@@ -23,6 +23,13 @@ export type ArtifactImageCollection = {
   images: ArtifactImage[]
 }
 
+function withBase(path: string): string {
+  const normalizedBase = import.meta.env.BASE_URL.endsWith('/')
+    ? import.meta.env.BASE_URL
+    : `${import.meta.env.BASE_URL}/`
+  return `${normalizedBase}${path.replace(/^\//, '')}`
+}
+
 function userProvidedRecipe(artifactId: string): CraftingRecipe {
   return {
     ingredients: [{ artifactId, quantity: 4 }],
@@ -377,7 +384,7 @@ const legendaryArtifacts: ArtifactImage[] = [
   },
 ]
 
-export const artifactImageCollections: ArtifactImageCollection[] = [
+const rawArtifactImageCollections: ArtifactImageCollection[] = [
   {
     id: 'mythic',
     title: 'Mythic artifacts',
@@ -394,7 +401,16 @@ export const artifactImageCollections: ArtifactImageCollection[] = [
   },
 ]
 
-export const artifactImageCount = artifactImageCollections.reduce(
+export const artifactImageCollections: ArtifactImageCollection[] =
+  rawArtifactImageCollections.map((collection) => ({
+    ...collection,
+    images: collection.images.map((image) => ({
+      ...image,
+      imageUrl: withBase(image.imageUrl),
+    })),
+  }))
+
+export const artifactImageCount = rawArtifactImageCollections.reduce(
   (total, collection) => total + collection.images.length,
   0,
 )
