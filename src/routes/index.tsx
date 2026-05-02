@@ -3,7 +3,6 @@ import { Search } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   artifactImageCollections,
-  artifactImageCount,
   type ArtifactImage,
 } from "../data/artifactImageCollections";
 import { ArtifactIconCollection } from "../features/artifacts/collection";
@@ -141,14 +140,6 @@ function Home() {
     );
   }, [artifactQuantities, query, rarityFilter]);
 
-  const obtainedUniqueCount = Object.values(artifactQuantities).filter(
-    (quantity) => quantity > 0,
-  ).length;
-  const obtainedTotalCount = Object.values(artifactQuantities).reduce(
-    (total, quantity) => total + quantity,
-    0,
-  );
-
   function addArtifactQuantity(artifactId: string, quantityToAdd: number) {
     if (!Number.isFinite(quantityToAdd) || quantityToAdd <= 0) {
       return;
@@ -222,10 +213,6 @@ function Home() {
               >
                 Soul Stone Calculator
               </Link>
-              <div className="rounded border border-souls-spirit/25 bg-souls-night/65 px-3 py-2 text-sm text-souls-panel">
-                {obtainedUniqueCount}/{artifactImageCount} crafted ·{" "}
-                {obtainedTotalCount} total
-              </div>
             </div>
           </nav>
 
