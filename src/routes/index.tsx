@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { Link, createFileRoute } from "@tanstack/react-router";
 import { Search } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -196,7 +196,7 @@ function Home() {
     <main className="min-h-screen bg-souls-void text-souls-parchment">
       <section className="hero-shell min-h-screen py-4">
         <div className="mx-auto w-full max-w-7xl px-5 md:px-8">
-          <nav className="mb-4 flex items-center justify-between">
+          <nav className="mb-4 flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-3">
               <div className="grid size-11 place-items-center rounded border border-souls-spirit/30 bg-souls-spirit/10">
                 <img
@@ -209,9 +209,23 @@ function Home() {
                 Souls Artifacts
               </span>
             </div>
-            <div className="rounded border border-souls-spirit/25 bg-souls-night/65 px-3 py-2 text-sm text-souls-panel">
-              {obtainedUniqueCount}/{artifactImageCount} crafted ·{" "}
-              {obtainedTotalCount} total
+            <div className="flex flex-wrap items-center justify-end gap-2">
+              <Link
+                className="rounded border border-souls-gold bg-souls-gold px-3 py-1.5 text-sm font-medium text-souls-void"
+                to="/"
+              >
+                Artifacts
+              </Link>
+              <Link
+                className="rounded border border-souls-spirit/20 px-3 py-1.5 text-sm font-medium text-souls-panel transition hover:border-souls-gold hover:bg-souls-gold hover:text-souls-void"
+                to="/soul-stone-calculator"
+              >
+                Soul Stone Calculator
+              </Link>
+              <div className="rounded border border-souls-spirit/25 bg-souls-night/65 px-3 py-2 text-sm text-souls-panel">
+                {obtainedUniqueCount}/{artifactImageCount} crafted ·{" "}
+                {obtainedTotalCount} total
+              </div>
             </div>
           </nav>
 

@@ -10,33 +10,43 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as SoulStoneCalculatorRouteImport } from './routes/soul-stone-calculator'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SoulStoneCalculatorRoute = SoulStoneCalculatorRouteImport.update({
+  id: '/soul-stone-calculator',
+  path: '/soul-stone-calculator',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/soul-stone-calculator': typeof SoulStoneCalculatorRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/soul-stone-calculator': typeof SoulStoneCalculatorRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/soul-stone-calculator': typeof SoulStoneCalculatorRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/soul-stone-calculator'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/soul-stone-calculator'
+  id: '__root__' | '/' | '/soul-stone-calculator'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  SoulStoneCalculatorRoute: typeof SoulStoneCalculatorRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +58,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/soul-stone-calculator': {
+      id: '/soul-stone-calculator'
+      path: '/soul-stone-calculator'
+      fullPath: '/soul-stone-calculator'
+      preLoaderRoute: typeof SoulStoneCalculatorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  SoulStoneCalculatorRoute: SoulStoneCalculatorRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
