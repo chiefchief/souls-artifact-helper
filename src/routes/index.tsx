@@ -30,6 +30,7 @@ type GalleryModalState = {
 };
 
 function Home() {
+  const appIconUrl = `${import.meta.env.BASE_URL}brand/favicon.png`;
   const [query, setQuery] = useState("");
   const [artifactQuantities, setArtifactQuantities] = useState<
     Record<string, number>
@@ -201,7 +202,7 @@ function Home() {
                 <img
                   alt="Souls icon"
                   className="size-6 object-contain"
-                  src="/brand/favicon.png"
+                  src={appIconUrl}
                 />
               </div>
               <span className="text-sm font-semibold uppercase tracking-[0.24em] text-souls-panel">
