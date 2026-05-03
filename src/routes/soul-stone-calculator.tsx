@@ -76,6 +76,7 @@ function SoulStoneCalculatorPage() {
   const [chapterInput, setChapterInput] = useState("");
   const [currentSoulStonesInput, setCurrentSoulStonesInput] = useState("");
   const [requiredSoulStonesInput, setRequiredSoulStonesInput] = useState("");
+  const [isStorageHydrated, setIsStorageHydrated] = useState(false);
   const [planResult, setPlanResult] = useState<ChestPlanResult | null>(null);
   const [planMessage, setPlanMessage] = useState<string | null>(null);
 
@@ -85,53 +86,23 @@ function SoulStoneCalculatorPage() {
     }
 
     const serialized = window.localStorage.getItem(SOUL_STONE_CALC_STORAGE_KEY);
-    if (!serialized) {
-      return;
-    }
-
-    try {
-      const parsed = JSON.parse(serialized) as Record<string, unknown>;
-      const normalized = Object.fromEntries(
-        Object.entries(parsed).filter(
-          ([, value]) => typeof value === "number" && value > 0,
-        ),
-      ) as Record<string, number>;
-      setQuantities(normalized);
-    } catch {
-      // ignore malformed storage payload
-    }
-  }, []);
-
-  useEffect(() => {
-    if (typeof window === "undefined") {
-      return;
-    }
-
-    window.localStorage.setItem(SOUL_STONE_CALC_STORAGE_KEY, JSON.stringify(quantities));
-  }, [quantities]);
-
-  useEffect(() => {
-    if (typeof window === "undefined") {
-      return;
+    if (serialized) {
+      try {
+        const parsed = JSON.parse(serialized) as Record<string, unknown>;
+        const normalized = Object.fromEntries(
+          Object.entries(parsed)
+            .map(([key, value]) => [key, Number(value)] as const)
+            .filter(([, value]) => Number.isFinite(value) && value > 0),
+        ) as Record<string, number>;
+        setQuantities(normalized);
+      } catch {
+        // ignore malformed storage payload
+      }
     }
 
     const storedChapter = window.localStorage.getItem(SOUL_STONE_CHAPTER_STORAGE_KEY);
     if (storedChapter) {
       setChapterInput(storedChapter);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (typeof window === "undefined") {
-      return;
-    }
-
-    window.localStorage.setItem(SOUL_STONE_CHAPTER_STORAGE_KEY, chapterInput);
-  }, [chapterInput]);
-
-  useEffect(() => {
-    if (typeof window === "undefined") {
-      return;
     }
 
     const storedCurrent = window.localStorage.getItem(SOUL_STONE_CURRENT_STORAGE_KEY);
@@ -142,23 +113,53 @@ function SoulStoneCalculatorPage() {
     if (storedRequired) {
       setRequiredSoulStonesInput(storedRequired);
     }
+
+    setIsStorageHydrated(true);
   }, []);
 
   useEffect(() => {
     if (typeof window === "undefined") {
       return;
     }
+    if (!isStorageHydrated) {
+      return;
+    }
 
-    window.localStorage.setItem(SOUL_STONE_CURRENT_STORAGE_KEY, currentSoulStonesInput);
-  }, [currentSoulStonesInput]);
+    window.localStorage.setItem(SOUL_STONE_CALC_STORAGE_KEY, JSON.stringify(quantities));
+  }, [isStorageHydrated, quantities]);
 
   useEffect(() => {
     if (typeof window === "undefined") {
       return;
     }
+    if (!isStorageHydrated) {
+      return;
+    }
+
+    window.localStorage.setItem(SOUL_STONE_CHAPTER_STORAGE_KEY, chapterInput);
+  }, [chapterInput, isStorageHydrated]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+    if (!isStorageHydrated) {
+      return;
+    }
+
+    window.localStorage.setItem(SOUL_STONE_CURRENT_STORAGE_KEY, currentSoulStonesInput);
+  }, [currentSoulStonesInput, isStorageHydrated]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+    if (!isStorageHydrated) {
+      return;
+    }
 
     window.localStorage.setItem(SOUL_STONE_REQUIRED_STORAGE_KEY, requiredSoulStonesInput);
-  }, [requiredSoulStonesInput]);
+  }, [isStorageHydrated, requiredSoulStonesInput]);
 
   const chapterValidation = useMemo(() => validateChapterInput(chapterInput), [chapterInput]);
   const chapterIndex = useMemo(() => {
@@ -203,6 +204,9 @@ function SoulStoneCalculatorPage() {
 
   function resetAll() {
     setQuantities({});
+    setChapterInput("");
+    setCurrentSoulStonesInput("");
+    setRequiredSoulStonesInput("");
     setPlanResult(null);
     setPlanMessage(null);
   }
@@ -681,14 +685,16 @@ function SoulStoneChestCard({
       <h3 className="mt-2 text-center text-xs font-semibold leading-tight text-souls-parchment">
         {chest.name}
       </h3>
-      <p className="mt-1 text-center text-[11px] text-souls-panel">
-        {chest.hours}h each · owned: {quantity}
-      </p>
-      <p className="mt-1 text-center text-[11px] text-souls-spirit">
-        {perChestSoulStones === null
-          ? "Enter valid chapter to calculate soul stones."
-          : `${Math.floor(perChestSoulStones).toLocaleString("en-US")} soul stones per chest`}
-      </p>
+      <div className="mt-1 flex items-center justify-between gap-1.5">
+        <span className="inline-flex min-h-6 items-center rounded border border-souls-gold/65 bg-souls-gold/15 px-2 text-[11px] font-bold text-souls-gold">
+          Qty: {quantity}
+        </span>
+        <span className="inline-flex min-h-6 items-center rounded border border-souls-spirit/45 bg-souls-spirit/10 px-2 text-[11px] font-semibold text-souls-spirit">
+          {perChestSoulStones === null
+            ? "Set chapter"
+            : `${Math.floor(perChestSoulStones).toLocaleString("en-US")} / chest`}
+        </span>
+      </div>
       <div className="mt-2 grid grid-cols-[minmax(0,1fr)_2rem] gap-1.5">
         <input
           className="min-h-8 min-w-0 rounded border border-souls-spirit/20 bg-souls-void/65 px-2 text-[11px] text-souls-parchment outline-none placeholder:text-souls-panel/55 focus:border-souls-spirit"

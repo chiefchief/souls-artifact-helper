@@ -1,4 +1,5 @@
 import { X } from "lucide-react";
+import { useMemo, useState } from "react";
 import type { ArtifactImage } from "../../data/artifactImageCollections";
 import {
   extractedArtifactById,
@@ -14,6 +15,7 @@ export function ArtifactGalleryModal({
   title: string;
   onClose: () => void;
 }) {
+  const [deprioritizeOwned, setDeprioritizeOwned] = useState(false);
   const mythicArtifacts = artifacts.filter((artifact) =>
     artifact.key.startsWith("mythic-"),
   );
@@ -24,6 +26,21 @@ export function ArtifactGalleryModal({
     title === "Crafted artifacts" &&
     mythicArtifacts.length > 0 &&
     legendaryArtifacts.length > 0;
+  const canDeprioritizeOwned = title === "Artifacts I can craft";
+  const visibleArtifacts = useMemo(() => {
+    if (!canDeprioritizeOwned || !deprioritizeOwned) {
+      return artifacts;
+    }
+
+    return [...artifacts].sort((first, second) => {
+      const firstOwned = Boolean(first.isOwned);
+      const secondOwned = Boolean(second.isOwned);
+      if (firstOwned === secondOwned) {
+        return 0;
+      }
+      return firstOwned ? 1 : -1;
+    });
+  }, [artifacts, canDeprioritizeOwned, deprioritizeOwned]);
 
   return (
     <div
@@ -34,11 +51,11 @@ export function ArtifactGalleryModal({
       <section
         aria-modal="true"
         aria-labelledby="artifact-gallery-modal-title"
-        className="w-full max-w-5xl overflow-hidden rounded border border-souls-spirit/30 bg-souls-night text-souls-parchment shadow-2xl"
+        className="flex max-h-[90vh] w-full max-w-5xl flex-col overflow-hidden rounded border border-souls-spirit/30 bg-souls-night text-souls-parchment shadow-2xl"
         onClick={(event) => event.stopPropagation()}
         role="dialog"
       >
-        <div className="flex items-center justify-between gap-4 border-b border-souls-spirit/20 p-4">
+        <div className="sticky top-0 z-10 flex items-center justify-between gap-4 border-b border-souls-spirit/20 bg-souls-night p-4">
           <h2 className="text-xl font-black" id="artifact-gallery-modal-title">
             {title}
           </h2>
@@ -51,7 +68,20 @@ export function ArtifactGalleryModal({
             <X className="size-4.5" />
           </button>
         </div>
-        <div className="p-4">
+        <div className="overflow-y-auto p-4">
+          {canDeprioritizeOwned ? (
+            <div className="mb-3">
+              <button
+                className="rounded border border-souls-spirit/20 px-3 py-1.5 text-sm font-medium text-souls-panel transition hover:border-souls-gold hover:bg-souls-gold hover:text-souls-void"
+                onClick={() => setDeprioritizeOwned((current) => !current)}
+                type="button"
+              >
+                {deprioritizeOwned
+                  ? "Show all equally"
+                  : "Dim crafted artifacts"}
+              </button>
+            </div>
+          ) : null}
           {showSeparatedRarities ? (
             <div className="space-y-5">
               <ArtifactGallerySection artifacts={mythicArtifacts} title="Mythic" />
@@ -60,8 +90,11 @@ export function ArtifactGalleryModal({
                 title="Legendary"
               />
             </div>
-          ) : artifacts.length > 0 ? (
-            <ArtifactGalleryGrid artifacts={artifacts} />
+          ) : visibleArtifacts.length > 0 ? (
+            <ArtifactGalleryGrid
+              artifacts={visibleArtifacts}
+              deprioritizeOwned={deprioritizeOwned}
+            />
           ) : (
             <div className="rounded border border-souls-spirit/18 bg-souls-void/55 p-4 text-sm text-souls-panel">
               No artifacts to display.
@@ -90,13 +123,24 @@ function ArtifactGallerySection({
   );
 }
 
-function ArtifactGalleryGrid({ artifacts }: { artifacts: GalleryArtifactItem[] }) {
+function ArtifactGalleryGrid({
+  artifacts,
+  deprioritizeOwned = false,
+}: {
+  artifacts: GalleryArtifactItem[];
+  deprioritizeOwned?: boolean;
+}) {
   return (
     <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8">
       {artifacts.map((artifact) => (
         <div
-          className="relative grid aspect-square place-items-center rounded border border-souls-spirit/18 bg-souls-void/55 p-2"
+          className="relative grid aspect-square place-items-center rounded border border-souls-spirit/18 bg-souls-void/55 p-2 transition"
+          data-owned={artifact.isOwned ? "true" : "false"}
+          data-owned-deprioritized={deprioritizeOwned ? "true" : "false"}
           key={artifact.key}
+          style={
+            deprioritizeOwned && artifact.isOwned ? { opacity: 0.28 } : undefined
+          }
         >
           <img
             alt={artifact.name}

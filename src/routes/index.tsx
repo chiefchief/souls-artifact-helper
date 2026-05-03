@@ -1,6 +1,13 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { Search } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useDeferredValue,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   artifactImageCollections,
   type ArtifactImage,
@@ -34,6 +41,7 @@ function Home() {
   const [artifactQuantities, setArtifactQuantities] = useState<
     Record<string, number>
   >({});
+  const [isQuantitiesHydrated, setIsQuantitiesHydrated] = useState(false);
   const [rarityFilter, setRarityFilter] = useState<RarityFilter>("all");
   const [selectedMythicArtifact, setSelectedMythicArtifact] =
     useState<ArtifactImage | null>(null);
@@ -43,6 +51,8 @@ function Home() {
   const [isLegendaryGuideOpen, setIsLegendaryGuideOpen] = useState(false);
   const stickyControlsRef = useRef<HTMLDivElement | null>(null);
   const [isStickyStuck, setIsStickyStuck] = useState(false);
+  const stickyStateRef = useRef(false);
+  const deferredQuery = useDeferredValue(query);
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -53,19 +63,22 @@ function Home() {
       ARTIFACT_QUANTITIES_STORAGE_KEY,
     );
     if (!serialized) {
+      setIsQuantitiesHydrated(true);
       return;
     }
 
     try {
       const parsed = JSON.parse(serialized) as Record<string, unknown>;
       const normalized = Object.fromEntries(
-        Object.entries(parsed).filter(
-          ([, value]) => typeof value === "number" && value > 0,
-        ),
+        Object.entries(parsed)
+          .map(([key, value]) => [key, Number(value)] as const)
+          .filter(([, value]) => Number.isFinite(value) && value > 0),
       ) as Record<string, number>;
       setArtifactQuantities(normalized);
     } catch {
       // ignore malformed storage payload
+    } finally {
+      setIsQuantitiesHydrated(true);
     }
   }, []);
 
@@ -73,21 +86,36 @@ function Home() {
     if (typeof window === "undefined") {
       return;
     }
+    if (!isQuantitiesHydrated) {
+      return;
+    }
 
     window.localStorage.setItem(
       ARTIFACT_QUANTITIES_STORAGE_KEY,
       JSON.stringify(artifactQuantities),
     );
-  }, [artifactQuantities]);
+  }, [artifactQuantities, isQuantitiesHydrated]);
 
   useEffect(() => {
     if (typeof window === "undefined") {
       return;
     }
 
+    let rafId = 0;
     function updateStickyState() {
-      const top = stickyControlsRef.current?.getBoundingClientRect().top;
-      setIsStickyStuck(typeof top === "number" ? top <= 0 : false);
+      if (rafId !== 0) {
+        return;
+      }
+
+      rafId = window.requestAnimationFrame(() => {
+        const top = stickyControlsRef.current?.getBoundingClientRect().top;
+        const nextIsStuck = typeof top === "number" ? top <= 0 : false;
+        if (stickyStateRef.current !== nextIsStuck) {
+          stickyStateRef.current = nextIsStuck;
+          setIsStickyStuck(nextIsStuck);
+        }
+        rafId = 0;
+      });
     }
 
     updateStickyState();
@@ -95,6 +123,9 @@ function Home() {
     window.addEventListener("resize", updateStickyState);
 
     return () => {
+      if (rafId !== 0) {
+        window.cancelAnimationFrame(rafId);
+      }
       window.removeEventListener("scroll", updateStickyState);
       window.removeEventListener("resize", updateStickyState);
     };
@@ -112,7 +143,7 @@ function Home() {
   );
 
   const filteredCollections = useMemo(() => {
-    const normalizedQuery = query.trim().toLowerCase();
+    const normalizedQuery = deferredQuery.trim().toLowerCase();
     const collectionsByRarity =
       rarityFilter === "all"
         ? artifactImageCollections
@@ -138,9 +169,9 @@ function Home() {
         .filter((collection) => collection.images.length > 0),
       artifactQuantities,
     );
-  }, [artifactQuantities, query, rarityFilter]);
+  }, [artifactQuantities, deferredQuery, rarityFilter]);
 
-  function addArtifactQuantity(artifactId: string, quantityToAdd: number) {
+  const addArtifactQuantity = useCallback((artifactId: string, quantityToAdd: number) => {
     if (!Number.isFinite(quantityToAdd) || quantityToAdd <= 0) {
       return;
     }
@@ -149,28 +180,28 @@ function Home() {
       ...current,
       [artifactId]: (current[artifactId] ?? 0) + Math.floor(quantityToAdd),
     }));
-  }
+  }, []);
 
-  function resetArtifactQuantity(artifactId: string) {
+  const resetArtifactQuantity = useCallback((artifactId: string) => {
     setArtifactQuantities((current) => {
       const next = { ...current };
       delete next[artifactId];
       return next;
     });
-  }
+  }, []);
 
-  function resetAllArtifactQuantities() {
+  const resetAllArtifactQuantities = useCallback(() => {
     setArtifactQuantities({});
-  }
+  }, []);
 
-  function openObtainedModal() {
+  const openObtainedModal = useCallback(() => {
     setGalleryModal({
       title: "Crafted artifacts",
       artifacts: buildObtainedGalleryItems(allArtifacts, artifactQuantities),
     });
-  }
+  }, [allArtifacts, artifactQuantities]);
 
-  function openCraftableModal() {
+  const openCraftableModal = useCallback(() => {
     setGalleryModal({
       title: "Artifacts I can craft",
       artifacts: mythicArtifacts
@@ -179,9 +210,10 @@ function Home() {
           key: artifact.id,
           imageUrl: artifact.imageUrl,
           name: artifact.name,
+          isOwned: (artifactQuantities[artifact.id] ?? 0) > 0,
         })),
     });
-  }
+  }, [artifactQuantities, mythicArtifacts]);
 
   return (
     <main className="min-h-screen bg-souls-void text-souls-parchment">

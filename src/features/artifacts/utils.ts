@@ -13,6 +13,7 @@ export type GalleryArtifactItem = {
   imageUrl: string;
   name: string;
   quantity?: number;
+  isOwned?: boolean;
 };
 
 export const extractedArtifactById = new Map(

@@ -1,11 +1,11 @@
 import { Info, RotateCcw } from "lucide-react";
-import { useState } from "react";
+import { memo, useState } from "react";
 import type {
   ArtifactImage,
   ArtifactImageCollection,
 } from "../../data/artifactImageCollections";
 
-export function ArtifactIconCollection({
+export const ArtifactIconCollection = memo(function ArtifactIconCollection({
   collection,
   artifactQuantities,
   onOpenLegendaryGuide,
@@ -29,7 +29,7 @@ export function ArtifactIconCollection({
   );
 
   return (
-    <div>
+    <div className="artifact-collection">
       <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <div className="flex items-center gap-2">
@@ -75,9 +75,9 @@ export function ArtifactIconCollection({
       )}
     </div>
   );
-}
+});
 
-function ArtifactInventoryCard({
+const ArtifactInventoryCard = memo(function ArtifactInventoryCard({
   artifact,
   quantity,
   onAddQuantity,
@@ -161,4 +161,4 @@ function ArtifactInventoryCard({
       </div>
     </article>
   );
-}
+});
