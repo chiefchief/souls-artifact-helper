@@ -176,6 +176,19 @@ function SoulStoneCalculatorPage() {
     currentSoulStones !== null && requiredSoulStones !== null
       ? Math.max(requiredSoulStones - currentSoulStones, 0)
       : null;
+  const totalPossibleFromAllChests = useMemo(() => {
+    if (chapterIndex === null) {
+      return null;
+    }
+
+    return soulStoneChests.reduce((sum, chest) => {
+      const quantity = quantities[chest.id] ?? 0;
+      const perChest = Math.floor(
+        chapterIndex * SOUL_STONE_HIDDEN_COEFFICIENT * chest.hours,
+      );
+      return sum + quantity * perChest;
+    }, 0);
+  }, [chapterIndex, quantities]);
 
   function setQuantity(chestId: string, nextQuantity: number) {
     if (!Number.isFinite(nextQuantity) || nextQuantity < 0) {
@@ -408,6 +421,11 @@ function SoulStoneCalculatorPage() {
                   : remainingSoulStones > 0
                     ? `Remaining needed: ${remainingSoulStones.toLocaleString("en-US")}`
                     : "Requirement reached."}
+              </p>
+              <p className="mt-1 text-sm text-souls-spirit">
+                {totalPossibleFromAllChests === null
+                  ? "Set a valid chapter to see total possible from all chests."
+                  : `Total possible from all chests: ${totalPossibleFromAllChests.toLocaleString("en-US")}`}
               </p>
             </div>
 
