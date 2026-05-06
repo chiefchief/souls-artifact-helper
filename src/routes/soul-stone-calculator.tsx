@@ -299,6 +299,30 @@ function SoulStoneCalculatorPage() {
     });
   }
 
+  function applyPlanResult() {
+    if (!planResult) {
+      return;
+    }
+
+    setQuantities((current) => {
+      const next = { ...current };
+      planResult.items.forEach((item) => {
+        const currentQty = next[item.chestId] ?? 0;
+        const updatedQty = Math.max(currentQty - item.used, 0);
+        if (updatedQty <= 0) {
+          delete next[item.chestId];
+        } else {
+          next[item.chestId] = updatedQty;
+        }
+      });
+      return next;
+    });
+
+    setCurrentSoulStonesInput(String(planResult.overflowAfterRequirement));
+    setPlanResult(null);
+    setPlanMessage("Plan applied. Chests were deducted and current soul stones set to overflow.");
+  }
+
   return (
     <main className="min-h-screen bg-souls-void text-souls-parchment">
       <section className="hero-shell min-h-screen py-4">
@@ -558,6 +582,20 @@ function SoulStoneCalculatorPage() {
                       ))}
                     </div>
                   </div>
+                  <div className="rounded border border-souls-spirit/18 bg-souls-void/45 p-3">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <button
+                        className="rounded border border-souls-leaf bg-souls-leaf px-3 py-1.5 text-sm font-semibold text-souls-void transition hover:brightness-95"
+                        onClick={applyPlanResult}
+                        type="button"
+                      >
+                        Apply this plan
+                      </button>
+                      <p className="text-sm text-souls-panel">
+                        Subtracts used chests from inventory, sets Current soul stones to Extra after target, and clears the current calculation.
+                      </p>
+                    </div>
+                  </div>
                 </div>
               ) : null}
             </div>
@@ -666,6 +704,104 @@ function solveMinimalUsageDp(
   deficit: number,
   chests: Array<{ available: number; value: number }>,
 ) {
+  const candidates = enumerateChestCandidates(deficit, chests);
+
+  if (candidates.length === 0) {
+    return null;
+  }
+
+  const minOverflow = Math.min(...candidates.map((candidate) => candidate.overflow));
+  const strictCandidates = candidates.filter(
+    (candidate) => candidate.overflow === minOverflow,
+  );
+  strictCandidates.sort((first, second) => {
+    const firstUsed = first.counts.reduce((sum, value) => sum + value, 0);
+    const secondUsed = second.counts.reduce((sum, value) => sum + value, 0);
+    return firstUsed - secondUsed;
+  });
+  return strictCandidates[0]?.counts ?? null;
+}
+
+function solveBalancedUsage(
+  deficit: number,
+  chests: Array<{ available: number; value: number }>,
+) {
+  const candidates = enumerateChestCandidates(deficit, chests);
+  if (candidates.length === 0) {
+    return null;
+  }
+
+  const minOverflow = Math.min(...candidates.map((candidate) => candidate.overflow));
+  const minChestValue = Math.min(...chests.map((chest) => chest.value));
+  const overflowWindow = Math.max(minChestValue, 350);
+  const limitedCandidates = candidates.filter(
+    (candidate) => candidate.overflow <= minOverflow + overflowWindow,
+  );
+
+  const stonesPerType = chests.map((chest) => chest.available * chest.value);
+  const grandTotal = stonesPerType.reduce((sum, value) => sum + value, 0);
+
+  if (grandTotal < deficit) {
+    return null;
+  }
+  const targetRatios = stonesPerType.map((stones) =>
+    grandTotal > 0 ? stones / grandTotal : 0,
+  );
+
+  const scoredCandidates = limitedCandidates.map((candidate) => {
+    const usedTypeCount = candidate.counts.reduce(
+      (sum, count) => sum + (count > 0 ? 1 : 0),
+      0,
+    );
+    const totalCount = candidate.counts.reduce((sum, count) => sum + count, 0);
+    return {
+      ...candidate,
+      usedTypeCount,
+      totalCount,
+      score: getBalancedDeviationScore(candidate.counts, chests, targetRatios),
+    };
+  });
+
+  scoredCandidates.sort((first, second) => {
+    if (first.overflow !== second.overflow) {
+      return first.overflow - second.overflow;
+    }
+    if (first.score !== second.score) {
+      return first.score - second.score;
+    }
+    if (first.usedTypeCount !== second.usedTypeCount) {
+      return second.usedTypeCount - first.usedTypeCount;
+    }
+    return first.totalCount - second.totalCount;
+  });
+
+  return scoredCandidates[0]?.counts ?? null;
+}
+
+function getBalancedDeviationScore(
+  counts: number[],
+  chests: Array<{ value: number }>,
+  targetRatios: number[],
+) {
+  const totalStones = counts.reduce(
+    (sum, count, index) => sum + count * chests[index].value,
+    0,
+  );
+
+  if (totalStones <= 0) {
+    return Number.POSITIVE_INFINITY;
+  }
+
+  return counts.reduce((score, count, index) => {
+    const actualRatio = (count * chests[index].value) / totalStones;
+    return score + Math.abs(actualRatio - targetRatios[index]);
+  }, 0);
+}
+
+function enumerateChestCandidates(
+  deficit: number,
+  chests: Array<{ available: number; value: number }>,
+) {
   const maxChestValue = Math.max(...chests.map((chest) => chest.value));
   const cap = deficit + maxChestValue - 1;
 
@@ -703,160 +839,13 @@ function solveMinimalUsageDp(
     dp = next;
   });
 
-  const candidates = Array.from(dp.entries())
+  return Array.from(dp.entries())
     .filter(([sum]) => sum >= deficit)
     .map(([sum, counts]) => ({
       sum,
       counts,
       overflow: sum - deficit,
     }));
-
-  if (candidates.length === 0) {
-    return null;
-  }
-
-  const minOverflow = Math.min(...candidates.map((candidate) => candidate.overflow));
-  const strictCandidates = candidates.filter(
-    (candidate) => candidate.overflow === minOverflow,
-  );
-  strictCandidates.sort((first, second) => {
-    const firstUsed = first.counts.reduce((sum, value) => sum + value, 0);
-    const secondUsed = second.counts.reduce((sum, value) => sum + value, 0);
-    return firstUsed - secondUsed;
-  });
-  return strictCandidates[0]?.counts ?? null;
-}
-
-function solveBalancedUsage(
-  deficit: number,
-  chests: Array<{ available: number; value: number }>,
-) {
-  const stonesPerType = chests.map((chest) => chest.available * chest.value);
-  const grandTotal = stonesPerType.reduce((sum, value) => sum + value, 0);
-
-  if (grandTotal < deficit) {
-    return null;
-  }
-
-  const used = chests.map((chest, index) => {
-    const share = grandTotal > 0 ? stonesPerType[index] / grandTotal : 0;
-    const floatCount = (share * deficit) / chest.value;
-    return Math.min(Math.floor(floatCount), chest.available);
-  });
-
-  const baseTotal = used.reduce(
-    (sum, count, index) => sum + count * chests[index].value,
-    0,
-  );
-  const remainingNeed = Math.max(deficit - baseTotal, 0);
-
-  if (remainingNeed <= 0) {
-    return used;
-  }
-
-  const remainingCapacity = chests.map(
-    (chest, index) => chest.available - used[index],
-  );
-  const maxChestValue = Math.max(...chests.map((chest) => chest.value));
-  const cap = remainingNeed + maxChestValue - 1;
-  const targetRatios = stonesPerType.map((stones) =>
-    grandTotal > 0 ? stones / grandTotal : 0,
-  );
-
-  let dp = new Map<number, number[]>();
-  dp.set(0, chests.map(() => 0));
-
-  chests.forEach((chest, chestIndex) => {
-    const next = new Map(dp);
-    const snapshot = Array.from(dp.entries());
-
-    snapshot.forEach(([sum, counts]) => {
-      for (let add = 1; add <= remainingCapacity[chestIndex]; add += 1) {
-        const nextSum = sum + add * chest.value;
-        if (nextSum > cap) {
-          break;
-        }
-
-        const nextCounts = [...counts];
-        nextCounts[chestIndex] += add;
-
-        const existing = next.get(nextSum);
-        if (!existing) {
-          next.set(nextSum, nextCounts);
-          continue;
-        }
-
-        // Keep candidate closer to proportional target for this exact sum
-        const existingScore = getBalancedDeviationScore(
-          used,
-          existing,
-          chests,
-          targetRatios,
-        );
-        const nextScore = getBalancedDeviationScore(
-          used,
-          nextCounts,
-          chests,
-          targetRatios,
-        );
-
-        if (nextScore < existingScore) {
-          next.set(nextSum, nextCounts);
-        }
-      }
-    });
-
-    dp = next;
-  });
-
-  const candidates = Array.from(dp.entries())
-    .filter(([sum]) => sum >= remainingNeed)
-    .map(([sum, addCounts]) => ({
-      sum,
-      addCounts,
-      overflow: sum - remainingNeed,
-      score: getBalancedDeviationScore(used, addCounts, chests, targetRatios),
-      extraChestCount: addCounts.reduce((total, value) => total + value, 0),
-    }));
-
-  if (candidates.length === 0) {
-    return used;
-  }
-
-  candidates.sort((first, second) => {
-    if (first.overflow !== second.overflow) {
-      return first.overflow - second.overflow;
-    }
-    if (first.score !== second.score) {
-      return first.score - second.score;
-    }
-    return first.extraChestCount - second.extraChestCount;
-  });
-
-  const bestAddCounts = candidates[0].addCounts;
-  return used.map((baseCount, index) => baseCount + bestAddCounts[index]);
-}
-
-function getBalancedDeviationScore(
-  baseCounts: number[],
-  addCounts: number[],
-  chests: Array<{ value: number }>,
-  targetRatios: number[],
-) {
-  const finalCounts = baseCounts.map((base, index) => base + addCounts[index]);
-  const totalStones = finalCounts.reduce(
-    (sum, count, index) => sum + count * chests[index].value,
-    0,
-  );
-
-  if (totalStones <= 0) {
-    return Number.POSITIVE_INFINITY;
-  }
-
-  return finalCounts.reduce((score, count, index) => {
-    const actualRatio = (count * chests[index].value) / totalStones;
-    return score + Math.abs(actualRatio - targetRatios[index]);
-  }, 0);
 }
 
 
