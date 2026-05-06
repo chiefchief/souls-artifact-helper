@@ -28,6 +28,7 @@ type ChestPlanResult = {
   finalSoulStones: number;
   overflowAfterRequirement: number;
 };
+type ChestPlanMode = "min-overuse" | "balanced";
 
 const SOUL_STONE_CALC_STORAGE_KEY = "souls_soul_stone_calculator_v1";
 const SOUL_STONE_CHAPTER_STORAGE_KEY = "souls_soul_stone_chapter_v1";
@@ -79,6 +80,7 @@ function SoulStoneCalculatorPage() {
   const [isStorageHydrated, setIsStorageHydrated] = useState(false);
   const [planResult, setPlanResult] = useState<ChestPlanResult | null>(null);
   const [planMessage, setPlanMessage] = useState<string | null>(null);
+  const [planMode, setPlanMode] = useState<ChestPlanMode>("min-overuse");
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -263,7 +265,7 @@ function SoulStoneCalculatorPage() {
       return;
     }
 
-    const usedCounts = findOptimalChestUsage(deficit, chestsWithValues);
+    const usedCounts = findOptimalChestUsage(deficit, chestsWithValues, planMode);
     if (!usedCounts) {
       setPlanMessage("Could not find a valid chest combination for this target.");
       return;
@@ -415,18 +417,65 @@ function SoulStoneCalculatorPage() {
                   />
                 </label>
               </div>
-              <p className="mt-2 text-sm text-souls-panel">
-                {remainingSoulStones === null
-                  ? "Enter both values to calculate remaining soul stones."
-                  : remainingSoulStones > 0
-                    ? `Remaining needed: ${remainingSoulStones.toLocaleString("en-US")}`
-                    : "Requirement reached."}
-              </p>
-              <p className="mt-1 text-sm text-souls-spirit">
-                {totalPossibleFromAllChests === null
-                  ? "Set a valid chapter to see total possible from all chests."
-                  : `Total possible from all chests: ${totalPossibleFromAllChests.toLocaleString("en-US")}`}
-              </p>
+              <div className="mt-2 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+                <div>
+                  <p className="text-sm text-souls-panel">
+                    {remainingSoulStones === null
+                      ? "Enter both values to calculate remaining soul stones."
+                      : remainingSoulStones > 0
+                        ? `Remaining needed: ${remainingSoulStones.toLocaleString("en-US")}`
+                        : "Requirement reached."}
+                  </p>
+                  <p className="mt-1 text-sm text-souls-spirit">
+                    {totalPossibleFromAllChests === null
+                      ? "Set a valid chapter to see total possible from all chests."
+                      : `Total possible from all chests: ${totalPossibleFromAllChests.toLocaleString("en-US")}`}
+                  </p>
+                </div>
+                <label className="inline-flex cursor-pointer items-center gap-2 rounded border border-souls-spirit/20 bg-souls-void/55 px-2 py-1">
+                  <span
+                    className={`text-xs font-semibold ${
+                      planMode === "min-overuse"
+                        ? "text-souls-parchment"
+                        : "text-souls-panel/65"
+                    }`}
+                  >
+                    Min overuse
+                  </span>
+                  <button
+                    aria-label="Toggle plan mode"
+                    className={`relative h-5 w-10 rounded-full transition ${
+                      planMode === "balanced"
+                        ? "bg-souls-gold/85"
+                        : "bg-souls-dusk/70"
+                    }`}
+                    onClick={() =>
+                      setPlanMode((current) =>
+                        current === "balanced" ? "min-overuse" : "balanced",
+                      )
+                    }
+                    type="button"
+                  >
+                    <span
+                      className={`absolute left-0.5 top-0.5 h-4 w-4 rounded-full bg-souls-panel transition-transform duration-200 ease-out ${
+                        planMode === "balanced" ? "translate-x-5" : "translate-x-0"
+                      }`}
+                    />
+                  </button>
+                  <span className="sr-only">
+                    {planMode === "balanced" ? "Balanced mode enabled" : "Min overuse mode enabled"}
+                  </span>
+                  <span
+                    className={`text-xs font-semibold ${
+                      planMode === "balanced"
+                        ? "text-souls-parchment"
+                        : "text-souls-panel/65"
+                    }`}
+                  >
+                    Balanced
+                  </span>
+                </label>
+              </div>
             </div>
 
             <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
@@ -604,6 +653,18 @@ function getSoulStoneIndex(chapter: number, level: number) {
 function findOptimalChestUsage(
   deficit: number,
   chests: Array<{ available: number; value: number }>,
+  mode: ChestPlanMode,
+) {
+  if (mode === "balanced") {
+    return solveBalancedUsage(deficit, chests);
+  }
+
+  return solveMinimalUsageDp(deficit, chests);
+}
+
+function solveMinimalUsageDp(
+  deficit: number,
+  chests: Array<{ available: number; value: number }>,
 ) {
   const maxChestValue = Math.max(...chests.map((chest) => chest.value));
   const cap = deficit + maxChestValue - 1;
@@ -642,30 +703,160 @@ function findOptimalChestUsage(
     dp = next;
   });
 
-  let bestSum: number | null = null;
-  let bestCounts: number[] | null = null;
+  const candidates = Array.from(dp.entries())
+    .filter(([sum]) => sum >= deficit)
+    .map(([sum, counts]) => ({
+      sum,
+      counts,
+      overflow: sum - deficit,
+    }));
 
-  Array.from(dp.entries()).forEach(([sum, counts]) => {
-    if (sum < deficit) {
-      return;
-    }
+  if (candidates.length === 0) {
+    return null;
+  }
 
-    if (bestSum === null || sum < bestSum) {
-      bestSum = sum;
-      bestCounts = counts;
-      return;
-    }
+  const minOverflow = Math.min(...candidates.map((candidate) => candidate.overflow));
+  const strictCandidates = candidates.filter(
+    (candidate) => candidate.overflow === minOverflow,
+  );
+  strictCandidates.sort((first, second) => {
+    const firstUsed = first.counts.reduce((sum, value) => sum + value, 0);
+    const secondUsed = second.counts.reduce((sum, value) => sum + value, 0);
+    return firstUsed - secondUsed;
+  });
+  return strictCandidates[0]?.counts ?? null;
+}
 
-    if (sum === bestSum && bestCounts) {
-      const currentChestTotal = bestCounts.reduce((acc, value) => acc + value, 0);
-      const nextChestTotal = counts.reduce((acc, value) => acc + value, 0);
-      if (nextChestTotal < currentChestTotal) {
-        bestCounts = counts;
-      }
-    }
+function solveBalancedUsage(
+  deficit: number,
+  chests: Array<{ available: number; value: number }>,
+) {
+  const stonesPerType = chests.map((chest) => chest.available * chest.value);
+  const grandTotal = stonesPerType.reduce((sum, value) => sum + value, 0);
+
+  if (grandTotal < deficit) {
+    return null;
+  }
+
+  const used = chests.map((chest, index) => {
+    const share = grandTotal > 0 ? stonesPerType[index] / grandTotal : 0;
+    const floatCount = (share * deficit) / chest.value;
+    return Math.min(Math.floor(floatCount), chest.available);
   });
 
-  return bestCounts;
+  const baseTotal = used.reduce(
+    (sum, count, index) => sum + count * chests[index].value,
+    0,
+  );
+  const remainingNeed = Math.max(deficit - baseTotal, 0);
+
+  if (remainingNeed <= 0) {
+    return used;
+  }
+
+  const remainingCapacity = chests.map(
+    (chest, index) => chest.available - used[index],
+  );
+  const maxChestValue = Math.max(...chests.map((chest) => chest.value));
+  const cap = remainingNeed + maxChestValue - 1;
+  const targetRatios = stonesPerType.map((stones) =>
+    grandTotal > 0 ? stones / grandTotal : 0,
+  );
+
+  let dp = new Map<number, number[]>();
+  dp.set(0, chests.map(() => 0));
+
+  chests.forEach((chest, chestIndex) => {
+    const next = new Map(dp);
+    const snapshot = Array.from(dp.entries());
+
+    snapshot.forEach(([sum, counts]) => {
+      for (let add = 1; add <= remainingCapacity[chestIndex]; add += 1) {
+        const nextSum = sum + add * chest.value;
+        if (nextSum > cap) {
+          break;
+        }
+
+        const nextCounts = [...counts];
+        nextCounts[chestIndex] += add;
+
+        const existing = next.get(nextSum);
+        if (!existing) {
+          next.set(nextSum, nextCounts);
+          continue;
+        }
+
+        // Keep candidate closer to proportional target for this exact sum
+        const existingScore = getBalancedDeviationScore(
+          used,
+          existing,
+          chests,
+          targetRatios,
+        );
+        const nextScore = getBalancedDeviationScore(
+          used,
+          nextCounts,
+          chests,
+          targetRatios,
+        );
+
+        if (nextScore < existingScore) {
+          next.set(nextSum, nextCounts);
+        }
+      }
+    });
+
+    dp = next;
+  });
+
+  const candidates = Array.from(dp.entries())
+    .filter(([sum]) => sum >= remainingNeed)
+    .map(([sum, addCounts]) => ({
+      sum,
+      addCounts,
+      overflow: sum - remainingNeed,
+      score: getBalancedDeviationScore(used, addCounts, chests, targetRatios),
+      extraChestCount: addCounts.reduce((total, value) => total + value, 0),
+    }));
+
+  if (candidates.length === 0) {
+    return used;
+  }
+
+  candidates.sort((first, second) => {
+    if (first.overflow !== second.overflow) {
+      return first.overflow - second.overflow;
+    }
+    if (first.score !== second.score) {
+      return first.score - second.score;
+    }
+    return first.extraChestCount - second.extraChestCount;
+  });
+
+  const bestAddCounts = candidates[0].addCounts;
+  return used.map((baseCount, index) => baseCount + bestAddCounts[index]);
+}
+
+function getBalancedDeviationScore(
+  baseCounts: number[],
+  addCounts: number[],
+  chests: Array<{ value: number }>,
+  targetRatios: number[],
+) {
+  const finalCounts = baseCounts.map((base, index) => base + addCounts[index]);
+  const totalStones = finalCounts.reduce(
+    (sum, count, index) => sum + count * chests[index].value,
+    0,
+  );
+
+  if (totalStones <= 0) {
+    return Number.POSITIVE_INFINITY;
+  }
+
+  return finalCounts.reduce((score, count, index) => {
+    const actualRatio = (count * chests[index].value) / totalStones;
+    return score + Math.abs(actualRatio - targetRatios[index]);
+  }, 0);
 }
 
 
