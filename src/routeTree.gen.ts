@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SoulStoneCalculatorRouteImport } from './routes/soul-stone-calculator'
+import { Route as SupportRouteImport } from './routes/support'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -22,31 +23,40 @@ const SoulStoneCalculatorRoute = SoulStoneCalculatorRouteImport.update({
   path: '/soul-stone-calculator',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SupportRoute = SupportRouteImport.update({
+  id: '/support',
+  path: '/support',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/soul-stone-calculator': typeof SoulStoneCalculatorRoute
+  '/support': typeof SupportRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/soul-stone-calculator': typeof SoulStoneCalculatorRoute
+  '/support': typeof SupportRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/soul-stone-calculator': typeof SoulStoneCalculatorRoute
+  '/support': typeof SupportRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/soul-stone-calculator'
+  fullPaths: '/' | '/soul-stone-calculator' | '/support'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/soul-stone-calculator'
-  id: '__root__' | '/' | '/soul-stone-calculator'
+  to: '/' | '/soul-stone-calculator' | '/support'
+  id: '__root__' | '/' | '/soul-stone-calculator' | '/support'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   SoulStoneCalculatorRoute: typeof SoulStoneCalculatorRoute
+  SupportRoute: typeof SupportRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -65,12 +75,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SoulStoneCalculatorRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/support': {
+      id: '/support'
+      path: '/support'
+      fullPath: '/support'
+      preLoaderRoute: typeof SupportRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   SoulStoneCalculatorRoute: SoulStoneCalculatorRoute,
+  SupportRoute: SupportRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
