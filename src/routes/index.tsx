@@ -18,6 +18,7 @@ import {
   LegendaryCountGuideModal,
   MythicCraftModal,
 } from "../features/artifacts/modals";
+import { ScreenshotCounterPanel } from "../features/artifacts/screenshotCounterPanel";
 import {
   ARTIFACT_QUANTITIES_STORAGE_KEY,
   buildObtainedGalleryItems,
@@ -194,6 +195,19 @@ function Home() {
     setArtifactQuantities({});
   }, []);
 
+  const applyDetectedQuantities = useCallback((counts: Record<string, number>) => {
+    setArtifactQuantities((current) => {
+      const next = { ...current };
+      for (const [artifactId, quantity] of Object.entries(counts)) {
+        if (!Number.isFinite(quantity) || quantity <= 0) {
+          continue;
+        }
+        next[artifactId] = (next[artifactId] ?? 0) + Math.floor(quantity);
+      }
+      return next;
+    });
+  }, []);
+
   const openObtainedModal = useCallback(() => {
     setGalleryModal({
       title: "Crafted artifacts",
@@ -275,10 +289,10 @@ function Home() {
               data-stuck={isStickyStuck}
               ref={stickyControlsRef}
             >
-              <div className="flex flex-wrap gap-2">
+              <div className="grid grid-cols-3 gap-2 md:flex md:flex-wrap">
                 {rarityFilters.map((filter) => (
                   <button
-                    className="rounded border border-souls-spirit/20 px-3 py-1.5 text-sm font-medium capitalize text-souls-panel transition data-[active=true]:border-souls-gold data-[active=true]:bg-souls-gold data-[active=true]:text-souls-void"
+                    className="w-full rounded border border-souls-spirit/20 px-3 py-1.5 text-sm font-medium capitalize text-souls-panel transition data-[active=true]:border-souls-gold data-[active=true]:bg-souls-gold data-[active=true]:text-souls-void md:w-auto"
                     data-active={rarityFilter === filter}
                     key={filter}
                     onClick={() => setRarityFilter(filter)}
@@ -289,23 +303,23 @@ function Home() {
                 ))}
               </div>
 
-              <div className="flex flex-wrap gap-2">
+              <div className="grid grid-cols-1 gap-2 md:flex md:flex-wrap">
                 <button
-                  className="inline-flex min-h-9 items-center justify-center gap-2 rounded border border-souls-spirit/20 px-3 py-1.5 text-sm font-medium text-souls-panel transition hover:border-souls-leaf hover:bg-souls-leaf hover:text-souls-void"
+                  className="inline-flex min-h-9 w-full items-center justify-center gap-2 rounded border border-souls-spirit/20 px-3 py-1.5 text-sm font-medium text-souls-panel transition hover:border-souls-leaf hover:bg-souls-leaf hover:text-souls-void md:w-auto"
                   onClick={openObtainedModal}
                   type="button"
                 >
                   Show crafted artifacts
                 </button>
                 <button
-                  className="inline-flex min-h-9 items-center justify-center gap-2 rounded border border-souls-spirit/20 px-3 py-1.5 text-sm font-medium text-souls-panel transition hover:border-souls-gold hover:bg-souls-gold hover:text-souls-void"
+                  className="inline-flex min-h-9 w-full items-center justify-center gap-2 rounded border border-souls-spirit/20 px-3 py-1.5 text-sm font-medium text-souls-panel transition hover:border-souls-gold hover:bg-souls-gold hover:text-souls-void md:w-auto"
                   onClick={openCraftableModal}
                   type="button"
                 >
                   Show artifacts I can craft
                 </button>
                 <button
-                  className="inline-flex min-h-9 items-center justify-center gap-2 rounded border border-souls-ember/30 px-3 py-1.5 text-sm font-medium text-souls-panel transition hover:border-souls-ember hover:bg-souls-ember hover:text-souls-void"
+                  className="inline-flex min-h-9 w-full items-center justify-center gap-2 rounded border border-souls-ember/30 px-3 py-1.5 text-sm font-medium text-souls-panel transition hover:border-souls-ember hover:bg-souls-ember hover:text-souls-void md:w-auto"
                   onClick={resetAllArtifactQuantities}
                   type="button"
                 >
@@ -313,6 +327,11 @@ function Home() {
                 </button>
               </div>
             </div>
+            <p className="mt-2 text-base font-semibold text-souls-panel/95">
+              Tip: values entered in <strong>+Qty</strong> are added to the current amount.
+            </p>
+
+            <ScreenshotCounterPanel onApplyCounts={applyDetectedQuantities} />
 
             <div className="mt-6 space-y-8">
               {filteredCollections.length > 0 ? (

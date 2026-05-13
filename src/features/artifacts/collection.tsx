@@ -50,13 +50,13 @@ export const ArtifactIconCollection = memo(function ArtifactIconCollection({
             total
           </p>
         </div>
-        <p className="max-w-2xl text-sm leading-6 text-souls-panel">
+        <p className="max-w-2xl text-xs leading-5 text-souls-panel sm:text-sm sm:leading-6">
           {collection.description}
         </p>
       </div>
 
       {collection.images.length > 0 ? (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8">
+        <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8">
           {collection.images.map((artifact) => (
             <ArtifactInventoryCard
               artifact={artifact}
@@ -113,7 +113,7 @@ const ArtifactInventoryCard = memo(function ArtifactInventoryCard({
       <div className="relative">
         <img
           alt={artifact.name}
-          className="mx-auto aspect-square w-full max-w-[64px] object-contain"
+          className="mx-auto aspect-square w-full max-w-[56px] object-contain sm:max-w-[64px]"
           loading="lazy"
           src={artifact.imageUrl}
         />
@@ -124,13 +124,13 @@ const ArtifactInventoryCard = memo(function ArtifactInventoryCard({
         )}
       </div>
 
-      <h3 className="mt-1.5 text-center text-[11px] font-semibold leading-tight text-souls-parchment [text-wrap:balance]">
+      <h3 className="mt-1 text-center text-[10px] font-semibold leading-tight text-souls-parchment sm:text-[11px] [text-wrap:balance]">
         {artifact.name}
       </h3>
 
-      <div className="mt-auto grid grid-cols-[minmax(0,1fr)_2rem] gap-1.5">
+      <div className="mt-auto grid grid-cols-[minmax(0,1fr)_1.8rem] gap-1 sm:grid-cols-[minmax(0,1fr)_2rem] sm:gap-1.5">
         <input
-          className="min-h-8 min-w-0 rounded border border-souls-spirit/20 bg-souls-void/65 px-2 text-[11px] text-souls-parchment outline-none placeholder:text-souls-panel/55 focus:border-souls-spirit"
+          className="min-h-7 min-w-0 rounded border border-souls-spirit/20 bg-souls-void/65 px-1.5 text-[10px] text-souls-parchment outline-none placeholder:text-souls-panel/55 focus:border-souls-spirit sm:min-h-8 sm:px-2 sm:text-[11px]"
           inputMode="numeric"
           min="1"
           onBlur={submitQuantity}
@@ -148,7 +148,7 @@ const ArtifactInventoryCard = memo(function ArtifactInventoryCard({
         />
         <button
           aria-label={`Reset ${artifact.name}`}
-          className="grid size-8 shrink-0 place-items-center rounded border border-souls-spirit/20 bg-souls-void/65 text-souls-panel transition hover:border-souls-gold hover:text-souls-gold disabled:cursor-not-allowed disabled:opacity-35"
+          className="grid size-7 shrink-0 place-items-center rounded border border-souls-spirit/20 bg-souls-void/65 text-souls-panel transition hover:border-souls-gold hover:text-souls-gold disabled:cursor-not-allowed disabled:opacity-35 sm:size-8"
           disabled={!isObtained}
           onClick={(event) => {
             event.stopPropagation();

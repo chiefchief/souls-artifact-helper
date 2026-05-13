@@ -11,3 +11,6 @@ dist-ssr
 .vinxi
 __unconfig*
 todos.json
+# local synthetic/eval datasets
+data/
+__pycache__

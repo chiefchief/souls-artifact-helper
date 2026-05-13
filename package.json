@@ -9,7 +9,17 @@
     "start": "vite dev --port 3000",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "vitest run"
+    "test": "vitest run",
+    "ds:clean": "bash scripts/clean_datasets.sh",
+    "ds:quick": "bash scripts/ds_quick.sh",
+    "ds:balanced": "bash scripts/ds_balanced.sh",
+    "ds:quality": "bash scripts/ds_quality.sh",
+    "train:quick": "bash scripts/train_quick.sh",
+    "train:balanced": "bash scripts/train_balanced.sh",
+    "train:quality": "bash scripts/train_quality.sh",
+    "pipeline:quick": "bash scripts/pipeline_quick.sh",
+    "pipeline:balanced": "bash scripts/pipeline_balanced.sh",
+    "pipeline:quality": "bash scripts/pipeline_quality.sh"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.18",
@@ -20,9 +30,11 @@
     "@tanstack/react-start": "latest",
     "@tanstack/router-plugin": "^1.132.0",
     "lucide-react": "^0.545.0",
+    "onnxruntime-web": "^1.26.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
-    "tailwindcss": "^4.1.18"
+    "tailwindcss": "^4.1.18",
+    "tesseract.js": "^7.0.0"
   },
   "devDependencies": {
     "@tailwindcss/typography": "^0.5.16",
@@ -33,6 +45,8 @@
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
     "@vitejs/plugin-react": "^6.0.1",
+    "adm-zip": "^0.5.17",
+    "jimp": "^1.6.1",
     "jsdom": "^28.1.0",
     "typescript": "^6.0.2",
     "vite": "^8.0.0",

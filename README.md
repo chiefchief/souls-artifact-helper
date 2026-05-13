@@ -1,5 +1,78 @@
 Welcome to your new TanStack Start app! 
 
+# Artifact OCR/Classifier Models
+
+The screenshot counter now supports ONNX models in browser (no backend):
+
+- `public/models/artifacts/artifact-classifier.onnx`
+- `public/models/artifacts/quantity-classifier.onnx`
+- `public/models/artifacts/diamonds-classifier.onnx`
+
+If models are not present, it falls back to the built-in heuristic matcher.
+
+## Train and export ONNX (Python)
+
+Generate synthetic datasets first (uses `artifact_screenshots/` and reference PNGs from `public/artifacts/`):
+
+```bash
+python3 scripts/artifact/generate_artifacts_synthetic_datasets.py --artifact-per-class 220 --quantity-per-class 220
+```
+
+Then train and export:
+
+```bash
+python3 scripts/train_artifact_classifier.py --data data/artifacts_dataset
+python3 scripts/train_quantity_classifier.py --data data/quantity_dataset
+python3 scripts/train_diamonds_classifier.py --data data/diamonds_dataset
+```
+
+## Preset scripts (recommended)
+
+Use ready profiles:
+
+```bash
+yarn ds:clean
+yarn pipeline:quick
+yarn pipeline:balanced
+yarn pipeline:quality
+```
+
+Or run generation/training separately:
+
+```bash
+yarn ds:quick
+yarn ds:balanced
+yarn ds:quality
+
+yarn train:quick
+yarn train:balanced
+yarn train:quality
+```
+
+Expected dataset folders:
+
+- `data/artifacts_dataset/<class_name>/*.png` (one folder per artifact class, in the same class order used for training/inference)
+- `data/quantity_dataset/<label>/*.png` where labels are numeric class names (`01`..`24`), with `01` including `E`, empty badge and numeric `1`
+- `data/diamonds_dataset/<label>/*.png` where labels are `0`..`3` (count of left-bottom diamonds)
+
+## ML roadmap (next step)
+
+Planned improvement: automatic **train + evaluate + keep-best** pipeline, so each run can improve quality safely without manual review.
+
+Scope:
+
+- add an evaluation set (not used for training), e.g. `eval/artifacts`, `eval/quantity`, `eval/diamonds`
+- add `scripts/evaluate_models.py` to compute metrics (accuracy/F1) for each model
+- save metrics to `public/models/artifacts/metrics.json`
+- compare with previous `best_metrics.json`
+- keep/export new models only if metrics are better, otherwise keep previous best ONNX files
+
+Why:
+
+- prevents silent regression after retraining
+- gives objective progress across runs
+- removes need to manually verify hundreds of screenshots
+
 # Getting Started
 
 To run this application:
