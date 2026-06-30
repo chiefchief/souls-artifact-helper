@@ -69,14 +69,14 @@ def parse_artifacts(ts_path: Path) -> List[Tuple[int, str, str, str]]:
     idx = 0
     for block in blocks:
         for obj in _extract_object_literals(block):
-            id_match = re.search(r"id:\s*'([^']+)'", obj)
-            img_match = re.search(r"imageUrl:\s*'([^']+)'", obj)
-            name_match = re.search(r"name:\s*'([^']+)'", obj)
+            id_match = re.search(r"id:\s*(['\"])([^'\"]+)\1", obj)
+            img_match = re.search(r"imageUrl:\s*(['\"])([^'\"]+)\1", obj)
+            name_match = re.search(r"name:\s*(['\"])([^'\"]+)\1", obj)
             if not id_match or not img_match:
                 continue
-            artifact_id = id_match.group(1)
-            image_url = img_match.group(1)
-            name = name_match.group(1) if name_match else artifact_id
+            artifact_id = id_match.group(2)
+            image_url = img_match.group(2)
+            name = name_match.group(2) if name_match else artifact_id
             artifacts.append((idx, artifact_id, name, image_url))
             idx += 1
 
