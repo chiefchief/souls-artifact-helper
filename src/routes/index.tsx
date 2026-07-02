@@ -1,23 +1,9 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { Search } from "lucide-react";
-import {
-  useCallback,
-  useDeferredValue,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
-import {
-  artifactImageCollections,
-  type ArtifactImage,
-} from "../data/artifactImageCollections";
+import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
+import { artifactImageCollections, type ArtifactImage } from "../data/artifactImageCollections";
 import { ArtifactIconCollection } from "../features/artifacts/collection";
-import {
-  ArtifactGalleryModal,
-  LegendaryCountGuideModal,
-  MythicCraftModal,
-} from "../features/artifacts/modals";
+import { ArtifactGalleryModal, LegendaryCountGuideModal, MythicCraftModal } from "../features/artifacts/modals";
 import { ScreenshotCounterPanel } from "../features/artifacts/screenshotCounterPanel";
 import {
   ARTIFACT_QUANTITIES_STORAGE_KEY,
@@ -39,16 +25,11 @@ type GalleryModalState = {
 function Home() {
   const appIconUrl = `${import.meta.env.BASE_URL}brand/favicon.png`;
   const [query, setQuery] = useState("");
-  const [artifactQuantities, setArtifactQuantities] = useState<
-    Record<string, number>
-  >({});
+  const [artifactQuantities, setArtifactQuantities] = useState<Record<string, number>>({});
   const [isQuantitiesHydrated, setIsQuantitiesHydrated] = useState(false);
   const [rarityFilter, setRarityFilter] = useState<RarityFilter>("all");
-  const [selectedMythicArtifact, setSelectedMythicArtifact] =
-    useState<ArtifactImage | null>(null);
-  const [galleryModal, setGalleryModal] = useState<GalleryModalState | null>(
-    null,
-  );
+  const [selectedMythicArtifact, setSelectedMythicArtifact] = useState<ArtifactImage | null>(null);
+  const [galleryModal, setGalleryModal] = useState<GalleryModalState | null>(null);
   const [isLegendaryGuideOpen, setIsLegendaryGuideOpen] = useState(false);
   const stickyControlsRef = useRef<HTMLDivElement | null>(null);
   const [isStickyStuck, setIsStickyStuck] = useState(false);
@@ -60,9 +41,7 @@ function Home() {
       return;
     }
 
-    const serialized = window.localStorage.getItem(
-      ARTIFACT_QUANTITIES_STORAGE_KEY,
-    );
+    const serialized = window.localStorage.getItem(ARTIFACT_QUANTITIES_STORAGE_KEY);
     if (!serialized) {
       setIsQuantitiesHydrated(true);
       return;
@@ -91,10 +70,7 @@ function Home() {
       return;
     }
 
-    window.localStorage.setItem(
-      ARTIFACT_QUANTITIES_STORAGE_KEY,
-      JSON.stringify(artifactQuantities),
-    );
+    window.localStorage.setItem(ARTIFACT_QUANTITIES_STORAGE_KEY, JSON.stringify(artifactQuantities));
   }, [artifactQuantities, isQuantitiesHydrated]);
 
   useEffect(() => {
@@ -132,14 +108,9 @@ function Home() {
     };
   }, []);
 
-  const allArtifacts = useMemo(
-    () => artifactImageCollections.flatMap((collection) => collection.images),
-    [],
-  );
+  const allArtifacts = useMemo(() => artifactImageCollections.flatMap((collection) => collection.images), []);
   const mythicArtifacts = useMemo(
-    () =>
-      artifactImageCollections.find((collection) => collection.id === "mythic")
-        ?.images ?? [],
+    () => artifactImageCollections.find((collection) => collection.id === "mythic")?.images ?? [],
     [],
   );
 
@@ -148,9 +119,7 @@ function Home() {
     const collectionsByRarity =
       rarityFilter === "all"
         ? artifactImageCollections
-        : artifactImageCollections.filter(
-            (collection) => collection.id === rarityFilter,
-          );
+        : artifactImageCollections.filter((collection) => collection.id === rarityFilter);
 
     return sortCollectionsByQuantity(
       collectionsByRarity
@@ -159,10 +128,7 @@ function Home() {
           images: collection.images.filter((artifact) => {
             const matchesQuery =
               normalizedQuery.length === 0 ||
-              [artifact.id, artifact.name]
-                .join(" ")
-                .toLowerCase()
-                .includes(normalizedQuery);
+              [artifact.id, artifact.name].join(" ").toLowerCase().includes(normalizedQuery);
 
             return matchesQuery;
           }),
@@ -236,11 +202,7 @@ function Home() {
           <nav className="mb-4 flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-3">
               <div className="grid size-11 place-items-center rounded border border-souls-spirit/30 bg-souls-spirit/10">
-                <img
-                  alt="Souls icon"
-                  className="size-6 object-contain"
-                  src={appIconUrl}
-                />
+                <img alt="Souls icon" className="size-6 object-contain" src={appIconUrl} />
               </div>
               <span className="text-sm font-semibold uppercase tracking-[0.24em] text-souls-panel">
                 Souls Artifacts
@@ -261,6 +223,12 @@ function Home() {
               </Link>
               <Link
                 className="rounded border border-souls-spirit/20 px-3 py-1.5 text-sm font-medium text-souls-panel transition hover:border-souls-gold hover:bg-souls-gold hover:text-souls-void"
+                to="/heroes"
+              >
+                Heroes
+              </Link>
+              <Link
+                className="rounded border border-souls-spirit/20 px-3 py-1.5 text-sm font-medium text-souls-panel transition hover:border-souls-gold hover:bg-souls-gold hover:text-souls-void"
                 to="/support"
               >
                 Support
@@ -271,12 +239,8 @@ function Home() {
           <section className="artifact-preview p-4 md:p-5">
             <div className="flex flex-col gap-4 border-b border-souls-spirit/20 pb-4 lg:flex-row lg:items-end lg:justify-between">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-souls-spirit">
-                  Inventory
-                </p>
-                <h1 className="mt-1 text-3xl font-black text-souls-parchment md:text-4xl">
-                  Crafted artifacts
-                </h1>
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-souls-spirit">Inventory</p>
+                <h1 className="mt-1 text-3xl font-black text-souls-parchment md:text-4xl">Crafted artifacts</h1>
               </div>
 
               <label className="flex min-h-10 w-full items-center gap-2 rounded border border-souls-spirit/25 bg-souls-void/55 px-3 lg:max-w-md">
@@ -347,11 +311,7 @@ function Home() {
                     collection={collection}
                     key={collection.id}
                     onAddQuantity={addArtifactQuantity}
-                    onOpenArtifact={
-                      collection.id === "mythic"
-                        ? setSelectedMythicArtifact
-                        : undefined
-                    }
+                    onOpenArtifact={collection.id === "mythic" ? setSelectedMythicArtifact : undefined}
                     onOpenLegendaryGuide={() => setIsLegendaryGuideOpen(true)}
                     onResetQuantity={resetArtifactQuantity}
                   />
@@ -366,10 +326,7 @@ function Home() {
         </div>
       </section>
       {selectedMythicArtifact && (
-        <MythicCraftModal
-          artifact={selectedMythicArtifact}
-          onClose={() => setSelectedMythicArtifact(null)}
-        />
+        <MythicCraftModal artifact={selectedMythicArtifact} onClose={() => setSelectedMythicArtifact(null)} />
       )}
       {galleryModal && (
         <ArtifactGalleryModal
@@ -378,11 +335,7 @@ function Home() {
           title={galleryModal.title}
         />
       )}
-      {isLegendaryGuideOpen && (
-        <LegendaryCountGuideModal
-          onClose={() => setIsLegendaryGuideOpen(false)}
-        />
-      )}
+      {isLegendaryGuideOpen && <LegendaryCountGuideModal onClose={() => setIsLegendaryGuideOpen(false)} />}
     </main>
   );
 }

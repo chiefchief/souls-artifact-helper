@@ -67,11 +67,7 @@ function loadImageFromFile(file: File) {
   });
 }
 
-function getGridBoundsFromRatios(
-  imageWidth: number,
-  imageHeight: number,
-  gridConfig: GridConfig,
-): Bounds {
+function getGridBoundsFromRatios(imageWidth: number, imageHeight: number, gridConfig: GridConfig): Bounds {
   const x = Math.floor(clamp(gridConfig.xRatio, 0, 1) * imageWidth);
   const y = Math.floor(clamp(gridConfig.yRatio, 0, 1) * imageHeight);
   const width = Math.floor(clamp(gridConfig.widthRatio, 0, 1) * imageWidth);
@@ -83,27 +79,15 @@ function getGridBoundsFromRatios(
   return { x, y, width: safeWidth, height: safeHeight };
 }
 
-function extractCellBounds(
-  gridBounds: Bounds,
-  row: number,
-  col: number,
-  rows: number,
-  cols: number,
-): Bounds {
+function extractCellBounds(gridBounds: Bounds, row: number, col: number, rows: number, cols: number): Bounds {
   const cellWidth = gridBounds.width / cols;
   const cellHeight = gridBounds.height / rows;
 
   const x = Math.floor(gridBounds.x + col * cellWidth);
   const y = Math.floor(gridBounds.y + row * cellHeight);
 
-  const width = Math.max(
-    8,
-    Math.floor(col === cols - 1 ? gridBounds.x + gridBounds.width - x : cellWidth),
-  );
-  const height = Math.max(
-    8,
-    Math.floor(row === rows - 1 ? gridBounds.y + gridBounds.height - y : cellHeight),
-  );
+  const width = Math.max(8, Math.floor(col === cols - 1 ? gridBounds.x + gridBounds.width - x : cellWidth));
+  const height = Math.max(8, Math.floor(row === rows - 1 ? gridBounds.y + gridBounds.height - y : cellHeight));
 
   return { x, y, width, height };
 }
@@ -127,9 +111,7 @@ export async function debugGridSlicingFromScreenshot({
     for (let col = 0; col < cols; col += 1) {
       const bounds = extractCellBounds(gridBounds, row, col, rows, cols);
       cells.push({ row, col, bounds });
-      debugLines.push(
-        `slot(r${row + 1} c${col + 1}) cell=(${bounds.x},${bounds.y},${bounds.width},${bounds.height})`,
-      );
+      debugLines.push(`slot(r${row + 1} c${col + 1}) cell=(${bounds.x},${bounds.y},${bounds.width},${bounds.height})`);
     }
   }
 
@@ -149,10 +131,7 @@ export async function debugGridSlicingFromScreenshot({
   };
 }
 
-function buildCellPreviews(
-  image: HTMLImageElement,
-  gridDebug: GridDebugResult,
-): CellPreview[] {
+function buildCellPreviews(image: HTMLImageElement, gridDebug: GridDebugResult): CellPreview[] {
   return gridDebug.cells.map((cell) => {
     const canvas = document.createElement("canvas");
     canvas.width = cell.bounds.width;

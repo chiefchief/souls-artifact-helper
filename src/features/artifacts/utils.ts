@@ -31,17 +31,13 @@ const LEGENDARY_NON_MYTHIC_MATERIAL_IDS = new Set([
   "legendary-23", // Gold Earrings
 ]);
 
-export function canCraftArtifact(
-  artifact: ArtifactImage,
-  artifactQuantities: Record<string, number>,
-) {
+export function canCraftArtifact(artifact: ArtifactImage, artifactQuantities: Record<string, number>) {
   if (!artifact.crafting) {
     return false;
   }
 
   return artifact.crafting.ingredients.every(
-    (ingredient) =>
-      (artifactQuantities[ingredient.artifactId] ?? 0) >= ingredient.quantity,
+    (ingredient) => (artifactQuantities[ingredient.artifactId] ?? 0) >= ingredient.quantity,
   );
 }
 
@@ -52,12 +48,8 @@ export function sortCollectionsByQuantity(
   return collections.map((collection) => ({
     ...collection,
     images: [...collection.images].sort((first, second) => {
-      const firstIsNonMaterial =
-        collection.id === "legendary" &&
-        LEGENDARY_NON_MYTHIC_MATERIAL_IDS.has(first.id);
-      const secondIsNonMaterial =
-        collection.id === "legendary" &&
-        LEGENDARY_NON_MYTHIC_MATERIAL_IDS.has(second.id);
+      const firstIsNonMaterial = collection.id === "legendary" && LEGENDARY_NON_MYTHIC_MATERIAL_IDS.has(first.id);
+      const secondIsNonMaterial = collection.id === "legendary" && LEGENDARY_NON_MYTHIC_MATERIAL_IDS.has(second.id);
 
       if (firstIsNonMaterial && !secondIsNonMaterial) {
         return 1;
@@ -83,10 +75,7 @@ export function sortCollectionsByQuantity(
   }));
 }
 
-export function buildObtainedGalleryItems(
-  allArtifacts: ArtifactImage[],
-  artifactQuantities: Record<string, number>,
-) {
+export function buildObtainedGalleryItems(allArtifacts: ArtifactImage[], artifactQuantities: Record<string, number>) {
   return allArtifacts.flatMap((artifact) => {
     const quantity = artifactQuantities[artifact.id] ?? 0;
     if (quantity <= 0) {

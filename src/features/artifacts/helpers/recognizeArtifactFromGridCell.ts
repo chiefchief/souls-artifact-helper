@@ -9,13 +9,10 @@ type ArtifactModelSession = {
 };
 
 let ortModulePromise: Promise<typeof Ort | null> | null = null;
-let artifactModelSessionPromise: Promise<ArtifactModelSession | null> | null =
-  null;
+let artifactModelSessionPromise: Promise<ArtifactModelSession | null> | null = null;
 
 function withBase(path: string): string {
-  const base = import.meta.env.BASE_URL.endsWith("/")
-    ? import.meta.env.BASE_URL
-    : `${import.meta.env.BASE_URL}/`;
+  const base = import.meta.env.BASE_URL.endsWith("/") ? import.meta.env.BASE_URL : `${import.meta.env.BASE_URL}/`;
   return `${base}${path.replace(/^\//, "")}`;
 }
 
@@ -46,8 +43,7 @@ function canvasToCHW(canvas: HTMLCanvasElement, size: number) {
 
 function softmax(logits: Float32Array) {
   let max = -Infinity;
-  for (let i = 0; i < logits.length; i += 1)
-    max = Math.max(max, logits[i] ?? -Infinity);
+  for (let i = 0; i < logits.length; i += 1) max = Math.max(max, logits[i] ?? -Infinity);
   const exps = new Float32Array(logits.length);
   let sum = 0;
   for (let i = 0; i < logits.length; i += 1) {
@@ -104,14 +100,8 @@ async function getOrtModule() {
   return ortModulePromise;
 }
 
-async function createOrtSession(
-  ort: typeof Ort,
-  modelUrl: string,
-): Promise<Ort.InferenceSession | null> {
-  const providerAttempts: Array<Array<"webgpu" | "wasm">> = [
-    ["webgpu", "wasm"],
-    ["wasm"],
-  ];
+async function createOrtSession(ort: typeof Ort, modelUrl: string): Promise<Ort.InferenceSession | null> {
+  const providerAttempts: Array<Array<"webgpu" | "wasm">> = [["webgpu", "wasm"], ["wasm"]];
   for (const executionProviders of providerAttempts) {
     try {
       return await ort.InferenceSession.create(modelUrl, {
@@ -153,9 +143,7 @@ function createImage(url: string) {
   });
 }
 
-export async function recognizeArtifactFromGridCell(
-  cell: CellPreview,
-): Promise<{
+export async function recognizeArtifactFromGridCell(cell: CellPreview): Promise<{
   artifactId: string;
   artifactName: string;
   confidence: number;
@@ -165,9 +153,7 @@ export async function recognizeArtifactFromGridCell(
   const ort = await getOrtModule();
   if (!model || !ort) return null;
 
-  const artifacts = artifactImageCollections.flatMap(
-    (collection) => collection.images,
-  );
+  const artifacts = artifactImageCollections.flatMap((collection) => collection.images);
 
   try {
     const image = await createImage(cell.imageUrl);

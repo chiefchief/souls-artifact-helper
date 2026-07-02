@@ -8,97 +8,113 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as SoulStoneCalculatorRouteImport } from './routes/soul-stone-calculator'
-import { Route as SupportRouteImport } from './routes/support'
+import { Route as rootRouteImport } from "./routes/__root";
+import { Route as HeroesRouteImport } from "./routes/heroes";
+import { Route as IndexRouteImport } from "./routes/index";
+import { Route as SoulStoneCalculatorRouteImport } from "./routes/soul-stone-calculator";
+import { Route as SupportRouteImport } from "./routes/support";
 
 const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+  id: "/",
+  path: "/",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
+const HeroesRoute = HeroesRouteImport.update({
+  id: "/heroes",
+  path: "/heroes",
+  getParentRoute: () => rootRouteImport,
+} as any);
 const SoulStoneCalculatorRoute = SoulStoneCalculatorRouteImport.update({
-  id: '/soul-stone-calculator',
-  path: '/soul-stone-calculator',
+  id: "/soul-stone-calculator",
+  path: "/soul-stone-calculator",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const SupportRoute = SupportRouteImport.update({
-  id: '/support',
-  path: '/support',
+  id: "/support",
+  path: "/support",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
-  '/soul-stone-calculator': typeof SoulStoneCalculatorRoute
-  '/support': typeof SupportRoute
+  "/": typeof IndexRoute;
+  "/heroes": typeof HeroesRoute;
+  "/soul-stone-calculator": typeof SoulStoneCalculatorRoute;
+  "/support": typeof SupportRoute;
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '/soul-stone-calculator': typeof SoulStoneCalculatorRoute
-  '/support': typeof SupportRoute
+  "/": typeof IndexRoute;
+  "/heroes": typeof HeroesRoute;
+  "/soul-stone-calculator": typeof SoulStoneCalculatorRoute;
+  "/support": typeof SupportRoute;
 }
 export interface FileRoutesById {
-  __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
-  '/soul-stone-calculator': typeof SoulStoneCalculatorRoute
-  '/support': typeof SupportRoute
+  __root__: typeof rootRouteImport;
+  "/": typeof IndexRoute;
+  "/heroes": typeof HeroesRoute;
+  "/soul-stone-calculator": typeof SoulStoneCalculatorRoute;
+  "/support": typeof SupportRoute;
 }
 export interface FileRouteTypes {
-  fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/soul-stone-calculator' | '/support'
-  fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/soul-stone-calculator' | '/support'
-  id: '__root__' | '/' | '/soul-stone-calculator' | '/support'
-  fileRoutesById: FileRoutesById
+  fileRoutesByFullPath: FileRoutesByFullPath;
+  fullPaths: "/" | "/heroes" | "/soul-stone-calculator" | "/support";
+  fileRoutesByTo: FileRoutesByTo;
+  to: "/" | "/heroes" | "/soul-stone-calculator" | "/support";
+  id: "__root__" | "/" | "/heroes" | "/soul-stone-calculator" | "/support";
+  fileRoutesById: FileRoutesById;
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
-  SoulStoneCalculatorRoute: typeof SoulStoneCalculatorRoute
-  SupportRoute: typeof SupportRoute
+  HeroesRoute: typeof HeroesRoute;
+  IndexRoute: typeof IndexRoute;
+  SoulStoneCalculatorRoute: typeof SoulStoneCalculatorRoute;
+  SupportRoute: typeof SupportRoute;
 }
 
-declare module '@tanstack/react-router' {
+declare module "@tanstack/react-router" {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/soul-stone-calculator': {
-      id: '/soul-stone-calculator'
-      path: '/soul-stone-calculator'
-      fullPath: '/soul-stone-calculator'
-      preLoaderRoute: typeof SoulStoneCalculatorRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/support': {
-      id: '/support'
-      path: '/support'
-      fullPath: '/support'
-      preLoaderRoute: typeof SupportRouteImport
-      parentRoute: typeof rootRouteImport
-    }
+    "/": {
+      id: "/";
+      path: "/";
+      fullPath: "/";
+      preLoaderRoute: typeof IndexRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/heroes": {
+      id: "/heroes";
+      path: "/heroes";
+      fullPath: "/heroes";
+      preLoaderRoute: typeof HeroesRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/soul-stone-calculator": {
+      id: "/soul-stone-calculator";
+      path: "/soul-stone-calculator";
+      fullPath: "/soul-stone-calculator";
+      preLoaderRoute: typeof SoulStoneCalculatorRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/support": {
+      id: "/support";
+      path: "/support";
+      fullPath: "/support";
+      preLoaderRoute: typeof SupportRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
+  HeroesRoute: HeroesRoute,
   IndexRoute: IndexRoute,
   SoulStoneCalculatorRoute: SoulStoneCalculatorRoute,
   SupportRoute: SupportRoute,
-}
-export const routeTree = rootRouteImport
-  ._addFileChildren(rootRouteChildren)
-  ._addFileTypes<FileRouteTypes>()
+};
+export const routeTree = rootRouteImport._addFileChildren(rootRouteChildren)._addFileTypes<FileRouteTypes>();
 
-import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
-declare module '@tanstack/react-start' {
+import type { getRouter } from "./router.tsx";
+import type { createStart } from "@tanstack/react-start";
+declare module "@tanstack/react-start" {
   interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
+    ssr: true;
+    router: Awaited<ReturnType<typeof getRouter>>;
   }
 }

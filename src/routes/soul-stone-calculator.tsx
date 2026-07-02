@@ -185,9 +185,7 @@ function SoulStoneCalculatorPage() {
 
     return soulStoneChests.reduce((sum, chest) => {
       const quantity = quantities[chest.id] ?? 0;
-      const perChest = Math.floor(
-        chapterIndex * SOUL_STONE_HIDDEN_COEFFICIENT * chest.hours,
-      );
+      const perChest = Math.floor(chapterIndex * SOUL_STONE_HIDDEN_COEFFICIENT * chest.hours);
       return sum + quantity * perChest;
     }, 0);
   }, [chapterIndex, quantities]);
@@ -251,16 +249,11 @@ function SoulStoneCalculatorPage() {
       value: Math.floor(chapterIndex * SOUL_STONE_HIDDEN_COEFFICIENT * chest.hours),
     }));
 
-    const totalAvailableSoulStones = chestsWithValues.reduce(
-      (sum, chest) => sum + chest.available * chest.value,
-      0,
-    );
+    const totalAvailableSoulStones = chestsWithValues.reduce((sum, chest) => sum + chest.available * chest.value, 0);
 
     if (totalAvailableSoulStones < deficit) {
       setPlanMessage(
-        `Not enough chests. Missing ${(
-          deficit - totalAvailableSoulStones
-        ).toLocaleString("en-US")} soul stones.`,
+        `Not enough chests. Missing ${(deficit - totalAvailableSoulStones).toLocaleString("en-US")} soul stones.`,
       );
       return;
     }
@@ -355,6 +348,12 @@ function SoulStoneCalculatorPage() {
               </Link>
               <Link
                 className="rounded border border-souls-spirit/20 px-3 py-1.5 text-sm font-medium text-souls-panel transition hover:border-souls-gold hover:bg-souls-gold hover:text-souls-void"
+                to="/heroes"
+              >
+                Heroes
+              </Link>
+              <Link
+                className="rounded border border-souls-spirit/20 px-3 py-1.5 text-sm font-medium text-souls-panel transition hover:border-souls-gold hover:bg-souls-gold hover:text-souls-void"
                 to="/support"
               >
                 Support
@@ -365,12 +364,8 @@ function SoulStoneCalculatorPage() {
           <section className="artifact-preview p-4 md:p-5">
             <div className="flex flex-wrap items-end justify-between gap-3 border-b border-souls-spirit/20 pb-4">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-souls-spirit">
-                  Calculator
-                </p>
-                <h1 className="mt-1 text-3xl font-black text-souls-parchment md:text-4xl">
-                  Soul Stone Calculator
-                </h1>
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-souls-spirit">Calculator</p>
+                <h1 className="mt-1 text-3xl font-black text-souls-parchment md:text-4xl">Soul Stone Calculator</h1>
               </div>
               <button
                 className="inline-flex min-h-9 items-center justify-center gap-2 rounded border border-souls-ember/30 px-3 py-1.5 text-sm font-medium text-souls-panel transition hover:border-souls-ember hover:bg-souls-ember hover:text-souls-void"
@@ -385,9 +380,7 @@ function SoulStoneCalculatorPage() {
             <div className="mt-4 rounded border border-souls-spirit/20 bg-souls-void/45 p-3">
               <div className="flex flex-col gap-2">
                 <div className="max-w-xl">
-                  <p className="text-xs uppercase tracking-[0.12em] text-souls-spirit">
-                    Current chapter
-                  </p>
+                  <p className="text-xs uppercase tracking-[0.12em] text-souls-spirit">Current chapter</p>
                   <p className="mt-1 text-sm text-souls-panel">
                     Enter format <strong>chapter-level</strong>, range{" "}
                     <strong>
@@ -407,11 +400,7 @@ function SoulStoneCalculatorPage() {
                   value={chapterInput}
                 />
               </div>
-              <p
-                className={`mt-2 text-sm ${
-                  chapterValidation.valid ? "text-souls-leaf" : "text-souls-ember"
-                }`}
-              >
+              <p className={`mt-2 text-sm ${chapterValidation.valid ? "text-souls-leaf" : "text-souls-ember"}`}>
                 {chapterValidation.valid ? "Valid chapter." : chapterValidation.message}
               </p>
             </div>
@@ -419,9 +408,7 @@ function SoulStoneCalculatorPage() {
             <div className="mt-4 rounded border border-souls-spirit/20 bg-souls-void/45 p-3">
               <div className="grid gap-3 sm:grid-cols-2">
                 <label className="flex flex-col gap-1">
-                  <span className="text-xs uppercase tracking-[0.12em] text-souls-spirit">
-                    Current soul stones
-                  </span>
+                  <span className="text-xs uppercase tracking-[0.12em] text-souls-spirit">Current soul stones</span>
                   <input
                     className="min-h-9 rounded border border-souls-spirit/25 bg-souls-void/65 px-3 text-sm text-souls-parchment outline-none placeholder:text-souls-panel/55 focus:border-souls-spirit"
                     inputMode="numeric"
@@ -433,9 +420,7 @@ function SoulStoneCalculatorPage() {
                   />
                 </label>
                 <label className="flex flex-col gap-1">
-                  <span className="text-xs uppercase tracking-[0.12em] text-souls-spirit">
-                    Required soul stones
-                  </span>
+                  <span className="text-xs uppercase tracking-[0.12em] text-souls-spirit">Required soul stones</span>
                   <input
                     className="min-h-9 rounded border border-souls-spirit/25 bg-souls-void/65 px-3 text-sm text-souls-parchment outline-none placeholder:text-souls-panel/55 focus:border-souls-spirit"
                     inputMode="numeric"
@@ -465,9 +450,7 @@ function SoulStoneCalculatorPage() {
                 <label className="inline-flex cursor-pointer items-center gap-2 rounded border border-souls-spirit/20 bg-souls-void/55 px-2 py-1">
                   <span
                     className={`text-xs font-semibold ${
-                      planMode === "min-overuse"
-                        ? "text-souls-parchment"
-                        : "text-souls-panel/65"
+                      planMode === "min-overuse" ? "text-souls-parchment" : "text-souls-panel/65"
                     }`}
                   >
                     Min overuse
@@ -475,15 +458,9 @@ function SoulStoneCalculatorPage() {
                   <button
                     aria-label="Toggle plan mode"
                     className={`relative h-5 w-10 rounded-full transition ${
-                      planMode === "balanced"
-                        ? "bg-souls-gold/85"
-                        : "bg-souls-dusk/70"
+                      planMode === "balanced" ? "bg-souls-gold/85" : "bg-souls-dusk/70"
                     }`}
-                    onClick={() =>
-                      setPlanMode((current) =>
-                        current === "balanced" ? "min-overuse" : "balanced",
-                      )
-                    }
+                    onClick={() => setPlanMode((current) => (current === "balanced" ? "min-overuse" : "balanced"))}
                     type="button"
                   >
                     <span
@@ -497,9 +474,7 @@ function SoulStoneCalculatorPage() {
                   </span>
                   <span
                     className={`text-xs font-semibold ${
-                      planMode === "balanced"
-                        ? "text-souls-parchment"
-                        : "text-souls-panel/65"
+                      planMode === "balanced" ? "text-souls-parchment" : "text-souls-panel/65"
                     }`}
                   >
                     Balanced
@@ -516,9 +491,7 @@ function SoulStoneCalculatorPage() {
                   onSetQuantity={setQuantity}
                   onResetQuantity={resetQuantity}
                   perChestSoulStones={
-                    chapterIndex === null
-                      ? null
-                      : chapterIndex * SOUL_STONE_HIDDEN_COEFFICIENT * chest.hours
+                    chapterIndex === null ? null : chapterIndex * SOUL_STONE_HIDDEN_COEFFICIENT * chest.hours
                   }
                   quantity={quantities[chest.id] ?? 0}
                 />
@@ -534,37 +507,24 @@ function SoulStoneCalculatorPage() {
                 >
                   Calculate plan
                 </button>
-                {planMessage ? (
-                  <span className="text-sm text-souls-ember">{planMessage}</span>
-                ) : null}
+                {planMessage ? <span className="text-sm text-souls-ember">{planMessage}</span> : null}
               </div>
 
               {planResult ? (
                 <div className="mt-3 space-y-2">
                   <div className="grid gap-2 sm:grid-cols-3">
-                    <StatCard
-                      label="Added soul stones"
-                      value={planResult.addedSoulStones.toLocaleString("en-US")}
-                    />
-                    <StatCard
-                      label="Final soul stones"
-                      value={planResult.finalSoulStones.toLocaleString("en-US")}
-                    />
+                    <StatCard label="Added soul stones" value={planResult.addedSoulStones.toLocaleString("en-US")} />
+                    <StatCard label="Final soul stones" value={planResult.finalSoulStones.toLocaleString("en-US")} />
                     <StatCard
                       label="Extra after target"
                       value={planResult.overflowAfterRequirement.toLocaleString("en-US")}
                     />
                   </div>
                   <div className="rounded border border-souls-spirit/18 bg-souls-void/45 p-2">
-                    <p className="text-xs uppercase tracking-[0.12em] text-souls-spirit">
-                      Chest usage plan
-                    </p>
+                    <p className="text-xs uppercase tracking-[0.12em] text-souls-spirit">Chest usage plan</p>
                     <div className="mt-2 grid grid-cols-2 gap-2 md:grid-cols-3 lg:grid-cols-5">
                       {planResult.items.map((item) => (
-                        <div
-                          className="rounded border border-souls-spirit/18 bg-souls-night p-2"
-                          key={item.chestId}
-                        >
+                        <div className="rounded border border-souls-spirit/18 bg-souls-night p-2" key={item.chestId}>
                           <img
                             alt={item.chestName}
                             className="mx-auto aspect-square w-full max-w-[64px] object-contain"
@@ -578,9 +538,7 @@ function SoulStoneCalculatorPage() {
                               ×{item.used}
                             </span>
                           </p>
-                          <p className="mt-0.5 text-center text-[11px] text-souls-panel">
-                            in bag: {item.available}
-                          </p>
+                          <p className="mt-0.5 text-center text-[11px] text-souls-panel">in bag: {item.available}</p>
                           <p className="mt-0.5 text-center text-[11px] text-souls-spirit">
                             {item.totalValue.toLocaleString("en-US")}
                           </p>
@@ -598,7 +556,8 @@ function SoulStoneCalculatorPage() {
                         Apply this plan
                       </button>
                       <p className="text-sm text-souls-panel">
-                        Subtracts used chests from inventory, sets Current soul stones to Extra after target, and clears the current calculation.
+                        Subtracts used chests from inventory, sets Current soul stones to Extra after target, and clears
+                        the current calculation.
                       </p>
                     </div>
                   </div>
@@ -663,10 +622,8 @@ function validateChapterInput(input: string): {
     };
   }
 
-  const isBelowMin =
-    chapter < MIN_CHAPTER || (chapter === MIN_CHAPTER && level < MIN_LEVEL);
-  const isAboveMax =
-    chapter > MAX_CHAPTER || (chapter === MAX_CHAPTER && level > MAX_LEVEL);
+  const isBelowMin = chapter < MIN_CHAPTER || (chapter === MIN_CHAPTER && level < MIN_LEVEL);
+  const isAboveMax = chapter > MAX_CHAPTER || (chapter === MAX_CHAPTER && level > MAX_LEVEL);
 
   if (isBelowMin || isAboveMax) {
     return {
@@ -706,10 +663,7 @@ function findOptimalChestUsage(
   return solveMinimalUsageDp(deficit, chests);
 }
 
-function solveMinimalUsageDp(
-  deficit: number,
-  chests: Array<{ available: number; value: number }>,
-) {
+function solveMinimalUsageDp(deficit: number, chests: Array<{ available: number; value: number }>) {
   const candidates = enumerateChestCandidates(deficit, chests);
 
   if (candidates.length === 0) {
@@ -717,9 +671,7 @@ function solveMinimalUsageDp(
   }
 
   const minOverflow = Math.min(...candidates.map((candidate) => candidate.overflow));
-  const strictCandidates = candidates.filter(
-    (candidate) => candidate.overflow === minOverflow,
-  );
+  const strictCandidates = candidates.filter((candidate) => candidate.overflow === minOverflow);
   strictCandidates.sort((first, second) => {
     const firstUsed = first.counts.reduce((sum, value) => sum + value, 0);
     const secondUsed = second.counts.reduce((sum, value) => sum + value, 0);
@@ -728,10 +680,7 @@ function solveMinimalUsageDp(
   return strictCandidates[0]?.counts ?? null;
 }
 
-function solveBalancedUsage(
-  deficit: number,
-  chests: Array<{ available: number; value: number }>,
-) {
+function solveBalancedUsage(deficit: number, chests: Array<{ available: number; value: number }>) {
   const candidates = enumerateChestCandidates(deficit, chests);
   if (candidates.length === 0) {
     return null;
@@ -740,9 +689,7 @@ function solveBalancedUsage(
   const minOverflow = Math.min(...candidates.map((candidate) => candidate.overflow));
   const minChestValue = Math.min(...chests.map((chest) => chest.value));
   const overflowWindow = Math.max(minChestValue, 350);
-  const limitedCandidates = candidates.filter(
-    (candidate) => candidate.overflow <= minOverflow + overflowWindow,
-  );
+  const limitedCandidates = candidates.filter((candidate) => candidate.overflow <= minOverflow + overflowWindow);
 
   const stonesPerType = chests.map((chest) => chest.available * chest.value);
   const grandTotal = stonesPerType.reduce((sum, value) => sum + value, 0);
@@ -750,15 +697,10 @@ function solveBalancedUsage(
   if (grandTotal < deficit) {
     return null;
   }
-  const targetRatios = stonesPerType.map((stones) =>
-    grandTotal > 0 ? stones / grandTotal : 0,
-  );
+  const targetRatios = stonesPerType.map((stones) => (grandTotal > 0 ? stones / grandTotal : 0));
 
   const scoredCandidates = limitedCandidates.map((candidate) => {
-    const usedTypeCount = candidate.counts.reduce(
-      (sum, count) => sum + (count > 0 ? 1 : 0),
-      0,
-    );
+    const usedTypeCount = candidate.counts.reduce((sum, count) => sum + (count > 0 ? 1 : 0), 0);
     const totalCount = candidate.counts.reduce((sum, count) => sum + count, 0);
     return {
       ...candidate,
@@ -784,15 +726,8 @@ function solveBalancedUsage(
   return scoredCandidates[0]?.counts ?? null;
 }
 
-function getBalancedDeviationScore(
-  counts: number[],
-  chests: Array<{ value: number }>,
-  targetRatios: number[],
-) {
-  const totalStones = counts.reduce(
-    (sum, count, index) => sum + count * chests[index].value,
-    0,
-  );
+function getBalancedDeviationScore(counts: number[], chests: Array<{ value: number }>, targetRatios: number[]) {
+  const totalStones = counts.reduce((sum, count, index) => sum + count * chests[index].value, 0);
 
   if (totalStones <= 0) {
     return Number.POSITIVE_INFINITY;
@@ -804,15 +739,15 @@ function getBalancedDeviationScore(
   }, 0);
 }
 
-function enumerateChestCandidates(
-  deficit: number,
-  chests: Array<{ available: number; value: number }>,
-) {
+function enumerateChestCandidates(deficit: number, chests: Array<{ available: number; value: number }>) {
   const maxChestValue = Math.max(...chests.map((chest) => chest.value));
   const cap = deficit + maxChestValue - 1;
 
   let dp = new Map<number, number[]>();
-  dp.set(0, chests.map(() => 0));
+  dp.set(
+    0,
+    chests.map(() => 0),
+  );
 
   chests.forEach((chest, chestIndex) => {
     const next = new Map(dp);
@@ -854,7 +789,6 @@ function enumerateChestCandidates(
     }));
 }
 
-
 function StatCard({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded border border-souls-spirit/20 bg-souls-void/45 p-3">
@@ -881,14 +815,8 @@ function SoulStoneChestCard({
 
   return (
     <article className="flex flex-col rounded border border-souls-spirit/18 bg-souls-night p-3">
-      <img
-        alt={chest.name}
-        className="mx-auto aspect-square w-full max-w-[88px] object-contain"
-        src={chest.imageUrl}
-      />
-      <h3 className="mt-2 text-center text-xs font-semibold leading-tight text-souls-parchment">
-        {chest.name}
-      </h3>
+      <img alt={chest.name} className="mx-auto aspect-square w-full max-w-[88px] object-contain" src={chest.imageUrl} />
+      <h3 className="mt-2 text-center text-xs font-semibold leading-tight text-souls-parchment">{chest.name}</h3>
       <div className="mt-1 flex items-center justify-between gap-1.5">
         <span className="inline-flex min-h-6 items-center rounded border border-souls-gold/65 bg-souls-gold/15 px-2 text-[11px] font-bold text-souls-gold">
           Qty: {quantity}

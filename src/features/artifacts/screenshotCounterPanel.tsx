@@ -9,10 +9,7 @@ import {
   type SetStateAction,
 } from "react";
 import { createPortal } from "react-dom";
-import {
-  artifactImageCollections,
-  type ArtifactImage,
-} from "../../data/artifactImageCollections";
+import { artifactImageCollections, type ArtifactImage } from "../../data/artifactImageCollections";
 import {
   countArtifactsFromGridCells,
   defaultGridConfig,
@@ -35,26 +32,18 @@ function detectionCellKey(row: number, col: number) {
   return `${row}-${col}`;
 }
 
-function buildCountsFromDetections(
-  detections: CounterResult["detections"],
-  excludedCellKeys: Set<string>,
-) {
+function buildCountsFromDetections(detections: CounterResult["detections"], excludedCellKeys: Set<string>) {
   const counts: Record<string, number> = {};
   for (const detection of detections) {
     if (excludedCellKeys.has(detectionCellKey(detection.row, detection.col))) {
       continue;
     }
-    counts[detection.artifactId] =
-      (counts[detection.artifactId] ?? 0) + detection.quantity;
+    counts[detection.artifactId] = (counts[detection.artifactId] ?? 0) + detection.quantity;
   }
   return counts;
 }
 
-export function ScreenshotCounterPanel({
-  onApplyCounts,
-}: {
-  onApplyCounts: (counts: Record<string, number>) => void;
-}) {
+export function ScreenshotCounterPanel({ onApplyCounts }: { onApplyCounts: (counts: Record<string, number>) => void }) {
   const [isOpen, setIsOpen] = useState(false);
   const [gridConfig, setGridConfig] = useState<GridConfig>(defaultGridConfig);
   const [file, setFile] = useState<File | null>(null);
@@ -63,10 +52,7 @@ export function ScreenshotCounterPanel({
   const [isRunning, setIsRunning] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
-  const allArtifacts = useMemo(
-    () => artifactImageCollections.flatMap((collection) => collection.images),
-    [],
-  );
+  const allArtifacts = useMemo(() => artifactImageCollections.flatMap((collection) => collection.images), []);
 
   useEffect(() => {
     if (!file) {
@@ -114,11 +100,7 @@ export function ScreenshotCounterPanel({
       });
       setResult(nextResult);
     } catch (counterError) {
-      setError(
-        counterError instanceof Error
-          ? counterError.message
-          : "Failed to analyze screenshot.",
-      );
+      setError(counterError instanceof Error ? counterError.message : "Failed to analyze screenshot.");
     } finally {
       setIsRunning(false);
     }
@@ -196,9 +178,7 @@ function ScreenshotCounterModal({
   const imageWrapRef = useRef<HTMLDivElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [isDragActive, setIsDragActive] = useState(false);
-  const [excludedCellKeys, setExcludedCellKeys] = useState<Set<string>>(
-    () => new Set(),
-  );
+  const [excludedCellKeys, setExcludedCellKeys] = useState<Set<string>>(() => new Set());
   const isEditorOpen = Boolean(previewUrl);
 
   useEffect(() => {
@@ -248,16 +228,8 @@ function ScreenshotCounterModal({
           const nextHeight = current.heightRatio;
           return {
             ...current,
-            xRatio: clamp(
-              dragState.startGrid.xRatio + dxRatio,
-              0,
-              1 - nextWidth,
-            ),
-            yRatio: clamp(
-              dragState.startGrid.yRatio + dyRatio,
-              0,
-              1 - nextHeight,
-            ),
+            xRatio: clamp(dragState.startGrid.xRatio + dxRatio, 0, 1 - nextWidth),
+            yRatio: clamp(dragState.startGrid.yRatio + dyRatio, 0, 1 - nextHeight),
           };
         });
         return;
@@ -270,67 +242,35 @@ function ScreenshotCounterModal({
         if (dragState.mode === "resize-se") {
           return {
             ...current,
-            widthRatio: clamp(
-              start.widthRatio + dxRatio,
-              minSize,
-              1 - start.xRatio,
-            ),
-            heightRatio: clamp(
-              start.heightRatio + dyRatio,
-              minSize,
-              1 - start.yRatio,
-            ),
+            widthRatio: clamp(start.widthRatio + dxRatio, minSize, 1 - start.xRatio),
+            heightRatio: clamp(start.heightRatio + dyRatio, minSize, 1 - start.yRatio),
           };
         }
 
         if (dragState.mode === "resize-sw") {
-          const nextX = clamp(
-            start.xRatio + dxRatio,
-            0,
-            start.xRatio + start.widthRatio - minSize,
-          );
+          const nextX = clamp(start.xRatio + dxRatio, 0, start.xRatio + start.widthRatio - minSize);
           const right = start.xRatio + start.widthRatio;
           return {
             ...current,
             xRatio: nextX,
             widthRatio: clamp(right - nextX, minSize, 1 - nextX),
-            heightRatio: clamp(
-              start.heightRatio + dyRatio,
-              minSize,
-              1 - start.yRatio,
-            ),
+            heightRatio: clamp(start.heightRatio + dyRatio, minSize, 1 - start.yRatio),
           };
         }
 
         if (dragState.mode === "resize-ne") {
-          const nextY = clamp(
-            start.yRatio + dyRatio,
-            0,
-            start.yRatio + start.heightRatio - minSize,
-          );
+          const nextY = clamp(start.yRatio + dyRatio, 0, start.yRatio + start.heightRatio - minSize);
           const bottom = start.yRatio + start.heightRatio;
           return {
             ...current,
             yRatio: nextY,
-            widthRatio: clamp(
-              start.widthRatio + dxRatio,
-              minSize,
-              1 - start.xRatio,
-            ),
+            widthRatio: clamp(start.widthRatio + dxRatio, minSize, 1 - start.xRatio),
             heightRatio: clamp(bottom - nextY, minSize, 1 - nextY),
           };
         }
 
-        const nextX = clamp(
-          start.xRatio + dxRatio,
-          0,
-          start.xRatio + start.widthRatio - minSize,
-        );
-        const nextY = clamp(
-          start.yRatio + dyRatio,
-          0,
-          start.yRatio + start.heightRatio - minSize,
-        );
+        const nextX = clamp(start.xRatio + dxRatio, 0, start.xRatio + start.widthRatio - minSize);
+        const nextY = clamp(start.yRatio + dyRatio, 0, start.yRatio + start.heightRatio - minSize);
         const right = start.xRatio + start.widthRatio;
         const bottom = start.yRatio + start.heightRatio;
         return {
@@ -368,9 +308,7 @@ function ScreenshotCounterModal({
     });
   }
 
-  const filteredCounts = result
-    ? buildCountsFromDetections(result.detections, excludedCellKeys)
-    : {};
+  const filteredCounts = result ? buildCountsFromDetections(result.detections, excludedCellKeys) : {};
 
   return (
     <div
@@ -411,9 +349,7 @@ function ScreenshotCounterModal({
 
         <div
           className={
-            previewUrl
-              ? "min-h-0 flex-1 overflow-y-auto p-4"
-              : "min-h-0 flex flex-1 flex-col overflow-y-auto p-4"
+            previewUrl ? "min-h-0 flex-1 overflow-y-auto p-4" : "min-h-0 flex flex-1 flex-col overflow-y-auto p-4"
           }
         >
           {!previewUrl && (
@@ -441,12 +377,9 @@ function ScreenshotCounterModal({
               }}
             >
               <div className="mb-4 text-center">
-                <p className="text-lg font-semibold text-souls-parchment">
-                  Upload Inventory Screenshot
-                </p>
+                <p className="text-lg font-semibold text-souls-parchment">Upload Inventory Screenshot</p>
                 <p className="mt-1 text-sm text-souls-panel">
-                  Drag and drop your screenshot here or choose a file to start
-                  grid detection.
+                  Drag and drop your screenshot here or choose a file to start grid detection.
                 </p>
               </div>
               <div className="flex flex-wrap items-center justify-center gap-2">
@@ -459,16 +392,12 @@ function ScreenshotCounterModal({
                     onClick={(event) => {
                       event.currentTarget.value = "";
                     }}
-                    onChange={(event) =>
-                      onSelectFile(event.target.files?.[0] ?? null)
-                    }
+                    onChange={(event) => onSelectFile(event.target.files?.[0] ?? null)}
                     ref={fileInputRef}
                     type="file"
                   />
                 </label>
-                <span className="text-xs text-souls-panel">
-                  Drag and drop screenshot here
-                </span>
+                <span className="text-xs text-souls-panel">Drag and drop screenshot here</span>
               </div>
             </div>
           )}
@@ -483,13 +412,7 @@ function ScreenshotCounterModal({
                     onChange={(event) =>
                       setGridConfig((current) => ({
                         ...current,
-                        rows: Math.min(
-                          8,
-                          Math.max(
-                            1,
-                            Number(event.target.value) || current.rows,
-                          ),
-                        ),
+                        rows: Math.min(8, Math.max(1, Number(event.target.value) || current.rows)),
                       }))
                     }
                     value={gridConfig.rows}
@@ -511,13 +434,7 @@ function ScreenshotCounterModal({
                     onChange={(event) =>
                       setGridConfig((current) => ({
                         ...current,
-                        cols: Math.min(
-                          8,
-                          Math.max(
-                            1,
-                            Number(event.target.value) || current.cols,
-                          ),
-                        ),
+                        cols: Math.min(8, Math.max(1, Number(event.target.value) || current.cols)),
                       }))
                     }
                     value={gridConfig.cols}
@@ -537,8 +454,7 @@ function ScreenshotCounterModal({
               <div className="rounded border border-souls-spirit/18 bg-souls-void/45 p-3">
                 <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
                   <p className="text-center text-xs text-souls-panel md:text-left">
-                    Move the grid by dragging the rectangle. Resize it from any
-                    corner handle.
+                    Move the grid by dragging the rectangle. Resize it from any corner handle.
                   </p>
                   <button
                     className="inline-flex items-center gap-2 rounded border border-souls-ember/30 bg-souls-void/65 px-2.5 py-1.5 text-xs font-medium text-souls-panel transition hover:border-souls-ember hover:text-souls-ember"
@@ -554,11 +470,7 @@ function ScreenshotCounterModal({
                   </button>
                 </div>
                 <div className="flex justify-center overflow-auto rounded border border-souls-spirit/20 bg-black/30 p-2">
-                  <div
-                    className="inline-block max-h-[62vh]"
-                    ref={imageWrapRef}
-                    style={{ position: "relative" }}
-                  >
+                  <div className="inline-block max-h-[62vh]" ref={imageWrapRef} style={{ position: "relative" }}>
                     <img
                       alt="Screenshot preview"
                       className="block max-h-[62vh] w-auto select-none"
@@ -683,9 +595,7 @@ function ScreenshotCounterModal({
                             }).map((_, index) => {
                               const row = Math.floor(index / gridConfig.cols);
                               const col = index % gridConfig.cols;
-                              const detection = result.detections.find(
-                                (item) => item.row === row && item.col === col,
-                              );
+                              const detection = result.detections.find((item) => item.row === row && item.col === col);
 
                               if (!detection) {
                                 return (
@@ -698,14 +608,9 @@ function ScreenshotCounterModal({
                                 );
                               }
 
-                              const artifact = allArtifacts.find(
-                                (item) => item.id === detection.artifactId,
-                              );
-                              const name =
-                                artifact?.name ?? detection.artifactName;
-                              const isExcluded = excludedCellKeys.has(
-                                detectionCellKey(detection.row, detection.col),
-                              );
+                              const artifact = allArtifacts.find((item) => item.id === detection.artifactId);
+                              const name = artifact?.name ?? detection.artifactName;
+                              const isExcluded = excludedCellKeys.has(detectionCellKey(detection.row, detection.col));
                               return (
                                 <li
                                   className={`flex items-center gap-2 rounded border px-2 py-1.5 ${
@@ -716,46 +621,27 @@ function ScreenshotCounterModal({
                                   key={`${detection.row}-${detection.col}-${detection.artifactId}`}
                                 >
                                   {artifact?.imageUrl ? (
-                                    <img
-                                      alt={name}
-                                      className="size-8 rounded object-cover"
-                                      src={artifact.imageUrl}
-                                    />
+                                    <img alt={name} className="size-8 rounded object-cover" src={artifact.imageUrl} />
                                   ) : (
                                     <div className="size-8 rounded bg-souls-void/70" />
                                   )}
                                   <div className="min-w-0 flex-1">
-                                    <p className="truncate text-xs text-souls-panel">
-                                      {name}
-                                    </p>
+                                    <p className="truncate text-xs text-souls-panel">{name}</p>
                                     <p className="text-sm font-semibold">
                                       Qty: <span>{detection.quantity}</span>
                                     </p>
                                   </div>
                                   <button
-                                    aria-label={
-                                      isExcluded
-                                        ? "Restore detection"
-                                        : "Exclude detection"
-                                    }
+                                    aria-label={isExcluded ? "Restore detection" : "Exclude detection"}
                                     className={`grid size-7 place-items-center rounded border transition ${
                                       isExcluded
                                         ? "border-souls-leaf/55 bg-souls-leaf/15 text-souls-leaf hover:bg-souls-leaf hover:text-souls-void"
                                         : "border-red-500/65 bg-red-500/15 text-red-300 hover:bg-red-500 hover:text-white"
                                     }`}
-                                    onClick={() =>
-                                      toggleDetectionCell(
-                                        detection.row,
-                                        detection.col,
-                                      )
-                                    }
+                                    onClick={() => toggleDetectionCell(detection.row, detection.col)}
                                     type="button"
                                   >
-                                    {isExcluded ? (
-                                      <RotateCcw className="size-3.5" />
-                                    ) : (
-                                      <Trash2 className="size-3.5" />
-                                    )}
+                                    {isExcluded ? <RotateCcw className="size-3.5" /> : <Trash2 className="size-3.5" />}
                                   </button>
                                 </li>
                               );
@@ -767,7 +653,6 @@ function ScreenshotCounterModal({
                   )}
                 </div>
               )}
-
             </div>
           ) : null}
         </div>

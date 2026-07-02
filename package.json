@@ -10,6 +10,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "test": "vitest run",
+    "format": "prettier . --write",
+    "format:check": "prettier . --check",
     "ds:clean": "bash scripts/clean_datasets.sh",
     "ds:quick": "bash scripts/ds_quick.sh",
     "ds:balanced": "bash scripts/ds_balanced.sh",
@@ -48,6 +50,7 @@
     "adm-zip": "^0.5.17",
     "jimp": "^1.6.1",
     "jsdom": "^28.1.0",
+    "prettier": "^3.9.4",
     "typescript": "^6.0.2",
     "vite": "^8.0.0",
     "vitest": "^4.1.5"

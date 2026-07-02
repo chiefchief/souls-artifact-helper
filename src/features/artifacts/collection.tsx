@@ -1,9 +1,6 @@
 import { Info, RotateCcw } from "lucide-react";
 import { memo, useState } from "react";
-import type {
-  ArtifactImage,
-  ArtifactImageCollection,
-} from "../../data/artifactImageCollections";
+import type { ArtifactImage, ArtifactImageCollection } from "../../data/artifactImageCollections";
 
 export const ArtifactIconCollection = memo(function ArtifactIconCollection({
   collection,
@@ -20,13 +17,8 @@ export const ArtifactIconCollection = memo(function ArtifactIconCollection({
   onResetQuantity: (artifactId: string) => void;
   onOpenArtifact?: (artifact: ArtifactImage) => void;
 }) {
-  const obtainedCount = collection.images.filter(
-    (artifact) => (artifactQuantities[artifact.id] ?? 0) > 0,
-  ).length;
-  const totalCount = collection.images.reduce(
-    (total, artifact) => total + (artifactQuantities[artifact.id] ?? 0),
-    0,
-  );
+  const obtainedCount = collection.images.filter((artifact) => (artifactQuantities[artifact.id] ?? 0) > 0).length;
+  const totalCount = collection.images.reduce((total, artifact) => total + (artifactQuantities[artifact.id] ?? 0), 0);
 
   return (
     <div className="artifact-collection">
@@ -46,13 +38,10 @@ export const ArtifactIconCollection = memo(function ArtifactIconCollection({
             )}
           </div>
           <p className="mt-1 text-sm text-souls-panel">
-            {obtainedCount}/{collection.images.length} crafted · {totalCount}{" "}
-            total
+            {obtainedCount}/{collection.images.length} crafted · {totalCount} total
           </p>
         </div>
-        <p className="max-w-2xl text-xs leading-5 text-souls-panel sm:text-sm sm:leading-6">
-          {collection.description}
-        </p>
+        <p className="max-w-2xl text-xs leading-5 text-souls-panel sm:text-sm sm:leading-6">{collection.description}</p>
       </div>
 
       {collection.images.length > 0 ? (
