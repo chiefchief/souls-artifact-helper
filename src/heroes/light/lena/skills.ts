@@ -30,7 +30,7 @@ export const lena: Hero = {
       name: "Moon's Energy",
       description:
         "At the end of the round, has a 100% chance to remove own inability to act and, if successful, gains a buff that increases Attack by 30% for 2 turns.",
-      tags: ["remove-cc", "remove-enemy-buff"],
+      tags: ["remove-cc", "increase-self-attack"],
     },
     {
       id: "lena_magic_lena",

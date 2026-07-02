@@ -46,6 +46,7 @@ export type SkillTag =
   | "increase-crit-damage"
   | "increase-crit-rate"
   | "increase-crit-resistance"
+  | "reduce-crit-resistance"
   | "increase-damage-taken"
   | "increase-healing-received"
   | "join-attack"

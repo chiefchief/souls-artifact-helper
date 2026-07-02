@@ -43,7 +43,7 @@ export const nuel: Hero = {
         { stat: "dodge_rate", value: 15 },
         { stat: "mres", value: 15 },
       ],
-      tags: ["remove-ally-debuff"],
+      tags: ["remove-self-debuff"],
     },
     {
       id: "nuel_flash_of_light",

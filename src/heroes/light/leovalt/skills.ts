@@ -38,7 +38,7 @@ export const leovalt: Hero = {
       name: "Shining in Darkness",
       description:
         "Removes 1 debuffs from yourself upon landing a critical hit and gains a shield equal to 15% of max HP for 2 turns.",
-      tags: ["anti-shield", "remove-ally-debuff", "shield"],
+      tags: ["anti-shield", "remove-self-debuff", "shield"],
     },
     {
       id: "leovalt_guide_of_darkness",

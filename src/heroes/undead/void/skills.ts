@@ -29,7 +29,7 @@ export const voidHero: Hero = {
       name: "Game of Death",
       description: "At the start of each round, release 2x ally under CC.",
       statBonus: [{ stat: "cc_res", value: 100 }],
-      tags: [],
+      tags: ["remove-cc"],
     },
     {
       id: "void_mania",
@@ -38,7 +38,7 @@ export const voidHero: Hero = {
       description:
         "At the start of each round, reduce the Speed of the enemy with the highest ATK by 20 for 1 turn(s).",
       statBonus: [{ stat: "speed", value: 30 }],
-      tags: ["reduce-attack"],
+      tags: ["reduce-enemy-speed"],
     },
     {
       id: "void_death_magic",

@@ -37,7 +37,7 @@ export const oneiric: Hero = {
       name: "Satiation",
       description:
         "Each time [Orb of Darkness] or [Spirit's Feast] removes an enemy buff, increases ATK by 4% per buff removed.",
-      tags: ["remove-enemy-buff"],
+      tags: ["increase-self-attack"],
     },
     {
       id: "oneiric_spirits_feast",

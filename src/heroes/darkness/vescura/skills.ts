@@ -15,7 +15,7 @@ export const vescura: Hero = {
       name: "Demon's Heart",
       description:
         "Applies a debuff to all enemies, reducing Crit Resistance by 20% for 2 turns. Additionally, applies a debuff that increases damage taken by 30% for 1 turn{s} to the closest enemy in the front row. (Vescura cannot reuse his Active Skill)",
-      tags: ["increase-crit-resistance", "increase-damage-taken"],
+      tags: ["reduce-crit-resistance", "increase-damage-taken"],
     },
     {
       id: "vescura_dark_orb",

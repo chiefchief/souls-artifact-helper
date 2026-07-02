@@ -38,7 +38,7 @@ export const sander: Hero = {
       name: "Fearless Resolve",
       description:
         "Upon removing a debuff, gain 20 Energy for each debuff removed ally. When using an active skill, consumes all Energy to deal greater damage.",
-      tags: ["gain-energy", "remove-enemy-buff"],
+      tags: ["gain-energy"],
     },
     {
       id: "sander_disarm",

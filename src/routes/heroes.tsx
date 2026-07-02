@@ -103,6 +103,7 @@ const skillTagGroups: SkillTagGroup[] = [
       "increase-allies-speed",
       "reduce-enemy-speed",
       "increase-crit-resistance",
+      "reduce-crit-resistance",
       "reduce-crit-rate",
       "increase-crit-rate",
       "increase-crit-damage",

@@ -21,7 +21,7 @@ export const kyle: Hero = {
       type: "passive",
       name: "Straight rappier",
       description: "Increase ATK of normal attacks by 40% and permanently reduce DEF of enemies by 10%.",
-      tags: ["reduce-attack", "reduce-defense"],
+      tags: ["reduce-defense"],
     },
     {
       id: "kyle_counterattack_preparation",
@@ -37,7 +37,7 @@ export const kyle: Hero = {
       name: "Nullify",
       description:
         "When your HP falls below 50%, apply Heal Over Time to yourself and heal 120% of your ATK for 2 turns. Also, remove all crowd control and debuffs on you. (1 time per battle)",
-      tags: ["healing-over-time", "remove-ally-debuff", "remove-cc"],
+      tags: ["healing-over-time", "remove-self-debuff", "remove-cc"],
     },
     {
       id: "kyle_mortal_wound_dodge",

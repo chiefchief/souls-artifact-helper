@@ -64,7 +64,7 @@ export const zenon: Hero = {
       name: "Sturdy Chains",
       description:
         "When Zenon uses an active skill, the ally with the highest ATK gains +25% ATK for 2 turns. (Once per round)\nIf the active skill removes two or more enemy buffs at once, he will use the active skill again. (Once per round)",
-      tags: ["remove-enemy-buff"],
+      tags: ["increase-allies-attack"],
     },
   ],
 };
