@@ -59,7 +59,7 @@ export const fleta: Hero = {
       name: "Crescent of Death",
       description:
         "Immediately after the start of each round, if own Energy is 100 or higher, applies Fleta's Mark to the enemy hero with the lowest HP for 1 turn.\nEnemy heroes affected by Fleta's Mark have their Healing Received reduced by 80% and Dodge Rate reduced by 30%.\nWhen Fleta attacks an enemy affected by Fleta's Mark, there is a 100% chance to ignore effects that prevent damage from exceeding a certain proportion of Max HP. (This effect does not apply to additional actions taken by Fleta in the same turn the mark was applied.)",
-      tags: ["damage-cap", "reduce-healing-received"],
+      tags: ["ignore-damage-cap", "reduce-healing-received"],
     },
   ],
 };

@@ -29,7 +29,7 @@ export const bella: Hero = {
       name: "Encouraging Whisper",
       description:
         "Until round 5, Bella cannot take damage exceeding 51% of her Max HP from a single attack. If a Horde hero is in an adjacent front row position, they receive the same effect.",
-      tags: [],
+      tags: ["damage-cap"],
     },
     {
       id: "bella_opening_strike",

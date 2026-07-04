@@ -29,6 +29,7 @@ export type SkillTag =
   | "counter-attack"
   | "apply-dot"
   | "damage-cap"
+  | "ignore-damage-cap"
   | "damage-reduction"
   | "reflect-damage"
   | "execute"

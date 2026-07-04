@@ -54,7 +54,7 @@ export const dmitri: Hero = {
       name: "Dmitri's Engraving",
       description:
         "At the start of battle, if a total of 3 or more Dark and Undead heroes were deployed among allies, the following effect activates.\nUntil round 5, when an ally with a continuous healing buff is about to take damage exceeding 35% of their Max HP from a single attack, that damage is limited to 35% of Max HP, and one continuous healing buff is removed.",
-      tags: ["healing-over-time"],
+      tags: ["damage-cap"],
     },
   ],
 };

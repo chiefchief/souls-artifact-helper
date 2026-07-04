@@ -90,6 +90,7 @@ const skillTagMeta = {
   cc: { label: "CC" },
   "counter-attack": { label: "Counterattack" },
   "damage-cap": { label: "Damage Cap" },
+  "ignore-damage-cap": { label: "Ignore Damage Cap" },
   "damage-reduction": { label: "Damage Reduction" },
   execute: { label: "Execute" },
   "gain-energy": { label: "Gain Energy" },
@@ -174,14 +175,7 @@ const skillTagGroups: SkillTagGroup[] = [
   {
     color: "#7ed4ff",
     label: "Cleanse / Dispel",
-    tags: [
-      "remove-enemy-buff",
-      "remove-ally-debuff",
-      "remove-self-debuff",
-      "remove-dot",
-      "remove-cc",
-      "buff-block",
-    ],
+    tags: ["remove-enemy-buff", "remove-ally-debuff", "remove-self-debuff", "remove-dot", "remove-cc", "buff-block"],
   },
   {
     color: "#d8ef72",
@@ -243,22 +237,12 @@ const skillTagGroups: SkillTagGroup[] = [
   {
     color: "#ff9f5a",
     label: "Attack Triggers",
-    tags: [
-      "join-attack",
-      "counter-attack",
-      "repeat-attack",
-      "execute",
-    ],
+    tags: ["join-attack", "counter-attack", "repeat-attack", "execute"],
   },
   {
     color: "#e35a45",
     label: "Damage Types",
-    tags: [
-      "apply-dot",
-      "reduce-dot-damage",
-      "anti-shield",
-      "percent-damage",
-    ],
+    tags: ["apply-dot", "reduce-dot-damage", "anti-shield", "percent-damage"],
   },
 ];
 const groupedTagSet = new Set<SkillTag>(skillTagGroups.flatMap((group) => group.tags));
@@ -564,9 +548,9 @@ function TagFilterBar({
         .filter((group) => group.tags.length > 0)
     : showAllTags
       ? tagGroups
-    : activeTagGroup
-      ? [activeTagGroup]
-      : [];
+      : activeTagGroup
+        ? [activeTagGroup]
+        : [];
 
   return (
     <section className="mt-2 rounded border border-souls-spirit/20 bg-souls-night/78 p-2 shadow-lg">
@@ -632,10 +616,7 @@ function TagFilterBar({
         <div className="grid max-h-[42dvh] gap-2 overflow-y-auto pr-1 md:max-h-none md:grid-cols-[repeat(auto-fit,minmax(250px,1fr))] md:overflow-visible md:pr-0">
           {visibleTagGroups.map((group) => (
             <div className="min-w-0" key={group.label}>
-              <p
-                className="mb-1 text-[9px] font-black uppercase tracking-[0.14em]"
-                style={{ color: group.color }}
-              >
+              <p className="mb-1 text-[9px] font-black uppercase tracking-[0.14em]" style={{ color: group.color }}>
                 {group.label}
               </p>
               <div className="flex flex-wrap gap-1">
@@ -999,5 +980,8 @@ function getSkillTagLabel(tag: SkillTag): string {
 }
 
 function normalizeSearchValue(value: string): string {
-  return value.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
 }

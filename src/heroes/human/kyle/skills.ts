@@ -29,7 +29,7 @@ export const kyle: Hero = {
       name: "Counterattack Preparation",
       description:
         "Every time you directly receive damage, your ATK permanently increases by 5% of the ATK of the enemy that attacked you. (max 10 times)",
-      tags: [],
+      tags: ["increase-self-attack"],
     },
     {
       id: "kyle_nullify",
@@ -54,7 +54,7 @@ export const kyle: Hero = {
       name: "Kyle's Engraving",
       description:
         'If you directly receive damage 4 times, you turn into Wind Wish state for 2 turns. In the "Wind Wish" state, Dodge Rate increases by 100%, ATK increases by 50% (1 time per battle, cannot be removed)',
-      tags: [],
+      tags: ["increase-self-dodge", "increase-self-attack"],
     },
     {
       id: "kyle_rose_knight",
@@ -62,7 +62,7 @@ export const kyle: Hero = {
       name: "Rose Knight",
       description:
         "The activation condition for Wind Wish changes to [when allies in the same row, including self, take direct attack damage 4 times], and when Kyle acquires Wind Wish, he gains 100 Energy.\nWhile affected by Wind Wish, Kyle ignores effects that prevent damage dealt to enemies from exceeding a certain percentage of max HP when attacking. Additionally, when he directly defeats an enemy, the duration of Wind Wish increases by 2 turns and he gains 100 Energy.",
-      tags: ["damage-cap", "gain-energy"],
+      tags: ["ignore-damage-cap", "gain-energy"],
     },
   ],
 };

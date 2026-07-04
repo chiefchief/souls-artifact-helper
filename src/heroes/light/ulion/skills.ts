@@ -65,7 +65,7 @@ export const ulion: Hero = {
       name: "Thunder",
       description:
         "Increases the duration of the Active Skill's Shock effect by 1 turns.\nWhen attacking enemies in Shock, removes 1 buff(s) and has a 100% chance to ignore effects that prevent damage from exceeding a certain percentage of max HP. (This effect does not apply to additional attacks made in the same turn the Shock was applied.)",
-      tags: ["damage-cap", "remove-enemy-buff"],
+      tags: ["ignore-damage-cap", "remove-enemy-buff"],
     },
   ],
 };
