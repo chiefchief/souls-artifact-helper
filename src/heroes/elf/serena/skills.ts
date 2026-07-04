@@ -46,7 +46,7 @@ export const serena: Hero = {
       name: "Wave Strike",
       description:
         "When Serena attacks an enemy affected by the Fog debuff, the following effect activates.\nAttacks permanently reduces the target's Crit Damage by 15%. This effect does not apply to boss-type enemies. (Up to 2 times per target)\nWhen using an Active Skill, deals additional damage equal to 5% of the target's Max HP per debuff on the target. (Additional damage capped at 25%)",
-      tags: ["damage-cap", "reduce-crit-damage"],
+      tags: ["percent-damage", "reduce-crit-damage"],
     },
     {
       id: "serena_engraving",
@@ -54,7 +54,7 @@ export const serena: Hero = {
       name: "Serena's Engraving",
       description:
         "When Serena attacks with an Active Skill, her ATK increases by 10% per debuff on the target. (ATK increases up to 50%)\nCrit Rate of enemies affected by Fog is further reduced by 30%.",
-      tags: ["reduce-crit-rate"],
+      tags: ["increase-self-attack", "reduce-crit-rate"],
     },
   ],
 };

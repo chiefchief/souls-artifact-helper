@@ -44,7 +44,7 @@ export const ash: Hero = {
       name: "Burning Flame",
       description:
         "Upon death (activates even during an enemy's continuous attack), reduce the Energy of all enemies by 60 and apply a debuff that increases their Damage Taken by 28% for 2 turn(s). (once per battle)",
-      tags: ["reduce-energy"],
+      tags: ["reduce-energy", "increase-damage-taken"],
     },
     {
       id: "ash_engraving",

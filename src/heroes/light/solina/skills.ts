@@ -14,7 +14,7 @@ export const solina: Hero = {
       name: "Prayer of Healing",
       description:
         "Heal 2 allies with low HP by ATK 155%, and apply them a Shield equal to 20% of their max HP for 2 turn(s). Additionally, remove all debuffs from them. (The Shield cannot exceed 150% of Solina's ATK)",
-      tags: ["anti-shield", "heal-allies", "remove-ally-debuff", "shield"],
+      tags: ["heal-allies", "remove-ally-debuff", "shield"],
     },
     {
       id: "solina_ultimate_sacrifice",

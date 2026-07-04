@@ -15,7 +15,7 @@ export const roze: Hero = {
       name: "Dance of Death",
       description:
         "Deals ATK 230% damage to the enemy with the lowest HP and applies a debuff that reduces their healing received by 80% for 2 turns.",
-      tags: ["counter-attack"],
+      tags: ["reduce-healing-received"],
     },
     {
       id: "roze_stiletto_heels",
@@ -23,7 +23,7 @@ export const roze: Hero = {
       name: "Stiletto Heels",
       description:
         "Normal attacks deal ATK 130% damage to the enemy with the lowest HP and permanently reduce their Crit Resistance by 10%.",
-      tags: [],
+      tags: ["reduce-crit-resistance"],
     },
     {
       id: "roze_dance_of_vengeance",
@@ -31,7 +31,7 @@ export const roze: Hero = {
       name: "Dance of Vengeance",
       description:
         "When an ally dies, there is a 100% chance to retaliate against the enemy who killed them with ATK 100% damage.",
-      tags: [],
+      tags: ["counter-attack"],
     },
     {
       id: "roze_euphoria",
@@ -47,7 +47,7 @@ export const roze: Hero = {
       name: "Vital Strike",
       description:
         "Critical hits deal additional damage equal to 16% of the enemy's max HP. This effect increases by 3% each time a critical strike is triggered (up to 28%).",
-      tags: [],
+      tags: ["percent-damage"],
     },
     {
       id: "roze_engraving",

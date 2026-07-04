@@ -45,7 +45,7 @@ export const sekhrus: Hero = {
       name: "Death Sentence",
       description:
         "When an ally's HP (excluding self) falls below 50%, activate the following effect: Instantly remove Sekhrus's Poison debuff from enemy heroes and deal damage equal to 100% of the total damage of the removed Poison debuff. Heal all allies by 100% of the damage dealt. (Activates 2 times per battle, does not activate if no enemy heroes are affected by Sekhrus's Poison.)",
-      tags: ["heal-allies", "remove-dot"],
+      tags: ["heal-allies"],
     },
     {
       id: "sekhrus_engraving",

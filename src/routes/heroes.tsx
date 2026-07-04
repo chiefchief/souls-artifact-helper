@@ -1,5 +1,5 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
-import { BadgeQuestionMark, Gem, Shield, Sparkles, Sword, X, Zap } from "lucide-react";
+import { BadgeQuestionMark, Gem, Search, Shield, Sparkles, Sword, X, Zap } from "lucide-react";
 import type { ComponentType, ReactNode } from "react";
 import { useMemo, useState } from "react";
 import { createPortal } from "react-dom";
@@ -32,8 +32,12 @@ type TooltipState = {
   top: number;
 };
 type SkillTagGroup = {
+  color: string;
   label: string;
   tags: SkillTag[];
+};
+type SkillTagMeta = {
+  label: string;
 };
 
 const allHeroes = heroes as Hero[];
@@ -48,6 +52,18 @@ const raceTheme: Record<HeroRace, string> = {
   light: "#f4c95d",
   undead: "#48d5cf",
 };
+const roleTheme: Record<HeroRole, string> = {
+  dealer: "#c84d4d",
+  healer: "#5fc6d3",
+  supporter: "#b58a45",
+  tanker: "#5f82b8",
+};
+const attributeTheme: Record<HeroAttribute, string> = {
+  agility: "#69d36f",
+  intelligence: "#7ed4ff",
+  strength: "#e35a45",
+};
+const allFilterColor = "#cbd5e1";
 const primarySkillSlots: SkillSlot[] = [
   { label: "Active", missingLabel: "Active TBD", type: "active" },
   { label: "Passive 1", missingLabel: "Passive TBD", type: "passive" },
@@ -66,8 +82,75 @@ const draftTagPreview: SkillTag[] = [
   "sleep",
   "gain-energy",
 ];
+const skillTagMeta = {
+  "absorb-energy": { label: "Energy Steal" },
+  "anti-shield": { label: "Anti-Shield" },
+  "apply-dot": { label: "Apply DoT" },
+  "buff-block": { label: "Buff Block" },
+  cc: { label: "CC" },
+  "counter-attack": { label: "Counterattack" },
+  "damage-cap": { label: "Damage Cap" },
+  "damage-reduction": { label: "Damage Reduction" },
+  execute: { label: "Execute" },
+  "gain-energy": { label: "Gain Energy" },
+  "give-energy": { label: "Grant Energy" },
+  "heal-allies": { label: "Heal Allies" },
+  "heal-self": { label: "Self Heal" },
+  "healing-over-time": { label: "HoT" },
+  "increase-allies-accuracy": { label: "Ally ACC Up" },
+  "increase-allies-attack": { label: "Ally ATK Up" },
+  "increase-allies-defense": { label: "Ally DEF Up" },
+  "increase-allies-lifesteal": { label: "Ally Lifesteal Up" },
+  "increase-allies-speed": { label: "Ally Speed Up" },
+  "increase-cc-resistance": { label: "CC Resist Up" },
+  "increase-crit-damage": { label: "Crit DMG Up" },
+  "increase-crit-rate": { label: "Crit Rate Up" },
+  "increase-crit-resistance": { label: "Crit Resist Up" },
+  "increase-damage-taken": { label: "Vulnerability" },
+  "increase-energy-gain": { label: "Energy Gain Up" },
+  "increase-healing-received": { label: "Healing Received Up" },
+  "increase-self-accuracy": { label: "Self ACC Up" },
+  "increase-self-attack": { label: "Self ATK Up" },
+  "increase-self-crit-damage": { label: "Self Crit DMG Up" },
+  "increase-self-crit-rate": { label: "Self Crit Rate Up" },
+  "increase-self-defense": { label: "Self DEF Up" },
+  "increase-self-dodge": { label: "Self Dodge Up" },
+  "increase-self-lifesteal": { label: "Self Lifesteal Up" },
+  "increase-self-penetration": { label: "Self PEN Up" },
+  "increase-self-speed": { label: "Self Speed Up" },
+  "join-attack": { label: "Assist Attack" },
+  "percent-damage": { label: "Percent Damage" },
+  "prevent-revive": { label: "Prevent Revive" },
+  "reduce-attack": { label: "ATK Down" },
+  "reduce-cc-resistance": { label: "CC Resist Down" },
+  "reduce-crit-damage": { label: "Crit DMG Down" },
+  "reduce-crit-rate": { label: "Crit Rate Down" },
+  "reduce-crit-resistance": { label: "Crit Resist Down" },
+  "reduce-defense": { label: "DEF Down" },
+  "reduce-dot-damage": { label: "DoT Damage Down" },
+  "reduce-enemy-speed": { label: "Enemy Speed Down" },
+  "reduce-energy": { label: "Energy Down" },
+  "reduce-energy-gain": { label: "Energy Gain Down" },
+  "reduce-healing-received": { label: "Healing Received Down" },
+  "reduce-pres": { label: "PRES Down" },
+  "reflect-damage": { label: "Reflect Damage" },
+  "remove-ally-debuff": { label: "Cleanse Ally" },
+  "remove-cc": { label: "Cleanse CC" },
+  "remove-dot": { label: "Cleanse DoT" },
+  "remove-enemy-buff": { label: "Dispel Enemy" },
+  "remove-self-debuff": { label: "Self Cleanse" },
+  "repeat-attack": { label: "Extra Attack" },
+  "revive-ally": { label: "Revive Ally" },
+  "revive-self": { label: "Self Revive" },
+  shield: { label: "Shield" },
+  silence: { label: "Silence" },
+  sleep: { label: "Sleep" },
+  survive: { label: "Survive" },
+  taunt: { label: "Taunt" },
+} satisfies Record<SkillTag, SkillTagMeta>;
 const skillTagGroups: SkillTagGroup[] = [
   {
+    color: "#f6c85f",
     label: "Energy",
     tags: [
       "give-energy",
@@ -79,38 +162,57 @@ const skillTagGroups: SkillTagGroup[] = [
     ],
   },
   {
+    color: "#68c58e",
     label: "Healing",
     tags: ["heal-self", "heal-allies", "healing-over-time", "increase-healing-received", "reduce-healing-received"],
   },
   {
+    color: "#b981ff",
     label: "Control",
-    tags: ["cc", "silence", "sleep", "taunt", "remove-cc", "increase-cc-resistance", "reduce-cc-resistance"],
+    tags: ["cc", "silence", "sleep", "taunt", "increase-cc-resistance", "reduce-cc-resistance"],
   },
   {
-    label: "Buffs / Debuffs",
+    color: "#7ed4ff",
+    label: "Cleanse / Dispel",
     tags: [
       "remove-enemy-buff",
       "remove-ally-debuff",
       "remove-self-debuff",
+      "remove-dot",
+      "remove-cc",
       "buff-block",
-      "increase-damage-taken",
+    ],
+  },
+  {
+    color: "#d8ef72",
+    label: "Ally Buffs",
+    tags: [
       "increase-allies-attack",
       "increase-allies-defense",
       "increase-allies-lifesteal",
+      "increase-allies-speed",
+      "increase-allies-accuracy",
+      "increase-crit-rate",
+      "increase-crit-damage",
+      "increase-crit-resistance",
+    ],
+  },
+  {
+    color: "#ff7a45",
+    label: "Enemy Debuffs",
+    tags: [
+      "increase-damage-taken",
       "reduce-attack",
       "reduce-defense",
       "reduce-pres",
-      "increase-allies-speed",
       "reduce-enemy-speed",
-      "increase-crit-resistance",
       "reduce-crit-resistance",
       "reduce-crit-rate",
-      "increase-crit-rate",
-      "increase-crit-damage",
       "reduce-crit-damage",
     ],
   },
   {
+    color: "#69d36f",
     label: "Self Buffs",
     tags: [
       "increase-self-attack",
@@ -118,7 +220,6 @@ const skillTagGroups: SkillTagGroup[] = [
       "increase-self-speed",
       "increase-self-dodge",
       "increase-self-accuracy",
-      "increase-allies-accuracy",
       "increase-self-penetration",
       "increase-self-lifesteal",
       "increase-self-crit-rate",
@@ -126,6 +227,7 @@ const skillTagGroups: SkillTagGroup[] = [
     ],
   },
   {
+    color: "#48d5cf",
     label: "Survival",
     tags: [
       "shield",
@@ -139,16 +241,23 @@ const skillTagGroups: SkillTagGroup[] = [
     ],
   },
   {
-    label: "Damage Effects",
+    color: "#ff9f5a",
+    label: "Attack Triggers",
     tags: [
-      "apply-dot",
-      "remove-dot",
-      "reduce-dot-damage",
       "join-attack",
       "counter-attack",
       "repeat-attack",
       "execute",
+    ],
+  },
+  {
+    color: "#e35a45",
+    label: "Damage Types",
+    tags: [
+      "apply-dot",
+      "reduce-dot-damage",
       "anti-shield",
+      "percent-damage",
     ],
   },
 ];
@@ -260,9 +369,22 @@ function HeroesPage() {
               <section className="rounded border border-souls-spirit/20 bg-souls-void/45 p-2.5">
                 <div className="flex flex-wrap items-start justify-between gap-2">
                   <div className="flex flex-1 flex-col gap-2">
-                    <FilterGroup label="Race" onChange={setSelectedRace} options={races} value={selectedRace} />
-                    <FilterGroup label="Role" onChange={setSelectedRole} options={roles} value={selectedRole} />
                     <FilterGroup
+                      getOptionColor={(option) => (option === "all" ? allFilterColor : raceTheme[option])}
+                      label="Race"
+                      onChange={setSelectedRace}
+                      options={races}
+                      value={selectedRace}
+                    />
+                    <FilterGroup
+                      getOptionColor={(option) => (option === "all" ? allFilterColor : roleTheme[option])}
+                      label="Role"
+                      onChange={setSelectedRole}
+                      options={roles}
+                      value={selectedRole}
+                    />
+                    <FilterGroup
+                      getOptionColor={(option) => (option === "all" ? allFilterColor : attributeTheme[option])}
                       label="Attribute"
                       onChange={setSelectedAttribute}
                       options={attributes}
@@ -351,11 +473,13 @@ function NavLink({
 }
 
 function FilterGroup<T extends string>({
+  getOptionColor,
   label,
   onChange,
   options,
   value,
 }: {
+  getOptionColor?: (value: FilterValue<T>) => string;
   label: string;
   onChange: (value: FilterValue<T>) => void;
   options: T[];
@@ -365,17 +489,26 @@ function FilterGroup<T extends string>({
     <div className="flex flex-wrap items-center gap-2">
       <p className="w-20 shrink-0 text-[11px] font-semibold uppercase tracking-[0.14em] text-souls-spirit">{label}</p>
       <div className="flex flex-wrap gap-1.5">
-        {(["all", ...options] as FilterValue<T>[]).map((option) => (
-          <button
-            className="min-h-7 rounded border border-souls-spirit/20 px-2.5 text-xs font-medium capitalize text-souls-panel transition hover:border-souls-gold hover:bg-souls-gold hover:text-souls-void data-[active=true]:border-souls-gold data-[active=true]:bg-souls-gold data-[active=true]:text-souls-void"
-            data-active={value === option}
-            key={option}
-            onClick={() => onChange(option)}
-            type="button"
-          >
-            {formatLabel(option)}
-          </button>
-        ))}
+        {(["all", ...options] as FilterValue<T>[]).map((option) => {
+          const isActive = value === option;
+          const optionColor = getOptionColor?.(option) ?? allFilterColor;
+
+          return (
+            <button
+              className="min-h-7 rounded border px-2.5 text-xs font-medium capitalize transition hover:brightness-110"
+              key={option}
+              onClick={() => onChange(option)}
+              style={{
+                backgroundColor: isActive ? optionColor : `${optionColor}10`,
+                borderColor: isActive ? optionColor : `${optionColor}35`,
+                color: isActive ? "#111522" : optionColor,
+              }}
+              type="button"
+            >
+              {formatLabel(option)}
+            </button>
+          );
+        })}
       </div>
     </div>
   );
@@ -396,8 +529,18 @@ function TagFilterBar({
   selectedTag: SkillTag | null;
   tags: SkillTag[];
 }) {
+  const [tagQuery, setTagQuery] = useState("");
+  const [showAllTags, setShowAllTags] = useState(false);
   const hasRealTags = availableTags.length > 0;
-  const visibleTagGroups = [
+  const normalizedTagQuery = normalizeSearchValue(tagQuery);
+  const matchesTagQuery = (tag: SkillTag) => {
+    if (!normalizedTagQuery) {
+      return true;
+    }
+
+    return normalizeSearchValue(`${tag} ${getSkillTagLabel(tag)}`).includes(normalizedTagQuery);
+  };
+  const tagGroups = [
     ...skillTagGroups
       .map((group) => ({
         ...group,
@@ -405,38 +548,117 @@ function TagFilterBar({
       }))
       .filter((group) => group.tags.length > 0),
     {
+      color: "#7ed4ff",
       label: "Other",
       tags: tags.filter((tag) => !groupedTagSet.has(tag)),
     },
   ].filter((group) => group.tags.length > 0);
+  const [activeTagGroupLabel, setActiveTagGroupLabel] = useState(tagGroups[0]?.label ?? "");
+  const activeTagGroup = tagGroups.find((group) => group.label === activeTagGroupLabel) ?? tagGroups[0];
+  const visibleTagGroups = normalizedTagQuery
+    ? tagGroups
+        .map((group) => ({
+          ...group,
+          tags: group.tags.filter((tag) => matchesTagQuery(tag)),
+        }))
+        .filter((group) => group.tags.length > 0)
+    : showAllTags
+      ? tagGroups
+    : activeTagGroup
+      ? [activeTagGroup]
+      : [];
 
   return (
-    <section className="mt-2 rounded border border-souls-spirit/20 bg-souls-night/78 p-2.5 shadow-lg">
+    <section className="mt-2 rounded border border-souls-spirit/20 bg-souls-night/78 p-2 shadow-lg">
       <div className="flex flex-col gap-2">
-        <div className="flex flex-wrap items-baseline gap-2">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-souls-spirit">Tags</p>
-          {!hasRealTags ? <p className="text-[11px] text-souls-panel/70">Preview until skill tags are added.</p> : null}
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="flex flex-wrap items-baseline gap-2">
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-souls-spirit">Tags</p>
+            {!hasRealTags ? (
+              <p className="text-[11px] text-souls-panel/70">Preview until skill tags are added.</p>
+            ) : null}
+          </div>
+          <label className="flex min-h-8 w-full items-center gap-2 rounded border border-souls-spirit/20 bg-souls-void/45 px-2.5 text-xs text-souls-panel focus-within:border-souls-spirit md:w-64">
+            <Search className="size-3.5 shrink-0 text-souls-spirit" />
+            <input
+              className="min-w-0 flex-1 bg-transparent text-souls-parchment outline-none placeholder:text-souls-panel/55"
+              onChange={(event) => setTagQuery(event.target.value)}
+              placeholder="Find tag"
+              type="search"
+              value={tagQuery}
+            />
+          </label>
         </div>
 
-        <div className="grid gap-2">
+        <div className="flex flex-wrap gap-1">
+          <button
+            className="min-h-6 rounded border px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.08em] transition disabled:cursor-not-allowed disabled:opacity-55"
+            disabled={!hasRealTags}
+            onClick={() => setShowAllTags((value) => !value)}
+            style={{
+              backgroundColor: showAllTags && !normalizedTagQuery ? "#cbd5e1" : "#cbd5e114",
+              borderColor: showAllTags && !normalizedTagQuery ? "#cbd5e1" : "#cbd5e145",
+              color: showAllTags && !normalizedTagQuery ? "#111522" : "#cbd5e1",
+            }}
+            type="button"
+          >
+            {showAllTags && !normalizedTagQuery ? "Show less" : "Show all"}
+          </button>
+          {tagGroups.map((group) => {
+            const isActive = !normalizedTagQuery && !showAllTags && activeTagGroup?.label === group.label;
+
+            return (
+              <button
+                className="min-h-6 rounded border px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.08em] transition disabled:cursor-not-allowed disabled:opacity-55"
+                disabled={!hasRealTags}
+                key={group.label}
+                onClick={() => {
+                  setActiveTagGroupLabel(group.label);
+                  setShowAllTags(false);
+                }}
+                style={{
+                  backgroundColor: isActive ? group.color : `${group.color}10`,
+                  borderColor: isActive ? group.color : `${group.color}35`,
+                  color: isActive ? "#111522" : group.color,
+                }}
+                type="button"
+              >
+                {group.label}
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="grid max-h-[42dvh] gap-2 overflow-y-auto pr-1 md:max-h-none md:grid-cols-[repeat(auto-fit,minmax(250px,1fr))] md:overflow-visible md:pr-0">
           {visibleTagGroups.map((group) => (
-            <div className="grid gap-1.5 md:grid-cols-[132px_minmax(0,1fr)] md:items-start" key={group.label}>
-              <p className="pt-1 text-[10px] font-black uppercase tracking-[0.14em] text-souls-panel/75">
+            <div className="min-w-0" key={group.label}>
+              <p
+                className="mb-1 text-[9px] font-black uppercase tracking-[0.14em]"
+                style={{ color: group.color }}
+              >
                 {group.label}
               </p>
-              <div className="flex flex-wrap gap-1.5">
-                {group.tags.map((tag) => (
-                  <button
-                    className="rounded border border-souls-spirit/20 px-2.5 py-1 text-xs font-medium text-souls-panel transition enabled:hover:border-souls-gold enabled:hover:bg-souls-gold enabled:hover:text-souls-void disabled:cursor-not-allowed disabled:opacity-55 data-[active=true]:border-souls-gold data-[active=true]:bg-souls-gold data-[active=true]:text-souls-void"
-                    data-active={selectedTag === tag}
-                    disabled={!hasRealTags}
-                    key={tag}
-                    onClick={() => onSelectTag(selectedTag === tag ? null : tag)}
-                    type="button"
-                  >
-                    {formatLabel(tag)}
-                  </button>
-                ))}
+              <div className="flex flex-wrap gap-1">
+                {group.tags.map((tag) => {
+                  const isActive = selectedTag === tag;
+
+                  return (
+                    <button
+                      className="min-h-6 rounded border px-2 py-0.5 text-[11px] font-semibold transition disabled:cursor-not-allowed disabled:opacity-55"
+                      disabled={!hasRealTags}
+                      key={tag}
+                      onClick={() => onSelectTag(isActive ? null : tag)}
+                      style={{
+                        backgroundColor: isActive ? group.color : `${group.color}14`,
+                        borderColor: isActive ? group.color : `${group.color}45`,
+                        color: isActive ? "#111522" : group.color,
+                      }}
+                      type="button"
+                    >
+                      {getSkillTagLabel(tag)}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           ))}
@@ -770,4 +992,12 @@ function attributeIconUrl(attribute: HeroAttribute): string {
 
 function formatLabel(value: string): string {
   return value.replaceAll("-", " ");
+}
+
+function getSkillTagLabel(tag: SkillTag): string {
+  return skillTagMeta[tag].label;
+}
+
+function normalizeSearchValue(value: string): string {
+  return value.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
 }

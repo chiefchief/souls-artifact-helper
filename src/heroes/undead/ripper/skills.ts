@@ -55,7 +55,7 @@ export const ripper: Hero = {
       name: "Ripper's Engraving",
       description:
         "Ripper heals 12% of max HP and increases ATK by 5% whenever an ally Dodges. (Stacks up to 10 times)",
-      tags: ["heal-allies", "increase-allies-attack"],
+      tags: ["heal-self", "increase-self-attack"],
     },
     {
       id: "ripper_magnum_opus",

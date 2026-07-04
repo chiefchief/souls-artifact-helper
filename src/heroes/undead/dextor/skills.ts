@@ -26,7 +26,7 @@ export const dextor: Hero = {
         { stat: "pen", value: 15 },
         { stat: "cc_res", value: 50 },
       ],
-      tags: [],
+      tags: ["increase-allies-attack"],
     },
     {
       id: "dextor_subtlety",

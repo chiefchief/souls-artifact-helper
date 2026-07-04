@@ -54,7 +54,7 @@ export const nevir: Hero = {
       name: "Nevir's Engraving",
       description:
         "Gains +10% Crit DMG each time an Active Skill is used. (Once per round, up to 50%)\nGains 50 Energy when an enemy or ally dies. (Twice per battle)",
-      tags: ["gain-energy"],
+      tags: ["gain-energy", "increase-self-crit-damage"],
     },
   ],
 };

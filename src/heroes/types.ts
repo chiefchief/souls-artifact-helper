@@ -84,7 +84,8 @@ export type SkillTag =
   | "silence"
   | "sleep"
   | "survive"
-  | "taunt";
+  | "taunt"
+  | "percent-damage";
 
 type StatBonus = {
   stat: SkillStat;
