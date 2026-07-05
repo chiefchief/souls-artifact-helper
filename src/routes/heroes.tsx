@@ -628,7 +628,10 @@ function TagFilterBar({
                       className="min-h-6 rounded border px-2 py-0.5 text-[11px] font-semibold transition disabled:cursor-not-allowed disabled:opacity-55"
                       disabled={!hasRealTags}
                       key={tag}
-                      onClick={() => onSelectTag(isActive ? null : tag)}
+                      onClick={() => {
+                        setActiveTagGroupLabel(group.label);
+                        onSelectTag(isActive ? null : tag);
+                      }}
                       style={{
                         backgroundColor: isActive ? group.color : `${group.color}14`,
                         borderColor: isActive ? group.color : `${group.color}45`,
