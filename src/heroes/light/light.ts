@@ -8,4 +8,4 @@ import { solina } from "./solina/skills";
 import { taros } from "./taros/skills";
 import { ulion } from "./ulion/skills";
 
-export const lightHeroes = [taros, solina, nuel, ulion, lena, leovalt, akmon, lumen, rael];
+export const lightHeroes = [taros, solina, nuel, ulion, lena, leovalt, akmon, lumen, rael].reverse();

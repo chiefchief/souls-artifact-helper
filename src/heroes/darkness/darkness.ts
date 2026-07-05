@@ -8,4 +8,4 @@ import { vescura } from "./vescura/skills";
 import { zagrako } from "./zagrako/skills";
 import { zeke } from "./zeke/skills";
 
-export const darknessHeroes = [zagrako, bahzam, lilith, benzel, zeke, nebula, roze, dmitri, vescura];
+export const darknessHeroes = [zagrako, bahzam, lilith, benzel, zeke, nebula, roze, dmitri, vescura].reverse();

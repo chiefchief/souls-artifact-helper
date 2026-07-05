@@ -12,7 +12,7 @@ export const heroes = [
   ...undeadHeroes,
   ...lightHeroes,
   ...darknessHeroes,
-];
+].reverse();
 
 export { darknessHeroes, elfHeroes, hordeHeroes, humanHeroes, lightHeroes, undeadHeroes };
 

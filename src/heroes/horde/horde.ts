@@ -12,4 +12,18 @@ import { paru } from "./paru/skills";
 import { sol } from "./sol/skills";
 import { telfer } from "./telfer/skills";
 
-export const hordeHeroes = [lagou, telfer, naru, sol, paru, kaion, aruru, dolucos, jack, paopao, lupico, bella, nevir];
+export const hordeHeroes = [
+  lagou,
+  telfer,
+  naru,
+  sol,
+  paru,
+  kaion,
+  aruru,
+  dolucos,
+  jack,
+  paopao,
+  lupico,
+  bella,
+  nevir,
+].reverse();

@@ -1,4 +1,5 @@
 import { heroImageUrl, type Hero } from "../../types";
+
 export const voidHero: Hero = {
   id: "void",
   name: "Void",
