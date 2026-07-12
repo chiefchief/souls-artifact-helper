@@ -22,7 +22,7 @@ export const paru: Hero = {
       name: "Diffusion of Energy",
       description:
         "All allies in the same row, including yourself, can gain additional 30 Energy when deals a critical hit.",
-      tags: ["gain-energy"],
+      tags: ["gain-energy", "give-energy"],
     },
     {
       id: "paru_sharpness",
