@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from "./routes/__root";
+import { Route as CounterpickRouteImport } from "./routes/counterpick";
 import { Route as HeroesRouteImport } from "./routes/heroes";
 import { Route as IndexRouteImport } from "./routes/index";
 import { Route as SoulStoneCalculatorRouteImport } from "./routes/soul-stone-calculator";
@@ -24,6 +25,11 @@ const HeroesRoute = HeroesRouteImport.update({
   path: "/heroes",
   getParentRoute: () => rootRouteImport,
 } as any);
+const CounterpickRoute = CounterpickRouteImport.update({
+  id: "/counterpick",
+  path: "/counterpick",
+  getParentRoute: () => rootRouteImport,
+} as any);
 const SoulStoneCalculatorRoute = SoulStoneCalculatorRouteImport.update({
   id: "/soul-stone-calculator",
   path: "/soul-stone-calculator",
@@ -37,12 +43,14 @@ const SupportRoute = SupportRouteImport.update({
 
 export interface FileRoutesByFullPath {
   "/": typeof IndexRoute;
+  "/counterpick": typeof CounterpickRoute;
   "/heroes": typeof HeroesRoute;
   "/soul-stone-calculator": typeof SoulStoneCalculatorRoute;
   "/support": typeof SupportRoute;
 }
 export interface FileRoutesByTo {
   "/": typeof IndexRoute;
+  "/counterpick": typeof CounterpickRoute;
   "/heroes": typeof HeroesRoute;
   "/soul-stone-calculator": typeof SoulStoneCalculatorRoute;
   "/support": typeof SupportRoute;
@@ -50,19 +58,21 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport;
   "/": typeof IndexRoute;
+  "/counterpick": typeof CounterpickRoute;
   "/heroes": typeof HeroesRoute;
   "/soul-stone-calculator": typeof SoulStoneCalculatorRoute;
   "/support": typeof SupportRoute;
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath;
-  fullPaths: "/" | "/heroes" | "/soul-stone-calculator" | "/support";
+  fullPaths: "/" | "/counterpick" | "/heroes" | "/soul-stone-calculator" | "/support";
   fileRoutesByTo: FileRoutesByTo;
-  to: "/" | "/heroes" | "/soul-stone-calculator" | "/support";
-  id: "__root__" | "/" | "/heroes" | "/soul-stone-calculator" | "/support";
+  to: "/" | "/counterpick" | "/heroes" | "/soul-stone-calculator" | "/support";
+  id: "__root__" | "/" | "/counterpick" | "/heroes" | "/soul-stone-calculator" | "/support";
   fileRoutesById: FileRoutesById;
 }
 export interface RootRouteChildren {
+  CounterpickRoute: typeof CounterpickRoute;
   HeroesRoute: typeof HeroesRoute;
   IndexRoute: typeof IndexRoute;
   SoulStoneCalculatorRoute: typeof SoulStoneCalculatorRoute;
@@ -76,6 +86,13 @@ declare module "@tanstack/react-router" {
       path: "/";
       fullPath: "/";
       preLoaderRoute: typeof IndexRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/counterpick": {
+      id: "/counterpick";
+      path: "/counterpick";
+      fullPath: "/counterpick";
+      preLoaderRoute: typeof CounterpickRouteImport;
       parentRoute: typeof rootRouteImport;
     };
     "/heroes": {
@@ -103,6 +120,7 @@ declare module "@tanstack/react-router" {
 }
 
 const rootRouteChildren: RootRouteChildren = {
+  CounterpickRoute: CounterpickRoute,
   HeroesRoute: HeroesRoute,
   IndexRoute: IndexRoute,
   SoulStoneCalculatorRoute: SoulStoneCalculatorRoute,

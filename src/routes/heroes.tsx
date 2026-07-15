@@ -337,6 +337,7 @@ function HeroesPage() {
               <NavLink isActive to="/heroes">
                 Heroes
               </NavLink>
+              <NavLink to="/counterpick">Counterpick</NavLink>
               <NavLink to="/support">Support</NavLink>
             </div>
           </nav>
@@ -440,7 +441,7 @@ function NavLink({
 }: {
   children: ReactNode;
   isActive?: boolean;
-  to: "/" | "/soul-stone-calculator" | "/heroes" | "/support";
+  to: "/" | "/soul-stone-calculator" | "/heroes" | "/counterpick" | "/support";
 }) {
   return (
     <Link

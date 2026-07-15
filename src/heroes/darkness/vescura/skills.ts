@@ -48,7 +48,7 @@ export const vescura: Hero = {
       name: "Demonic Pact",
       description:
         "When using Active Skill, there is a 60% chance to apply [Blood Host] to all enemies for 2 turn(s). Enemies affected by [Blood Host] gain 10 less Energy from normal attacks. At the start of each round, Vescura attacks enemies afflicted with [Blood Host], dealing additional damage equal to 20% of their current HP. ([Blood Host] does not stack, and additional damage does not exceed 250% of Vescura's ATK)",
-      tags: [],
+      tags: ["reduce-energy-gain", "percent-damage"],
     },
     {
       id: "vescura_engraving",

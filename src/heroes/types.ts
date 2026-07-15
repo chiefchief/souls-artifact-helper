@@ -4,6 +4,19 @@ export type HeroRarity = "epic" | "rare" | "normal";
 export type HeroRace = "human" | "horde" | "elf" | "undead" | "light" | "darkness";
 export type HeroRole = "tanker" | "dealer" | "supporter" | "healer";
 export type HeroAttribute = "strength" | "agility" | "intelligence";
+export type HeroId =
+  | "abala" | "adora" | "akmon" | "amanda" | "aolmond" | "aruru" | "ash" | "babu" | "bahzam" | "bella"
+  | "benzel" | "calix" | "carmen" | "chiron" | "coco" | "dextor" | "dmitri" | "dolucos" | "elara" | "fiona"
+  | "fleta" | "galan" | "harfa" | "idina" | "jack" | "kaion" | "karim" | "ken" | "kyle" | "lagou" | "lena"
+  | "leovalt" | "liandra" | "lilith" | "louveti" | "lulu" | "lumen" | "lupico" | "melantha" | "milia" | "morra"
+  | "muerte" | "naru" | "nebula" | "nevir" | "nox" | "nuel" | "odelia" | "olga" | "oneiric" | "paopao" | "paru"
+  | "rael" | "rakan" | "richelle" | "ripper" | "roze" | "sander" | "scarlet" | "sekhrus" | "serena" | "sol"
+  | "solina" | "tania" | "taros" | "telfer" | "ulion" | "vescura" | "void" | "zagrako" | "zeke" | "zenon";
+export type CounterpickRating = 1 | 2 | 3 | 4 | 5;
+export type HeroCounterpick = {
+  heroId: HeroId;
+  rating: CounterpickRating;
+};
 export type SkillStat =
   | "atk"
   | "hp"
@@ -113,7 +126,7 @@ export type HeroSkills = [
 ];
 
 export type Hero = {
-  id: string;
+  id: HeroId;
   name: string;
   rarity: HeroRarity;
   race: HeroRace;
@@ -121,9 +134,11 @@ export type Hero = {
   attribute: HeroAttribute | null;
   imageUrl: string;
   skills: HeroSkills | [];
+  /** Heroes that are useful answers to this hero. Ratings are an editable 1–5 reference scale. */
+  counterpicks?: HeroCounterpick[];
 };
 
-export function heroImageUrl(race: HeroRace, heroId: string): string {
+export function heroImageUrl(race: HeroRace, heroId: HeroId): string {
   const baseUrl = import.meta.env.BASE_URL.endsWith("/") ? import.meta.env.BASE_URL : `${import.meta.env.BASE_URL}/`;
 
   return `${baseUrl}heroes/${race}/${heroId}/image.png`;

@@ -14,3 +14,4 @@ todos.json
 # local synthetic/eval datasets
 data/
 __pycache__
+.codex-routing-logs
