@@ -54,5 +54,13 @@ export const morra: Hero = {
         "Each time a Strength-type ally dies, the ATK and DEF of remaining Strength-type allies increase by 15%. (Only active while Morra is alive.)",
       tags: ["increase-allies-defense"],
     },
+    {
+      id: "morra_unyielding_hammer",
+      type: "exclusive-equipment",
+      name: "Unyielding Hammer",
+      description:
+        "If there are 5 or more Strength-type allied heroes, the following effect activates: At the start of battle, reduce the Physical Resistance  of all enemies by 20%. When Morra uses an Active Skill, heals the 3 allies with lowest HP by 150% of her own DEF.",
+      tags: ["reduce-pres", "heal-allies"],
+    },
   ],
 };

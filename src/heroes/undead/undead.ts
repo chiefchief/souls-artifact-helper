@@ -28,4 +28,4 @@ export const undeadHeroes = [
   muerte,
   sekhrus,
   louveti,
-].reverse();
+];

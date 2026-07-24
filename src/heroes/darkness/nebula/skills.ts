@@ -55,7 +55,7 @@ export const nebula: Hero = {
       name: "Nebula's Engraving",
       description:
         "Reduce the continuous damage received by yourself and all adjacent allies by 50%. If there is a continuous damage debuff, all (normal and active) attacks will reduce the target's energy by 25.",
-      tags: ["damage-reduction", "reduce-dot-damage", "reduce-energy"],
+      tags: ["reduce-dot-damage", "reduce-energy"],
     },
   ],
 };

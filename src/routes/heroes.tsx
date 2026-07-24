@@ -40,8 +40,8 @@ type SkillTagMeta = {
   label: string;
 };
 
-const allHeroes = heroes as Hero[];
-const races: HeroRace[] = ["human", "horde", "elf", "undead", "light", "darkness"];
+const allHeroes = heroes.reverse() as Hero[];
+const races: HeroRace[] = ["human", "horde", "elf", "undead", "light", "darkness"].reverse() as HeroRace[];
 const roles: HeroRole[] = ["tanker", "dealer", "supporter", "healer"];
 const attributes: HeroAttribute[] = ["strength", "agility", "intelligence"];
 const raceTheme: Record<HeroRace, string> = {
@@ -838,6 +838,7 @@ function SkillIconSlot({
 }) {
   const Icon = getSkillIcon(type);
   const [tooltipState, setTooltipState] = useState<TooltipState | null>(null);
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const tooltipTitle = skill?.name ?? missingLabel;
   const tooltipDescription = skill?.description || "Description will appear here once skill data is filled.";
 
@@ -860,7 +861,7 @@ function SkillIconSlot({
 
     setTooltipState({
       left: Math.min(Math.max(centeredLeft, minLeft), maxLeft),
-      maxHeight: Math.max(160, window.innerHeight - viewportPadding * 2),
+      maxHeight: Math.max(0, (placement === "bottom" ? spaceBelow : spaceAbove) - 8),
       placement,
       top: placement === "bottom" ? rect.bottom + 8 : rect.top - 8,
     });
@@ -873,6 +874,7 @@ function SkillIconSlot({
       data-filled={Boolean(skill)}
       data-matched={isMatched}
       onBlur={() => setTooltipState(null)}
+      onClick={() => setIsDetailsOpen(true)}
       onFocus={(event) => openTooltip(event.currentTarget)}
       onMouseEnter={(event) => openTooltip(event.currentTarget)}
       onMouseLeave={() => setTooltipState(null)}
@@ -885,7 +887,7 @@ function SkillIconSlot({
       {tooltipState && typeof document !== "undefined"
         ? createPortal(
             <span
-              className="skill-tooltip pointer-events-none fixed z-[9999] w-72 rounded border px-4 py-3 text-left text-sm font-normal text-souls-panel shadow-2xl"
+              className="skill-tooltip pointer-events-none fixed z-[9999] box-border w-72 overflow-hidden rounded border px-4 py-3 text-left text-sm font-normal text-souls-panel shadow-2xl"
               style={{
                 left: tooltipState.left,
                 maxHeight: tooltipState.maxHeight,
@@ -896,8 +898,45 @@ function SkillIconSlot({
             >
               <strong className="block text-base text-souls-parchment">{tooltipTitle}</strong>
               <span className="mt-1.5 block font-semibold text-souls-spirit">{label}</span>
-              <span className="mt-1.5 block leading-relaxed">{tooltipDescription}</span>
+              <span className="mt-1.5 block line-clamp-5 leading-relaxed">{tooltipDescription}</span>
+              <span className="mt-2 block text-xs font-semibold text-souls-spirit/75">Click for full description</span>
             </span>,
+            document.body,
+          )
+        : null}
+      {isDetailsOpen && typeof document !== "undefined"
+        ? createPortal(
+            <div
+              aria-label={`${tooltipTitle} details`}
+              aria-modal="true"
+              className="fixed inset-0 z-[10000] grid place-items-center bg-souls-void/75 p-4"
+              onClick={(event) => {
+                event.stopPropagation();
+                setIsDetailsOpen(false);
+              }}
+              role="dialog"
+            >
+              <div
+                className="max-h-[min(36rem,calc(100vh-2rem))] w-full max-w-lg overflow-y-auto rounded border border-souls-spirit/55 bg-souls-void p-5 text-left text-souls-panel shadow-2xl"
+                onClick={(event) => event.stopPropagation()}
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <strong className="block text-xl text-souls-parchment">{tooltipTitle}</strong>
+                    <span className="mt-1 block font-semibold text-souls-spirit">{label}</span>
+                  </div>
+                  <button
+                    aria-label="Close description"
+                    className="rounded border border-souls-spirit/25 p-1.5 text-souls-spirit transition hover:border-souls-spirit hover:text-souls-parchment"
+                    onClick={() => setIsDetailsOpen(false)}
+                    type="button"
+                  >
+                    <X aria-hidden="true" className="size-5" />
+                  </button>
+                </div>
+                <p className="mt-4 whitespace-pre-line leading-relaxed">{tooltipDescription}</p>
+              </div>
+            </div>,
             document.body,
           )
         : null}

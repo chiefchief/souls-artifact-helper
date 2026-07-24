@@ -26,4 +26,4 @@ export const elfHeroes = [
   oneiric,
   serena,
   chiron,
-].reverse();
+];
