@@ -14,7 +14,7 @@ export const rael: Hero = {
       name: "Battle Cry",
       description:
         "Applies a continuous healing to all allies, restoring HP equal to 55% of ATK for 2 turns. Additionally, grants the 2 allies with the lowest HP a shield equal to 25% of their Max HP for 2 turns.",
-      tags: ["heal-allies", "healing-over-time", "shield"],
+      tags: ["healing-over-time", "shield"],
     },
     {
       id: "rael_brave_charge",
@@ -29,7 +29,7 @@ export const rael: Hero = {
       type: "passive",
       name: "Salvation",
       description: "At the start of each round, restores HP equal to 40% of ATK to the allied hero with the lowest HP.",
-      tags: [],
+      tags: ["heal-allies"],
     },
     {
       id: "rael_insight",
@@ -44,7 +44,7 @@ export const rael: Hero = {
       name: "Heavenly Blessing",
       description:
         "When an allied hero (including herself) dies, grants Blessing of Light to all allied heroes for 2 turns. (Once per battle. Allies affected by Blessing of Light cannot take damage exceeding 35% of Max HP from a single attack).",
-      tags: [],
+      tags: ["damage-cap"],
     },
     {
       id: "rael_engraving",
@@ -52,7 +52,7 @@ export const rael: Hero = {
       name: "Rael's Engraving",
       description:
         "When an adjacent back-row hero (including herself) takes fatal damage, they survive with 1 HP instead and gain a shield equal to 150% of Rael's ATK for 1 turn. Additionally, removes all debuffs from the target. (Once per battle. This effect does not trigger together with the effect that let allies survive with 1 HP, and the ally's own effect takes priority).",
-      tags: ["remove-ally-debuff", "shield", "survive"],
+      tags: ["survive", "shield", "remove-ally-debuff"],
     },
   ],
 };

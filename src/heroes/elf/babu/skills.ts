@@ -55,7 +55,7 @@ export const babu: Hero = {
       name: "Babu's Engraving",
       description:
         "When receiving Critical Strikes, apply a 22% Crit Rate increase buff to 1 random ally for 1 turns. ATK against agility-type enemies increases by 18%.",
-      tags: [],
+      tags: ["increase-crit-rate"],
     },
     {
       id: "babu_ancient_rune_tablet",
