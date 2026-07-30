@@ -53,7 +53,7 @@ export const aolmond: Hero = {
       name: "Aolmond's Engraving",
       description:
         "When you have more than 3 adjacent allies, Physical Resistance increase by 20%, and damage of normal attacks increases by 50%.",
-      tags: ["increase-allies-defense"],
+      tags: ["increase-self-pres"],
     },
     {
       id: "aolmond_forest_moon_owl",

@@ -53,7 +53,7 @@ export const benzel: Hero = {
       name: "Benzel's Engraving",
       description:
         "For each enemy in Acid state, increase Physical Resistance of all allies in the same row including yourself by 6%. If HP is below 50%, ATK increases by 24%.",
-      tags: ["increase-allies-defense"],
+      tags: ["increase-allies-pres"],
     },
   ],
 };

@@ -101,6 +101,7 @@ const skillTagMeta = {
   "increase-allies-accuracy": { label: "Ally ACC Up" },
   "increase-allies-attack": { label: "Ally ATK Up" },
   "increase-allies-defense": { label: "Ally DEF Up" },
+  "increase-allies-pres": { label: "Ally PRES Up" },
   "increase-allies-lifesteal": { label: "Ally Lifesteal Up" },
   "increase-allies-speed": { label: "Ally Speed Up" },
   "increase-cc-resistance": { label: "CC Resist Up" },
@@ -115,6 +116,7 @@ const skillTagMeta = {
   "increase-self-crit-damage": { label: "Self Crit DMG Up" },
   "increase-self-crit-rate": { label: "Self Crit Rate Up" },
   "increase-self-defense": { label: "Self DEF Up" },
+  "increase-self-pres": { label: "Self PRES Up" },
   "increase-self-dodge": { label: "Self Dodge Up" },
   "increase-self-lifesteal": { label: "Self Lifesteal Up" },
   "increase-self-penetration": { label: "Self PEN Up" },
@@ -183,6 +185,7 @@ const skillTagGroups: SkillTagGroup[] = [
     tags: [
       "increase-allies-attack",
       "increase-allies-defense",
+      "increase-allies-pres",
       "increase-allies-lifesteal",
       "increase-allies-speed",
       "increase-allies-accuracy",
@@ -211,6 +214,7 @@ const skillTagGroups: SkillTagGroup[] = [
     tags: [
       "increase-self-attack",
       "increase-self-defense",
+      "increase-self-pres",
       "increase-self-speed",
       "increase-self-dodge",
       "increase-self-accuracy",

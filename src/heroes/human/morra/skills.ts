@@ -28,7 +28,7 @@ export const morra: Hero = {
       name: "Plate Forging",
       description:
         "Increases Physical Resistance of all Strength-type allies by 10%, and increases their DEF by 5% at the start of each round. (Max 10 stacks)",
-      tags: ["increase-allies-defense"],
+      tags: ["increase-allies-pres", "increase-allies-defense"],
     },
     {
       id: "morra_emergency_evacuation",

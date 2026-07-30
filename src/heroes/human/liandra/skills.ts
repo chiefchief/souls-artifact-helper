@@ -14,7 +14,7 @@ export const liandra: Hero = {
       name: "Mace of Judgment",
       description:
         "Deals 120% ATK DMG to all enemies. Additionally, Active Skill ignores enemy shields.(Excludes damage-immune shields and nullification shields)",
-      tags: ["shield"],
+      tags: ["anti-shield"],
     },
     {
       id: "liandra_divine_blessing",
@@ -30,14 +30,14 @@ export const liandra: Hero = {
       name: "Paladin's Ward",
       description:
         "Liandra's Physical Resistance is increased by 50%. This effect decreases as HP drops. (Physical Resistance -0.3% per 1% HP, minimum 20%)",
-      tags: [],
+      tags: ["increase-self-pres"],
     },
     {
       id: "liandra_prayer_of_protection",
       type: "passive",
       name: "Prayer of Protection",
       description: "At the start of the round, if your HP is 50% or below, recover 50% of Max HP. (Once per battle)",
-      tags: [],
+      tags: ["heal-self"],
     },
     {
       id: "liandra_unshakable_faith",
@@ -45,7 +45,13 @@ export const liandra: Hero = {
       name: "Unshakable Faith",
       description:
         "When an enemy hero is healed 3 times by Active Skills, Liandra gains 1 stack of Paladin's Ward. Liandra gains +20% ATK and +20% Accuracy, and +10% Damage Reduction per stack of Paladin's Ward she has. (Up to 5 stacks)\nIf Liandra has 3 or more stacks of Paladin's Ward when using her Active Skill, she removes 1 buff from all enemies and reduces their Healing Rate by 70% for 2 turns. (Once per round)",
-      tags: ["damage-reduction", "reduce-attack", "remove-enemy-buff"],
+      tags: [
+        "increase-self-attack",
+        "increase-self-accuracy",
+        "damage-reduction",
+        "remove-enemy-buff",
+        "reduce-healing-received",
+      ],
     },
     {
       id: "liandra_engraving",
