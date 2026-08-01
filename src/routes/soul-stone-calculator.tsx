@@ -1,6 +1,14 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { RotateCcw } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import {
+  getNextSoulStoneUpgrade,
+  getReachableLevelAfterSoulStoneUpgrade,
+  getSoulStoneUpgradesFrom,
+  MAX_SOUL_LINK_LEVEL,
+  MIN_SOUL_LINK_LEVEL,
+} from "#/lib/soulLinkUpgradeCosts";
+import { findOptimalChestUsage, type ChestPlanMode } from "#/lib/soulStoneChestPlanning";
 
 export const Route = createFileRoute("/soul-stone-calculator")({
   component: SoulStoneCalculatorPage,
@@ -27,13 +35,21 @@ type ChestPlanResult = {
   addedSoulStones: number;
   finalSoulStones: number;
   overflowAfterRequirement: number;
+  targetLevel: number;
+  reachableLevel: number;
+  totalUpgradeCost: number;
+  nextUpgradeSummary: {
+    totalRemainingValue: number;
+    remainingChestValue: number;
+    targetLevel: number | null;
+    cost: number | null;
+    missingSoulStones: number;
+  } | null;
 };
-type ChestPlanMode = "min-overuse" | "balanced";
-
 const SOUL_STONE_CALC_STORAGE_KEY = "souls_soul_stone_calculator_v1";
 const SOUL_STONE_CHAPTER_STORAGE_KEY = "souls_soul_stone_chapter_v1";
 const SOUL_STONE_CURRENT_STORAGE_KEY = "souls_soul_stone_current_v1";
-const SOUL_STONE_REQUIRED_STORAGE_KEY = "souls_soul_stone_required_v1";
+const SOUL_LINK_LEVEL_STORAGE_KEY = "souls_soul_link_level_v2";
 const SOUL_STONE_HIDDEN_COEFFICIENT = 1.08475;
 const MIN_CHAPTER = 40;
 const MIN_LEVEL = 1;
@@ -76,7 +92,7 @@ function SoulStoneCalculatorPage() {
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [chapterInput, setChapterInput] = useState("");
   const [currentSoulStonesInput, setCurrentSoulStonesInput] = useState("");
-  const [requiredSoulStonesInput, setRequiredSoulStonesInput] = useState("");
+  const [soulLinkLevelInput, setSoulLinkLevelInput] = useState("");
   const [isStorageHydrated, setIsStorageHydrated] = useState(false);
   const [planResult, setPlanResult] = useState<ChestPlanResult | null>(null);
   const [planMessage, setPlanMessage] = useState<string | null>(null);
@@ -108,12 +124,12 @@ function SoulStoneCalculatorPage() {
     }
 
     const storedCurrent = window.localStorage.getItem(SOUL_STONE_CURRENT_STORAGE_KEY);
-    const storedRequired = window.localStorage.getItem(SOUL_STONE_REQUIRED_STORAGE_KEY);
+    const storedSoulLinkLevel = window.localStorage.getItem(SOUL_LINK_LEVEL_STORAGE_KEY);
     if (storedCurrent) {
       setCurrentSoulStonesInput(storedCurrent);
     }
-    if (storedRequired) {
-      setRequiredSoulStonesInput(storedRequired);
+    if (storedSoulLinkLevel) {
+      setSoulLinkLevelInput(storedSoulLinkLevel);
     }
 
     setIsStorageHydrated(true);
@@ -160,8 +176,8 @@ function SoulStoneCalculatorPage() {
       return;
     }
 
-    window.localStorage.setItem(SOUL_STONE_REQUIRED_STORAGE_KEY, requiredSoulStonesInput);
-  }, [isStorageHydrated, requiredSoulStonesInput]);
+    window.localStorage.setItem(SOUL_LINK_LEVEL_STORAGE_KEY, soulLinkLevelInput);
+  }, [isStorageHydrated, soulLinkLevelInput]);
 
   const chapterValidation = useMemo(() => validateChapterInput(chapterInput), [chapterInput]);
   const chapterIndex = useMemo(() => {
@@ -173,11 +189,14 @@ function SoulStoneCalculatorPage() {
   }, [chapterValidation]);
 
   const currentSoulStones = parseNonNegativeNumber(currentSoulStonesInput);
-  const requiredSoulStones = parseNonNegativeNumber(requiredSoulStonesInput);
-  const remainingSoulStones =
-    currentSoulStones !== null && requiredSoulStones !== null
-      ? Math.max(requiredSoulStones - currentSoulStones, 0)
-      : null;
+  const soulLinkLevelValidation = useMemo(() => validateSoulLinkLevel(soulLinkLevelInput), [soulLinkLevelInput]);
+  const nextSoulStoneUpgrade = useMemo(
+    () =>
+      soulLinkLevelValidation.valid && soulLinkLevelValidation.level
+        ? getNextSoulStoneUpgrade(soulLinkLevelValidation.level)
+        : null,
+    [soulLinkLevelValidation],
+  );
   const totalPossibleFromAllChests = useMemo(() => {
     if (chapterIndex === null) {
       return null;
@@ -219,12 +238,12 @@ function SoulStoneCalculatorPage() {
     setQuantities({});
     setChapterInput("");
     setCurrentSoulStonesInput("");
-    setRequiredSoulStonesInput("");
+    setSoulLinkLevelInput("");
     setPlanResult(null);
     setPlanMessage(null);
   }
 
-  function calculateChestPlan() {
+  function calculateChestPlan(isMaximumUpgrade: boolean) {
     setPlanResult(null);
 
     if (!chapterValidation.valid || chapterIndex === null) {
@@ -232,29 +251,66 @@ function SoulStoneCalculatorPage() {
       return;
     }
 
-    if (currentSoulStones === null || requiredSoulStones === null) {
-      setPlanMessage("Enter both current and required soul stones.");
+    if (currentSoulStones === null || !soulLinkLevelValidation.valid || !soulLinkLevelValidation.level) {
+      setPlanMessage("Enter your current Soul Link level and soul stones.");
       return;
     }
 
-    const deficit = requiredSoulStones - currentSoulStones;
-    if (deficit <= 0) {
-      setPlanMessage("Requirement already reached. No chests needed.");
+    const upgrades = getSoulStoneUpgradesFrom(soulLinkLevelValidation.level);
+    if (upgrades.length === 0) {
+      setPlanMessage(`No more Soul Stones are needed through level ${MAX_SOUL_LINK_LEVEL}.`);
       return;
     }
-
     const chestsWithValues = soulStoneChests.map((chest) => ({
       ...chest,
       available: quantities[chest.id] ?? 0,
       value: Math.floor(chapterIndex * SOUL_STONE_HIDDEN_COEFFICIENT * chest.hours),
     }));
-
     const totalAvailableSoulStones = chestsWithValues.reduce((sum, chest) => sum + chest.available * chest.value, 0);
+    const totalBudget = currentSoulStones + totalAvailableSoulStones;
+    const selectedUpgrades = isMaximumUpgrade ? getMaximumAffordableUpgrades(upgrades, totalBudget) : [upgrades[0]];
+
+    if (selectedUpgrades.length === 0) {
+      setPlanMessage(
+        `Not enough soul stones for the next upgrade to level ${upgrades[0].targetLevel}. Need ${upgrades[0].cost.toLocaleString("en-US")}.`,
+      );
+      return;
+    }
+
+    const totalUpgradeCost = selectedUpgrades.reduce((sum, upgrade) => sum + upgrade.cost, 0);
+    const deficit = Math.max(totalUpgradeCost - currentSoulStones, 0);
 
     if (totalAvailableSoulStones < deficit) {
       setPlanMessage(
         `Not enough chests. Missing ${(deficit - totalAvailableSoulStones).toLocaleString("en-US")} soul stones.`,
       );
+      return;
+    }
+
+    if (deficit === 0) {
+      setPlanMessage("You already have enough soul stones. No chests needed.");
+      const items = chestsWithValues.map((chest) => ({
+        chestId: chest.id,
+        chestName: chest.name,
+        chestImageUrl: chest.imageUrl,
+        chestHours: chest.hours,
+        used: 0,
+        available: chest.available,
+        perChestValue: chest.value,
+        totalValue: 0,
+      }));
+      const reachableLevel = getReachableLevelAfterSoulStoneUpgrade(selectedUpgrades.at(-1)!.targetLevel);
+      const finalSoulStones = currentSoulStones - totalUpgradeCost;
+      setPlanResult({
+        items,
+        addedSoulStones: 0,
+        finalSoulStones,
+        overflowAfterRequirement: finalSoulStones,
+        targetLevel: selectedUpgrades.at(-1)!.targetLevel,
+        reachableLevel,
+        totalUpgradeCost,
+        nextUpgradeSummary: getNextUpgradeSummary(isMaximumUpgrade, reachableLevel, finalSoulStones, items),
+      });
       return;
     }
 
@@ -280,8 +336,9 @@ function SoulStoneCalculatorPage() {
     });
 
     const addedSoulStones = items.reduce((sum, item) => sum + item.totalValue, 0);
-    const finalSoulStones = currentSoulStones + addedSoulStones;
-    const overflowAfterRequirement = finalSoulStones - requiredSoulStones;
+    const finalSoulStones = currentSoulStones + addedSoulStones - totalUpgradeCost;
+    const overflowAfterRequirement = finalSoulStones;
+    const reachableLevel = getReachableLevelAfterSoulStoneUpgrade(selectedUpgrades.at(-1)!.targetLevel);
 
     setPlanMessage(null);
     setPlanResult({
@@ -289,6 +346,10 @@ function SoulStoneCalculatorPage() {
       addedSoulStones,
       finalSoulStones,
       overflowAfterRequirement,
+      targetLevel: selectedUpgrades.at(-1)!.targetLevel,
+      reachableLevel,
+      totalUpgradeCost,
+      nextUpgradeSummary: getNextUpgradeSummary(isMaximumUpgrade, reachableLevel, finalSoulStones, items),
     });
   }
 
@@ -312,8 +373,9 @@ function SoulStoneCalculatorPage() {
     });
 
     setCurrentSoulStonesInput(String(planResult.overflowAfterRequirement));
+    setSoulLinkLevelInput(String(planResult.reachableLevel));
     setPlanResult(null);
-    setPlanMessage("Plan applied. Chests were deducted and current soul stones set to overflow.");
+    setPlanMessage(`Plan applied. Level is now ${planResult.reachableLevel}; remaining soul stones were saved.`);
   }
 
   return (
@@ -426,33 +488,76 @@ function SoulStoneCalculatorPage() {
                   />
                 </label>
                 <label className="flex flex-col gap-1">
-                  <span className="text-xs uppercase tracking-[0.12em] text-souls-spirit">Required soul stones</span>
+                  <span className="text-xs uppercase tracking-[0.12em] text-souls-spirit">Current Soul Link level</span>
                   <input
                     className="min-h-9 rounded border border-souls-spirit/25 bg-souls-void/65 px-3 text-sm text-souls-parchment outline-none placeholder:text-souls-panel/55 focus:border-souls-spirit"
                     inputMode="numeric"
-                    min="0"
-                    onChange={(event) => setRequiredSoulStonesInput(event.target.value)}
-                    placeholder="80000"
+                    max={MAX_SOUL_LINK_LEVEL}
+                    min={MIN_SOUL_LINK_LEVEL}
+                    onChange={(event) => setSoulLinkLevelInput(event.target.value)}
+                    placeholder="220"
                     type="number"
-                    value={requiredSoulStonesInput}
+                    value={soulLinkLevelInput}
                   />
+                  <span
+                    className={`text-sm ${soulLinkLevelValidation.valid ? "text-souls-panel" : "text-souls-ember"}`}
+                  >
+                    {!soulLinkLevelValidation.valid ? (
+                      soulLinkLevelValidation.message
+                    ) : nextSoulStoneUpgrade ? (
+                      <>
+                        Next payment at level {nextSoulStoneUpgrade.targetLevel}:{" "}
+                        <strong className="text-souls-gold">
+                          {nextSoulStoneUpgrade.cost.toLocaleString("en-US")} stones
+                        </strong>
+                      </>
+                    ) : (
+                      `No further Soul Stones are needed through level ${MAX_SOUL_LINK_LEVEL}.`
+                    )}
+                  </span>
                 </label>
               </div>
-              <div className="mt-2 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-                <div>
-                  <p className="text-sm text-souls-panel">
-                    {remainingSoulStones === null
-                      ? "Enter both values to calculate remaining soul stones."
-                      : remainingSoulStones > 0
-                        ? `Remaining needed: ${remainingSoulStones.toLocaleString("en-US")}`
-                        : "Requirement reached."}
-                  </p>
-                  <p className="mt-1 text-sm text-souls-spirit">
-                    {totalPossibleFromAllChests === null
-                      ? "Set a valid chapter to see total possible from all chests."
-                      : `Total possible from all chests: ${totalPossibleFromAllChests.toLocaleString("en-US")}`}
-                  </p>
-                </div>
+              <div className="mt-2">
+                <p className="text-sm text-souls-spirit">
+                  {totalPossibleFromAllChests === null
+                    ? "Set a valid chapter to see total possible from all chests."
+                    : `Total possible from all chests: ${totalPossibleFromAllChests.toLocaleString("en-US")}`}
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+              {soulStoneChests.map((chest) => (
+                <SoulStoneChestCard
+                  chest={chest}
+                  key={chest.id}
+                  onSetQuantity={setQuantity}
+                  onResetQuantity={resetQuantity}
+                  perChestSoulStones={
+                    chapterIndex === null ? null : chapterIndex * SOUL_STONE_HIDDEN_COEFFICIENT * chest.hours
+                  }
+                  quantity={quantities[chest.id] ?? 0}
+                />
+              ))}
+            </div>
+
+            <div className="mt-4 rounded border border-souls-spirit/20 bg-souls-void/45 p-3">
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  className="rounded border border-souls-gold bg-souls-gold px-3 py-1.5 text-sm font-semibold text-souls-void transition hover:brightness-95"
+                  onClick={() => calculateChestPlan(false)}
+                  type="button"
+                >
+                  Plan next upgrade
+                </button>
+                <button
+                  className="rounded border border-souls-spirit/55 bg-souls-spirit/15 px-3 py-1.5 text-sm font-semibold text-souls-parchment transition hover:border-souls-spirit hover:bg-souls-spirit/25"
+                  onClick={() => calculateChestPlan(true)}
+                  type="button"
+                >
+                  Plan maximum upgrades
+                </button>
+                <span className="hidden h-7 w-px bg-souls-spirit/20 sm:block" />
                 <label className="inline-flex cursor-pointer items-center gap-2 rounded border border-souls-spirit/20 bg-souls-void/55 px-2 py-1">
                   <span
                     className={`text-xs font-semibold ${
@@ -486,46 +591,74 @@ function SoulStoneCalculatorPage() {
                     Balanced
                   </span>
                 </label>
-              </div>
-            </div>
-
-            <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-              {soulStoneChests.map((chest) => (
-                <SoulStoneChestCard
-                  chest={chest}
-                  key={chest.id}
-                  onSetQuantity={setQuantity}
-                  onResetQuantity={resetQuantity}
-                  perChestSoulStones={
-                    chapterIndex === null ? null : chapterIndex * SOUL_STONE_HIDDEN_COEFFICIENT * chest.hours
-                  }
-                  quantity={quantities[chest.id] ?? 0}
-                />
-              ))}
-            </div>
-
-            <div className="mt-4 rounded border border-souls-spirit/20 bg-souls-void/45 p-3">
-              <div className="flex flex-wrap items-center gap-2">
-                <button
-                  className="rounded border border-souls-gold bg-souls-gold px-3 py-1.5 text-sm font-semibold text-souls-void transition hover:brightness-95"
-                  onClick={calculateChestPlan}
-                  type="button"
-                >
-                  Calculate plan
-                </button>
                 {planMessage ? <span className="text-sm text-souls-ember">{planMessage}</span> : null}
               </div>
 
               {planResult ? (
                 <div className="mt-3 space-y-2">
-                  <div className="grid gap-2 sm:grid-cols-3">
-                    <StatCard label="Added soul stones" value={planResult.addedSoulStones.toLocaleString("en-US")} />
-                    <StatCard label="Final soul stones" value={planResult.finalSoulStones.toLocaleString("en-US")} />
-                    <StatCard
-                      label="Extra after target"
-                      value={planResult.overflowAfterRequirement.toLocaleString("en-US")}
-                    />
+                  <div className="grid gap-3 lg:grid-cols-[minmax(240px,0.45fr)_minmax(0,1.55fr)]">
+                    <section className="rounded border border-souls-gold/30 bg-souls-gold/5 p-3">
+                      <p className="text-xs font-semibold uppercase tracking-[0.12em] text-souls-gold">Level result</p>
+                      <div className="mt-2">
+                        <StatCard label="Reachable level" value={planResult.reachableLevel.toLocaleString("en-US")} />
+                      </div>
+                    </section>
+                    <section className="rounded border border-souls-spirit/20 bg-souls-void/30 p-3">
+                      <p className="text-xs font-semibold uppercase tracking-[0.12em] text-souls-spirit">
+                        Soul Stone summary
+                      </p>
+                      <div className="mt-2 grid gap-2 sm:grid-cols-3">
+                        <StatCard
+                          label="Total Soul Stones needed"
+                          value={planResult.totalUpgradeCost.toLocaleString("en-US")}
+                        />
+                        <StatCard
+                          label="Soul Stones from chests"
+                          value={planResult.addedSoulStones.toLocaleString("en-US")}
+                        />
+                        <StatCard
+                          label="Loose Soul Stones remaining"
+                          value={planResult.finalSoulStones.toLocaleString("en-US")}
+                        />
+                      </div>
+                    </section>
                   </div>
+                  {planResult.nextUpgradeSummary ? (
+                    <section className="rounded border border-souls-leaf/30 bg-souls-leaf/5 p-3">
+                      <p className="text-xs font-semibold uppercase tracking-[0.12em] text-souls-leaf">
+                        Next Soul Stone payment
+                      </p>
+                      <div className="mt-2 grid gap-2 sm:grid-cols-3">
+                        <StatCard
+                          label="Total value remaining"
+                          value={planResult.nextUpgradeSummary.totalRemainingValue.toLocaleString("en-US")}
+                        />
+                        {planResult.nextUpgradeSummary.targetLevel !== null &&
+                        planResult.nextUpgradeSummary.cost !== null ? (
+                          <>
+                            <StatCard
+                              label={`Needed for level ${planResult.nextUpgradeSummary.targetLevel}`}
+                              value={planResult.nextUpgradeSummary.cost.toLocaleString("en-US")}
+                            />
+                            <StatCard
+                              label="Still missing"
+                              value={planResult.nextUpgradeSummary.missingSoulStones.toLocaleString("en-US")}
+                            />
+                          </>
+                        ) : (
+                          <div className="rounded border border-souls-leaf/25 bg-souls-void/45 p-3 sm:col-span-2">
+                            <p className="text-xs uppercase tracking-[0.12em] text-souls-leaf">Progress</p>
+                            <p className="mt-1 text-2xl font-black text-souls-parchment">Maximum level reached</p>
+                          </div>
+                        )}
+                      </div>
+                      <p className="mt-2 text-xs text-souls-panel">
+                        Total value remaining includes loose Soul Stones and{" "}
+                        {planResult.nextUpgradeSummary.remainingChestValue.toLocaleString("en-US")} Soul Stones still
+                        stored in unopened chests.
+                      </p>
+                    </section>
+                  ) : null}
                   <div className="rounded border border-souls-spirit/18 bg-souls-void/45 p-2">
                     <p className="text-xs uppercase tracking-[0.12em] text-souls-spirit">Chest usage plan</p>
                     <div className="mt-2 grid grid-cols-2 gap-2 md:grid-cols-3 lg:grid-cols-5">
@@ -562,8 +695,7 @@ function SoulStoneCalculatorPage() {
                         Apply this plan
                       </button>
                       <p className="text-sm text-souls-panel">
-                        Subtracts used chests from inventory, sets Current soul stones to Extra after target, and clears
-                        the current calculation.
+                        Subtracts used chests, saves your remaining Soul Stones, and updates your Soul Link level.
                       </p>
                     </div>
                   </div>
@@ -575,6 +707,29 @@ function SoulStoneCalculatorPage() {
       </section>
     </main>
   );
+}
+
+function getNextUpgradeSummary(
+  isMaximumUpgrade: boolean,
+  reachableLevel: number,
+  looseSoulStones: number,
+  items: ChestPlanItem[],
+): ChestPlanResult["nextUpgradeSummary"] {
+  if (!isMaximumUpgrade) {
+    return null;
+  }
+
+  const remainingChestValue = items.reduce((sum, item) => sum + (item.available - item.used) * item.perChestValue, 0);
+  const totalRemainingValue = looseSoulStones + remainingChestValue;
+  const nextUpgrade = getNextSoulStoneUpgrade(reachableLevel);
+
+  return {
+    totalRemainingValue,
+    remainingChestValue,
+    targetLevel: nextUpgrade?.targetLevel ?? null,
+    cost: nextUpgrade?.cost ?? null,
+    missingSoulStones: nextUpgrade ? Math.max(nextUpgrade.cost - totalRemainingValue, 0) : 0,
+  };
 }
 
 function parseNonNegativeNumber(input: string): number | null {
@@ -589,6 +744,35 @@ function parseNonNegativeNumber(input: string): number | null {
   }
 
   return Math.floor(parsed);
+}
+
+function validateSoulLinkLevel(input: string): { valid: boolean; message: string; level?: number } {
+  const level = parseNonNegativeNumber(input);
+  if (level === null) {
+    return { valid: false, message: `Enter a Soul Link level from ${MIN_SOUL_LINK_LEVEL} to ${MAX_SOUL_LINK_LEVEL}.` };
+  }
+  if (level < MIN_SOUL_LINK_LEVEL || level > MAX_SOUL_LINK_LEVEL) {
+    return {
+      valid: false,
+      message: `Soul Link level must be between ${MIN_SOUL_LINK_LEVEL} and ${MAX_SOUL_LINK_LEVEL}.`,
+    };
+  }
+  return { valid: true, message: "ok", level };
+}
+
+function getMaximumAffordableUpgrades(upgrades: Array<{ targetLevel: number; cost: number }>, totalBudget: number) {
+  const affordable: Array<{ targetLevel: number; cost: number }> = [];
+  let spent = 0;
+
+  for (const upgrade of upgrades) {
+    if (spent + upgrade.cost > totalBudget) {
+      break;
+    }
+    affordable.push(upgrade);
+    spent += upgrade.cost;
+  }
+
+  return affordable;
 }
 
 function validateChapterInput(input: string): {
@@ -655,144 +839,6 @@ function getSoulStoneIndex(chapter: number, level: number) {
   }
 
   return 104 + Math.floor((absoluteLevel - 12) / 20);
-}
-
-function findOptimalChestUsage(
-  deficit: number,
-  chests: Array<{ available: number; value: number }>,
-  mode: ChestPlanMode,
-) {
-  if (mode === "balanced") {
-    return solveBalancedUsage(deficit, chests);
-  }
-
-  return solveMinimalUsageDp(deficit, chests);
-}
-
-function solveMinimalUsageDp(deficit: number, chests: Array<{ available: number; value: number }>) {
-  const candidates = enumerateChestCandidates(deficit, chests);
-
-  if (candidates.length === 0) {
-    return null;
-  }
-
-  const minOverflow = Math.min(...candidates.map((candidate) => candidate.overflow));
-  const strictCandidates = candidates.filter((candidate) => candidate.overflow === minOverflow);
-  strictCandidates.sort((first, second) => {
-    const firstUsed = first.counts.reduce((sum, value) => sum + value, 0);
-    const secondUsed = second.counts.reduce((sum, value) => sum + value, 0);
-    return firstUsed - secondUsed;
-  });
-  return strictCandidates[0]?.counts ?? null;
-}
-
-function solveBalancedUsage(deficit: number, chests: Array<{ available: number; value: number }>) {
-  const candidates = enumerateChestCandidates(deficit, chests);
-  if (candidates.length === 0) {
-    return null;
-  }
-
-  const minOverflow = Math.min(...candidates.map((candidate) => candidate.overflow));
-  const minChestValue = Math.min(...chests.map((chest) => chest.value));
-  const overflowWindow = Math.max(minChestValue, 350);
-  const limitedCandidates = candidates.filter((candidate) => candidate.overflow <= minOverflow + overflowWindow);
-
-  const stonesPerType = chests.map((chest) => chest.available * chest.value);
-  const grandTotal = stonesPerType.reduce((sum, value) => sum + value, 0);
-
-  if (grandTotal < deficit) {
-    return null;
-  }
-  const targetRatios = stonesPerType.map((stones) => (grandTotal > 0 ? stones / grandTotal : 0));
-
-  const scoredCandidates = limitedCandidates.map((candidate) => {
-    const usedTypeCount = candidate.counts.reduce((sum, count) => sum + (count > 0 ? 1 : 0), 0);
-    const totalCount = candidate.counts.reduce((sum, count) => sum + count, 0);
-    return {
-      ...candidate,
-      usedTypeCount,
-      totalCount,
-      score: getBalancedDeviationScore(candidate.counts, chests, targetRatios),
-    };
-  });
-
-  scoredCandidates.sort((first, second) => {
-    if (first.overflow !== second.overflow) {
-      return first.overflow - second.overflow;
-    }
-    if (first.score !== second.score) {
-      return first.score - second.score;
-    }
-    if (first.usedTypeCount !== second.usedTypeCount) {
-      return second.usedTypeCount - first.usedTypeCount;
-    }
-    return first.totalCount - second.totalCount;
-  });
-
-  return scoredCandidates[0]?.counts ?? null;
-}
-
-function getBalancedDeviationScore(counts: number[], chests: Array<{ value: number }>, targetRatios: number[]) {
-  const totalStones = counts.reduce((sum, count, index) => sum + count * chests[index].value, 0);
-
-  if (totalStones <= 0) {
-    return Number.POSITIVE_INFINITY;
-  }
-
-  return counts.reduce((score, count, index) => {
-    const actualRatio = (count * chests[index].value) / totalStones;
-    return score + Math.abs(actualRatio - targetRatios[index]);
-  }, 0);
-}
-
-function enumerateChestCandidates(deficit: number, chests: Array<{ available: number; value: number }>) {
-  const maxChestValue = Math.max(...chests.map((chest) => chest.value));
-  const cap = deficit + maxChestValue - 1;
-
-  let dp = new Map<number, number[]>();
-  dp.set(
-    0,
-    chests.map(() => 0),
-  );
-
-  chests.forEach((chest, chestIndex) => {
-    const next = new Map(dp);
-    const snapshot = Array.from(dp.entries());
-
-    snapshot.forEach(([sum, counts]) => {
-      for (let used = 1; used <= chest.available; used += 1) {
-        const nextSum = sum + used * chest.value;
-        if (nextSum > cap) {
-          break;
-        }
-
-        const nextCounts = [...counts];
-        nextCounts[chestIndex] = nextCounts[chestIndex] + used;
-
-        const existing = next.get(nextSum);
-        if (!existing) {
-          next.set(nextSum, nextCounts);
-          continue;
-        }
-
-        const existingChestTotal = existing.reduce((acc, value) => acc + value, 0);
-        const nextChestTotal = nextCounts.reduce((acc, value) => acc + value, 0);
-        if (nextChestTotal < existingChestTotal) {
-          next.set(nextSum, nextCounts);
-        }
-      }
-    });
-
-    dp = next;
-  });
-
-  return Array.from(dp.entries())
-    .filter(([sum]) => sum >= deficit)
-    .map(([sum, counts]) => ({
-      sum,
-      counts,
-      overflow: sum - deficit,
-    }));
 }
 
 function StatCard({ label, value }: { label: string; value: string }) {
