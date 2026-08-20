@@ -224,6 +224,24 @@ const mythicArtifacts: ArtifactImage[] = [
     imageUrl: "/artifacts/mythic/codex-of-flame-rites-vol-1-fervor.png",
     crafting: userProvidedRecipe("legendary-18"),
   },
+  {
+    id: "mythic-32",
+    name: "Scale of Balance",
+    imageUrl: "/artifacts/mythic/scale-of-balance.png",
+    crafting: userProvidedRecipe("legendary-32"),
+  },
+  {
+    id: "mythic-33",
+    name: "Abyssal Jevel",
+    imageUrl: "/artifacts/mythic/abyssal-jewel.png",
+    crafting: userProvidedRecipe("legendary-33"),
+  },
+  {
+    id: "mythic-34",
+    name: "Primal Claw",
+    imageUrl: "/artifacts/mythic/primal-claw.png",
+    crafting: undefined,
+  },
 ];
 
 const legendaryArtifacts: ArtifactImage[] = [
@@ -381,6 +399,16 @@ const legendaryArtifacts: ArtifactImage[] = [
     id: "legendary-31",
     name: "Dragon Hide Shield",
     imageUrl: "/artifacts/legendary/dragon-hide-shield.png",
+  },
+  {
+    id: "legendary-32",
+    name: "Key of Dawn",
+    imageUrl: "/artifacts/legendary/key-of-dawn.png",
+  },
+  {
+    id: "legendary-33",
+    name: "Oath of Sacrifice",
+    imageUrl: "/artifacts/legendary/oath-of-sacrifice.png",
   },
 ];
 

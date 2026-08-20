@@ -14,13 +14,13 @@ def parse_args() -> argparse.Namespace:
   parser.add_argument(
     "--input-dir",
     type=Path,
-    default=Path("new_mythic"),
+    default=Path("artifacts"),
     help="Directory with source screenshots.",
   )
   parser.add_argument(
     "--output-dir",
     type=Path,
-    default=Path("output_mythic"),
+    default=Path("artifacts_output"),
     help="Directory for cropped artifact images.",
   )
   parser.add_argument("--left", type=float, default=227.5, help="Left offset in pixels.")

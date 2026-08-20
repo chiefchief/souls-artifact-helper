@@ -21,7 +21,8 @@
     "train:quality": "bash scripts/train_quality.sh",
     "pipeline:quick": "bash scripts/pipeline_quick.sh",
     "pipeline:balanced": "bash scripts/pipeline_balanced.sh",
-    "pipeline:quality": "bash scripts/pipeline_quality.sh"
+    "pipeline:quality": "bash scripts/pipeline_quality.sh",
+    "crop:artifacts": "python3 scripts/crop_updated_artifacts.py"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.18",
