@@ -22,7 +22,8 @@
     "pipeline:quick": "bash scripts/pipeline_quick.sh",
     "pipeline:balanced": "bash scripts/pipeline_balanced.sh",
     "pipeline:quality": "bash scripts/pipeline_quality.sh",
-    "crop:artifacts": "python3 scripts/crop_updated_artifacts.py"
+    "crop:artifacts": "python3 scripts/crop_updated_artifacts.py",
+    "resources:sort-images": "node scripts/sort-resource-images.mjs"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.18",
@@ -51,6 +52,7 @@
     "@types/react-dom": "^19.2.0",
     "@vitejs/plugin-react": "^6.0.1",
     "adm-zip": "^0.5.17",
+    "cac": "^7.0.0",
     "jimp": "^1.6.1",
     "jsdom": "^28.1.0",
     "prettier": "^3.9.4",

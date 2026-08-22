@@ -5,6 +5,7 @@ import { artifactImageCollections, type ArtifactImage } from "../data/artifactIm
 import { ArtifactIconCollection } from "../features/artifacts/collection";
 import { ArtifactGalleryModal, LegendaryCountGuideModal, MythicCraftModal } from "../features/artifacts/modals";
 import { ScreenshotCounterPanel } from "../features/artifacts/screenshotCounterPanel";
+import { fetchArtifactRatingOverrides } from "../lib/artifactRatingsApi";
 import {
   ARTIFACT_QUANTITIES_STORAGE_KEY,
   buildObtainedGalleryItems,
@@ -29,6 +30,7 @@ function Home() {
   const [isQuantitiesHydrated, setIsQuantitiesHydrated] = useState(false);
   const [rarityFilter, setRarityFilter] = useState<RarityFilter>("all");
   const [selectedMythicArtifact, setSelectedMythicArtifact] = useState<ArtifactImage | null>(null);
+  const [ratingOverrides, setRatingOverrides] = useState<Record<string, ArtifactImage["ratings"]>>({});
   const [galleryModal, setGalleryModal] = useState<GalleryModalState | null>(null);
   const [isLegendaryGuideOpen, setIsLegendaryGuideOpen] = useState(false);
   const stickyControlsRef = useRef<HTMLDivElement | null>(null);
@@ -108,18 +110,33 @@ function Home() {
     };
   }, []);
 
-  const allArtifacts = useMemo(() => artifactImageCollections.flatMap((collection) => collection.images), []);
+  useEffect(() => {
+    void fetchArtifactRatingOverrides().then(setRatingOverrides).catch(() => undefined);
+  }, []);
+
+  const collectionsWithRatings = useMemo(
+    () =>
+      artifactImageCollections.map((collection) => ({
+        ...collection,
+        images: collection.images.map((artifact) => ({
+          ...artifact,
+          ratings: ratingOverrides[artifact.id] ?? artifact.ratings,
+        })),
+      })),
+    [ratingOverrides],
+  );
+  const allArtifacts = useMemo(() => collectionsWithRatings.flatMap((collection) => collection.images), [collectionsWithRatings]);
   const mythicArtifacts = useMemo(
-    () => artifactImageCollections.find((collection) => collection.id === "mythic")?.images ?? [],
-    [],
+    () => collectionsWithRatings.find((collection) => collection.id === "mythic")?.images ?? [],
+    [collectionsWithRatings],
   );
 
   const filteredCollections = useMemo(() => {
     const normalizedQuery = deferredQuery.trim().toLowerCase();
     const collectionsByRarity =
       rarityFilter === "all"
-        ? artifactImageCollections
-        : artifactImageCollections.filter((collection) => collection.id === rarityFilter);
+        ? collectionsWithRatings
+        : collectionsWithRatings.filter((collection) => collection.id === rarityFilter);
 
     return sortCollectionsByQuantity(
       collectionsByRarity
@@ -136,7 +153,7 @@ function Home() {
         .filter((collection) => collection.images.length > 0),
       artifactQuantities,
     );
-  }, [artifactQuantities, deferredQuery, rarityFilter]);
+  }, [artifactQuantities, collectionsWithRatings, deferredQuery, rarityFilter]);
 
   const addArtifactQuantity = useCallback((artifactId: string, quantityToAdd: number) => {
     if (!Number.isFinite(quantityToAdd) || quantityToAdd <= 0) {
@@ -190,6 +207,7 @@ function Home() {
           key: artifact.id,
           imageUrl: artifact.imageUrl,
           name: artifact.name,
+          ratings: artifact.ratings,
           isOwned: (artifactQuantities[artifact.id] ?? 0) > 0,
         })),
     });

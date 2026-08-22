@@ -12,6 +12,18 @@ dist-ssr
 __unconfig*
 todos.json
 # local synthetic/eval datasets
-data/
+/data/
 __pycache__
 .codex-routing-logs
+
+# Keep game resource archives, but do not track extracted image assets.
+game_resources/**/*.avif
+game_resources/**/*.bmp
+game_resources/**/*.gif
+game_resources/**/*.ico
+game_resources/**/*.jpeg
+game_resources/**/*.jpg
+game_resources/**/*.png
+game_resources/**/*.svg
+game_resources/**/*.tga
+game_resources/**/*.webp

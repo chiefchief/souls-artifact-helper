@@ -108,6 +108,7 @@ const skillTagMeta = {
   "increase-crit-damage": { label: "Crit DMG Up" },
   "increase-crit-rate": { label: "Crit Rate Up" },
   "increase-crit-resistance": { label: "Crit Resist Up" },
+  "increase-crit-defense": { label: "Crit DEF Up" },
   "increase-damage-taken": { label: "Vulnerability" },
   "increase-energy-gain": { label: "Energy Gain Up" },
   "increase-healing-received": { label: "Healing Received Up" },
@@ -115,6 +116,7 @@ const skillTagMeta = {
   "increase-self-attack": { label: "Self ATK Up" },
   "increase-self-crit-damage": { label: "Self Crit DMG Up" },
   "increase-self-crit-rate": { label: "Self Crit Rate Up" },
+  "increase-self-crit-defense": { label: "Self Crit DEF Up" },
   "increase-self-defense": { label: "Self DEF Up" },
   "increase-self-pres": { label: "Self PRES Up" },
   "increase-self-dodge": { label: "Self Dodge Up" },
@@ -192,6 +194,7 @@ const skillTagGroups: SkillTagGroup[] = [
       "increase-crit-rate",
       "increase-crit-damage",
       "increase-crit-resistance",
+      "increase-crit-defense",
     ],
   },
   {
@@ -221,6 +224,7 @@ const skillTagGroups: SkillTagGroup[] = [
       "increase-self-penetration",
       "increase-self-lifesteal",
       "increase-self-crit-rate",
+      "increase-self-crit-defense",
       "increase-self-crit-damage",
     ],
   },
@@ -736,8 +740,8 @@ function HeroCard({
 
   return (
     <article className="hero-card">
-      <div className="grid grid-cols-[56px_minmax(0,1fr)_56px] items-end gap-3 text-center">
-        <div className="grid justify-items-center gap-2">
+      <div className="grid grid-cols-[56px_minmax(0,1fr)_56px] items-end gap-2 text-center">
+        <div className="grid self-stretch content-between justify-items-center">
           <SkillIconSlot
             className="size-full min-h-0"
             isDimmed={isSkillDimmed(skillLayout.exclusiveEquipment)}
@@ -755,13 +759,13 @@ function HeroCard({
         </div>
 
         <div className="min-w-0">
-          <div className="hero-portrait relative mx-auto grid size-20 place-items-center overflow-hidden rounded bg-souls-void/55 border border-souls-spirit/35">
+          <div className="hero-portrait relative mx-auto grid w-24 aspect-[206/234] place-items-center overflow-hidden rounded bg-souls-void/55 border border-souls-spirit/35">
             <img alt={hero.name} className="size-full object-cover object-top" src={hero.imageUrl} />
           </div>
-          <h2 className="mt-3 truncate text-xl font-black text-souls-parchment">{hero.name}</h2>
+          <h2 className="mt-2 truncate text-xl font-black text-souls-parchment">{hero.name}</h2>
         </div>
 
-        <div className="grid justify-items-center gap-2">
+        <div className="grid self-stretch content-between justify-items-center">
           <SkillIconSlot
             className="size-full min-h-0"
             isDimmed={isSkillDimmed(skillLayout.engraving)}
@@ -779,7 +783,7 @@ function HeroCard({
         </div>
       </div>
 
-      <div className="mt-3">
+      <div className="mt-2">
         <div className="grid grid-cols-5 gap-2">
           {primarySkillSlots.map((slot, index) => (
             <SkillIconSlot

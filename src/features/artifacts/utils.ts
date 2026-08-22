@@ -2,6 +2,7 @@ import {
   artifactImageCollections,
   type ArtifactImage,
   type ArtifactImageCollection,
+  type ArtifactRatings,
 } from "../../data/artifactImageCollections";
 
 export const rarityFilters = ["all", "mythic", "legendary"] as const;
@@ -12,6 +13,7 @@ export type GalleryArtifactItem = {
   key: string;
   imageUrl: string;
   name: string;
+  ratings?: ArtifactRatings;
   quantity?: number;
   isOwned?: boolean;
 };

@@ -263,11 +263,25 @@ function TargetSelector({
       {selectedTargets.length ? (
         <>
           <div className={isTeam ? "grid w-full grid-cols-5 gap-2" : "flex justify-center"}>
-            {(isTeam ? Array.from({ length: MAX_TEAM_SIZE }, (_, index) => selectedTargets[index] ?? null) : [selectedTargets[0]]).map((hero, index) => (
-              <div className="flex min-w-0 flex-col items-center gap-1 rounded border border-souls-spirit/25 bg-souls-void/50 p-1.5" key={hero?.id ?? `empty-${index}`}>
+            {(isTeam
+              ? Array.from({ length: MAX_TEAM_SIZE }, (_, index) => selectedTargets[index] ?? null)
+              : [selectedTargets[0]]
+            ).map((hero, index) => (
+              <div
+                className="flex min-w-0 flex-col items-center gap-1 rounded border border-souls-spirit/25 bg-souls-void/50 p-1.5"
+                key={hero?.id ?? `empty-${index}`}
+              >
                 {hero ? (
                   <>
-                    <img alt="" className={isTeam ? "size-16 rounded object-contain hero-portrait" : "size-24 rounded object-contain hero-portrait"} src={hero.imageUrl} />
+                    <img
+                      alt=""
+                      className={
+                        isTeam
+                          ? "size-16 rounded object-contain hero-portrait"
+                          : "size-24 rounded object-contain hero-portrait"
+                      }
+                      src={hero.imageUrl}
+                    />
                     <span className="truncate text-xs font-semibold text-souls-panel">{hero.name}</span>
                   </>
                 ) : (
@@ -349,4 +363,3 @@ function NavLink({
     </Link>
   );
 }
-

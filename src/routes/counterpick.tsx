@@ -43,7 +43,9 @@ function CounterpickPage() {
               <Sparkles className="size-4" />
               New tool
             </p>
-            <h1 className="mt-3 text-4xl font-black tracking-tight text-souls-parchment sm:text-5xl">Counterpick is in progress</h1>
+            <h1 className="mt-3 text-4xl font-black tracking-tight text-souls-parchment sm:text-5xl">
+              Counterpick is in progress
+            </h1>
             <p className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-souls-panel/85 sm:text-lg">
               We are building an easy way to find hero counterpicks. Please check back soon — this page will be
               available when it is ready.

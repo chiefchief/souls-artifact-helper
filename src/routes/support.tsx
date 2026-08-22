@@ -107,7 +107,9 @@ function SupportPage() {
                     <Heart className="size-5" />
                   </div>
                   <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-souls-gold">Optional support</p>
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-souls-gold">
+                      Optional support
+                    </p>
                     <h2 className="mt-1 text-xl font-black text-souls-parchment">Support the project</h2>
                     <p className="mt-2 text-sm leading-relaxed text-souls-panel/80">
                       If this tool has been useful, you can support its development with USDT on the TRON network.
@@ -116,7 +118,9 @@ function SupportPage() {
                 </div>
                 <div className="relative mt-4 flex flex-col gap-4 rounded border border-souls-spirit/20 bg-souls-night/70 p-3 sm:flex-row sm:items-center">
                   <div className="min-w-0 flex-1">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-souls-spirit">USDT · TRC20 network</p>
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-souls-spirit">
+                      USDT · TRC20 network
+                    </p>
                     <div className="mt-2 flex flex-col gap-3">
                       <code className="break-all text-sm font-semibold text-souls-parchment">{USDT_TRC20_ADDRESS}</code>
                       <button
@@ -134,7 +138,9 @@ function SupportPage() {
                   {qrCodeUrl ? (
                     <figure className="shrink-0 self-center rounded bg-souls-parchment p-2 text-center">
                       <img alt="QR code for the USDT TRC20 donation address" className="size-28" src={qrCodeUrl} />
-                      <figcaption className="mt-1 text-[10px] font-bold uppercase tracking-[0.12em] text-souls-ink">Scan to donate</figcaption>
+                      <figcaption className="mt-1 text-[10px] font-bold uppercase tracking-[0.12em] text-souls-ink">
+                        Scan to donate
+                      </figcaption>
                     </figure>
                   ) : null}
                 </div>

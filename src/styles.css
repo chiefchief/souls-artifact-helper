@@ -171,7 +171,7 @@ input[type="number"]::-webkit-outer-spin-button {
   border: 1px solid rgba(126, 212, 255, 0.18);
   border-radius: 8px;
   background: rgba(29, 36, 53, 0.78);
-  padding: 0.75rem;
+  padding: 0.5rem;
   box-shadow: 0 18px 42px rgba(17, 21, 34, 0.18);
   transition:
     border-color 160ms ease,
@@ -209,4 +209,48 @@ input[type="number"]::-webkit-outer-spin-button {
   box-shadow:
     0 24px 62px rgba(0, 0, 0, 0.82),
     0 0 0 1px rgba(8, 13, 24, 1);
+}
+
+@keyframes admin-toast-in {
+  from {
+    opacity: 0;
+    transform: translateX(1.25rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.admin-toast {
+  animation: admin-toast-in 180ms ease-out;
+  transition:
+    opacity 300ms ease,
+    transform 300ms ease;
+}
+
+.admin-toast[data-leaving="true"] {
+  opacity: 0;
+  transform: translateX(1.25rem);
+}
+
+.tier-drop-zone[data-drop-target="true"] {
+  border-color: rgba(246, 200, 95, 0.56);
+}
+
+.tier-artifact-card {
+  cursor: grab;
+  transition:
+    border-color 150ms ease,
+    transform 150ms ease;
+}
+
+.tier-artifact-card:hover {
+  border-color: rgba(246, 200, 95, 0.65);
+  transform: translateY(-2px);
+}
+
+.tier-artifact-card:active {
+  cursor: grabbing;
 }

@@ -7,7 +7,7 @@ coverage/
 .vite/
 
 
-data/
+/data/
 debug/
 hero_screenshots/
 hero_slots/

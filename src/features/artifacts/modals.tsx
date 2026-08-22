@@ -13,25 +13,37 @@ export function ArtifactGalleryModal({
   onClose: () => void;
 }) {
   const [deprioritizeOwned, setDeprioritizeOwned] = useState(false);
+  const [includePvpRating, setIncludePvpRating] = useState(true);
+  const [includePveRating, setIncludePveRating] = useState(true);
   const mythicArtifacts = artifacts.filter((artifact) => artifact.key.startsWith("mythic-"));
   const legendaryArtifacts = artifacts.filter((artifact) => artifact.key.startsWith("legendary-"));
   const showSeparatedRarities =
     title === "Crafted artifacts" && mythicArtifacts.length > 0 && legendaryArtifacts.length > 0;
   const canDeprioritizeOwned = title === "Artifacts I can craft";
   const visibleArtifacts = useMemo(() => {
-    if (!canDeprioritizeOwned || !deprioritizeOwned) {
+    if (!canDeprioritizeOwned) {
       return artifacts;
     }
 
     return [...artifacts].sort((first, second) => {
+      const firstRating =
+        (includePvpRating ? (first.ratings?.pvp ?? 0) : 0) + (includePveRating ? (first.ratings?.pve ?? 0) : 0);
+      const secondRating =
+        (includePvpRating ? (second.ratings?.pvp ?? 0) : 0) + (includePveRating ? (second.ratings?.pve ?? 0) : 0);
+
+      if (firstRating !== secondRating) {
+        return secondRating - firstRating;
+      }
+
       const firstOwned = Boolean(first.isOwned);
       const secondOwned = Boolean(second.isOwned);
-      if (firstOwned === secondOwned) {
-        return 0;
+      if (deprioritizeOwned && firstOwned !== secondOwned) {
+        return firstOwned ? 1 : -1;
       }
-      return firstOwned ? 1 : -1;
+
+      return first.name.localeCompare(second.name);
     });
-  }, [artifacts, canDeprioritizeOwned, deprioritizeOwned]);
+  }, [artifacts, canDeprioritizeOwned, deprioritizeOwned, includePveRating, includePvpRating]);
 
   return (
     <div
@@ -61,7 +73,31 @@ export function ArtifactGalleryModal({
         </div>
         <div className="overflow-y-auto p-4">
           {canDeprioritizeOwned ? (
-            <div className="mb-3">
+            <div className="mb-3 flex flex-wrap items-center gap-2">
+              <button
+                aria-pressed={includePvpRating}
+                className={`rounded border px-3 py-1.5 text-sm font-medium transition ${
+                  includePvpRating
+                    ? "border-souls-gold bg-souls-gold text-souls-void"
+                    : "border-souls-spirit/20 text-souls-panel hover:border-souls-gold hover:text-souls-gold"
+                }`}
+                onClick={() => setIncludePvpRating((current) => !current)}
+                type="button"
+              >
+                PVP
+              </button>
+              <button
+                aria-pressed={includePveRating}
+                className={`rounded border px-3 py-1.5 text-sm font-medium transition ${
+                  includePveRating
+                    ? "border-souls-gold bg-souls-gold text-souls-void"
+                    : "border-souls-spirit/20 text-souls-panel hover:border-souls-gold hover:text-souls-gold"
+                }`}
+                onClick={() => setIncludePveRating((current) => !current)}
+                type="button"
+              >
+                PVE
+              </button>
               <button
                 className="rounded border border-souls-spirit/20 px-3 py-1.5 text-sm font-medium text-souls-panel transition hover:border-souls-gold hover:bg-souls-gold hover:text-souls-void"
                 onClick={() => setDeprioritizeOwned((current) => !current)}
