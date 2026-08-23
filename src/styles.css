@@ -254,3 +254,27 @@ input[type="number"]::-webkit-outer-spin-button {
 .tier-artifact-card:active {
   cursor: grabbing;
 }
+
+.tier-artifact-card[data-drop-position="before"]::before {
+  position: absolute;
+  top: -0.2rem;
+  bottom: -0.2rem;
+  left: -0.55rem;
+  width: 3px;
+  border-radius: 999px;
+  background: rgba(246, 200, 95, 1);
+  box-shadow: 0 0 8px rgba(246, 200, 95, 0.75);
+  content: "";
+}
+
+.tier-artifact-card[data-drop-position="after"]::after {
+  position: absolute;
+  top: -0.2rem;
+  right: -0.55rem;
+  bottom: -0.2rem;
+  width: 3px;
+  border-radius: 999px;
+  background: rgba(246, 200, 95, 1);
+  box-shadow: 0 0 8px rgba(246, 200, 95, 0.75);
+  content: "";
+}

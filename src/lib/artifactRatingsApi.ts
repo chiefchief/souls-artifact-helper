@@ -17,25 +17,23 @@ export async function fetchArtifactRatingOverrides(): Promise<Record<string, Art
     throw new Error(await getErrorMessage(response));
   }
 
-  return (await response.json() as RatingsResponse).ratings;
+  return ((await response.json()) as RatingsResponse).ratings;
 }
 
-export async function saveArtifactRating({
-  artifactId,
-  rating,
+export async function saveArtifactRatings({
+  ratings,
   token,
 }: {
-  artifactId: string;
-  rating: ArtifactRatings;
+  ratings: Record<string, ArtifactRatings>;
   token: string;
 }): Promise<void> {
-  const response = await fetch(`${artifactRatingsApiUrl}/ratings/${artifactId}`, {
+  const response = await fetch(`${artifactRatingsApiUrl}/ratings`, {
     method: "PUT",
     headers: {
       Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(rating),
+    body: JSON.stringify({ ratings }),
   });
 
   if (!response.ok) {

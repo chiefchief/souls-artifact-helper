@@ -26,6 +26,12 @@ export function ArtifactGalleryModal({
     }
 
     return [...artifacts].sort((first, second) => {
+      const firstOwned = Boolean(first.isOwned);
+      const secondOwned = Boolean(second.isOwned);
+      if (deprioritizeOwned && firstOwned !== secondOwned) {
+        return firstOwned ? 1 : -1;
+      }
+
       const firstRating =
         (includePvpRating ? (first.ratings?.pvp ?? 0) : 0) + (includePveRating ? (first.ratings?.pve ?? 0) : 0);
       const secondRating =
@@ -33,12 +39,6 @@ export function ArtifactGalleryModal({
 
       if (firstRating !== secondRating) {
         return secondRating - firstRating;
-      }
-
-      const firstOwned = Boolean(first.isOwned);
-      const secondOwned = Boolean(second.isOwned);
-      if (deprioritizeOwned && firstOwned !== secondOwned) {
-        return firstOwned ? 1 : -1;
       }
 
       return first.name.localeCompare(second.name);

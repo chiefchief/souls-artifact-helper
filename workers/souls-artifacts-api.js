@@ -18,7 +18,7 @@ function json(data, init = {}) {
 }
 
 function isRating(value) {
-  return Number.isInteger(value) && value >= 1 && value <= 5;
+  return Number.isFinite(value) && value >= 0 && value < 6;
 }
 
 function isAuthorized(request, env) {
@@ -42,6 +42,38 @@ export default {
       return json({ ratings });
     }
 
+    if (url.pathname === "/ratings" && request.method === "PUT") {
+      if (!isAuthorized(request, env)) {
+        return json({ error: "Unauthorized" }, { status: 401 });
+      }
+
+      let body;
+      try {
+        body = await request.json();
+      } catch {
+        return json({ error: "Request body must be valid JSON." }, { status: 400 });
+      }
+
+      const updates = body?.ratings;
+      if (
+        !updates ||
+        typeof updates !== "object" ||
+        Array.isArray(updates) ||
+        !Object.entries(updates).every(
+          ([artifactId, rating]) => /^[a-z]+-\d+$/.test(artifactId) && isRating(rating?.pvp) && isRating(rating?.pve),
+        )
+      ) {
+        return json(
+          { error: "ratings must contain artifact IDs with PVP and PVE values from 0 to less than 6." },
+          { status: 400 },
+        );
+      }
+
+      const ratings = (await env.RATINGS.get(RATINGS_KEY, "json")) ?? {};
+      await env.RATINGS.put(RATINGS_KEY, JSON.stringify({ ...ratings, ...updates }));
+      return json({ saved: Object.keys(updates).length });
+    }
+
     const ratingMatch = url.pathname.match(/^\/ratings\/([a-z]+-\d+)$/);
     if (ratingMatch && request.method === "PUT") {
       if (!isAuthorized(request, env)) {
@@ -56,7 +88,7 @@ export default {
       }
 
       if (!isRating(body?.pvp) || !isRating(body?.pve)) {
-        return json({ error: "Both pvp and pve must be integers from 1 to 5." }, { status: 400 });
+        return json({ error: "Both pvp and pve must be numbers from 0 to less than 6." }, { status: 400 });
       }
 
       const ratings = (await env.RATINGS.get(RATINGS_KEY, "json")) ?? {};

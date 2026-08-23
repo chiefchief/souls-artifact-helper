@@ -7,13 +7,21 @@ import {
   type ArtifactRating,
   type ArtifactRatings,
 } from "../data/artifactImageCollections";
-import { fetchArtifactRatingOverrides, saveArtifactRating } from "../lib/artifactRatingsApi";
+import { fetchArtifactRatingOverrides, saveArtifactRatings } from "../lib/artifactRatingsApi";
 
 export const Route = createFileRoute("/admin")({ component: AdminPage });
 
-const tierRatings: ArtifactRating[] = [5, 4, 3, 2, 1];
-const tierNames: Record<ArtifactRating, string> = { 1: "Weak", 2: "Situational", 3: "Good", 4: "Strong", 5: "Best" };
-type RatingMode = keyof ArtifactRatings;
+const tierRatings = [5, 4, 3, 2, 1] as const;
+const tierNames: Record<(typeof tierRatings)[number], string> = {
+  1: "Not useful",
+  2: "Limited use",
+  3: "Moderately useful",
+  4: "Very useful",
+  5: "Must-have",
+};
+type TierRating = (typeof tierRatings)[number];
+type RatingMode = "pvp" | "pve";
+type CardDropTarget = { artifactId: string; position: "after" | "before" };
 type Notification = { message: string; tone: "error" | "success" };
 
 function AdminPage() {
@@ -31,6 +39,7 @@ function AdminPage() {
   const [edits, setEdits] = useState<Record<string, ArtifactRatings>>({});
   const [draggedArtifactId, setDraggedArtifactId] = useState<string | null>(null);
   const [dropTargetId, setDropTargetId] = useState<string | null>(null);
+  const [dropTargetArtifact, setDropTargetArtifact] = useState<CardDropTarget | null>(null);
   const [selectedArtifact, setSelectedArtifact] = useState<ArtifactImage | null>(null);
   const [loading, setLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -69,6 +78,7 @@ function AdminPage() {
   useEffect(() => {
     if (draggedArtifactId === null) {
       setDropTargetId(null);
+      setDropTargetArtifact(null);
     }
   }, [draggedArtifactId]);
 
@@ -76,19 +86,59 @@ function AdminPage() {
     return edits[artifact.id] ?? remoteOverrides[artifact.id] ?? artifact.ratings;
   }
 
-  function moveArtifact(artifactId: string, rating: ArtifactRating) {
+  function updateEdits(artifactId: string, nextRating: ArtifactRatings) {
     const artifact = artifacts.find((candidate) => candidate.id === artifactId);
     if (!artifact) return;
+
     setEdits((current) => {
       const savedRating = remoteOverrides[artifactId] ?? artifact.ratings;
-      const nextRating = { ...(current[artifactId] ?? savedRating), [mode]: rating };
-
       if (nextRating.pvp === savedRating.pvp && nextRating.pve === savedRating.pve) {
         const { [artifactId]: _removed, ...remainingEdits } = current;
         return remainingEdits;
       }
-
       return { ...current, [artifactId]: nextRating };
+    });
+  }
+
+  function moveArtifact(artifactId: string, rating: TierRating) {
+    const artifact = artifacts.find((candidate) => candidate.id === artifactId);
+    if (!artifact) return;
+    updateEdits(artifactId, { ...getRating(artifact), [mode]: rating });
+  }
+
+  function moveToUnranked(artifactId: string) {
+    const artifact = artifacts.find((candidate) => candidate.id === artifactId);
+    if (!artifact) return;
+    updateEdits(artifactId, { ...getRating(artifact), [mode]: 0 });
+  }
+
+  function placeAroundArtifact(artifactId: string, targetArtifactId: string, position: CardDropTarget["position"]) {
+    if (artifactId === targetArtifactId) return;
+    const targetArtifact = artifacts.find((artifact) => artifact.id === targetArtifactId);
+    if (!targetArtifact) return;
+
+    const tier = Math.floor(getRating(targetArtifact)[mode]) as TierRating;
+    if (tier === 0) return;
+    const collection = collections.find((candidate) =>
+      candidate.images.some((artifact) => artifact.id === targetArtifactId),
+    );
+    if (!collection) return;
+
+    const tierArtifacts = collection.images
+      .filter((artifact) => Math.floor(getRating(artifact)[mode]) === tier)
+      .sort((first, second) => getRating(second)[mode] - getRating(first)[mode]);
+    const sourceIndex = tierArtifacts.findIndex((artifact) => artifact.id === artifactId);
+    const targetIndex = tierArtifacts.findIndex((artifact) => artifact.id === targetArtifactId);
+    const draggedArtifact = artifacts.find((artifact) => artifact.id === artifactId);
+    if (targetIndex < 0 || !draggedArtifact) return;
+
+    const orderedArtifacts = tierArtifacts.filter((artifact) => artifact.id !== artifactId);
+    const remainingTargetIndex = orderedArtifacts.findIndex((artifact) => artifact.id === targetArtifactId);
+    const insertAfter = sourceIndex >= 0 ? sourceIndex < targetIndex : position === "after";
+    orderedArtifacts.splice(remainingTargetIndex + (insertAfter ? 1 : 0), 0, draggedArtifact);
+    orderedArtifacts.forEach((artifact, index) => {
+      const orderedRating = Number((tier + (orderedArtifacts.length - index) / 100).toFixed(2));
+      updateEdits(artifact.id, { ...getRating(artifact), [mode]: orderedRating });
     });
   }
 
@@ -103,9 +153,7 @@ function AdminPage() {
     setIsSaving(true);
     setNotification(null);
     try {
-      await Promise.all(
-        updates.map(([artifactId, rating]) => saveArtifactRating({ artifactId, rating, token: token.trim() })),
-      );
+      await saveArtifactRatings({ ratings: edits, token: token.trim() });
       setRemoteOverrides((current) => ({ ...current, ...edits }));
       setEdits({});
       setNotification({ message: `${updates.length} rating changes saved.`, tone: "success" });
@@ -163,25 +211,18 @@ function AdminPage() {
         </div>
 
         {loading ? <p className="mb-4 text-souls-panel">Loading remote ratings…</p> : null}
-        <p className="mb-3 text-sm text-souls-panel">
-          Drag an artifact card into a tier. Changes remain local until you press Save all.
-        </p>
-
         <div className="space-y-8">
           {collections.map((collection) => (
             <section key={collection.id}>
-              <div className="mb-3 flex items-center gap-3">
-                <h2
-                  className={`text-xl font-black ${collection.id === "mythic" ? "text-souls-gold" : "text-souls-spirit"}`}
-                >
-                  {collection.title}
-                </h2>
+              <div className="mb-3">
                 <span className="text-sm text-souls-panel">{collection.images.length} artifacts</span>
               </div>
               <div className="space-y-3">
                 {tierRatings.map((rating) => {
                   const targetId = `${collection.id}-${rating}`;
-                  const tierArtifacts = collection.images.filter((artifact) => getRating(artifact)[mode] === rating);
+                  const tierArtifacts = collection.images
+                    .filter((artifact) => Math.floor(getRating(artifact)[mode]) === rating)
+                    .sort((first, second) => getRating(second)[mode] - getRating(first)[mode]);
                   return (
                     <section
                       className="tier-drop-zone grid grid-cols-[5.5rem_minmax(0,1fr)] overflow-hidden rounded border border-souls-spirit/25 bg-souls-night"
@@ -205,15 +246,18 @@ function AdminPage() {
                           {tierNames[rating]}
                         </span>
                       </div>
-                      <div className="min-h-28 p-3">
+                      <div className="min-h-20 p-2">
                         <TierArtifactGroup
                           artifacts={tierArtifacts}
+                          draggedArtifactId={draggedArtifactId}
+                          onDropAroundArtifact={placeAroundArtifact}
+                          onDropTargetArtifactChange={setDropTargetArtifact}
+                          dropTargetArtifact={dropTargetArtifact}
                           onSelect={setSelectedArtifact}
-                          rarity={collection.id === "mythic" ? "Mythic" : "Legendary"}
                           onDragStateChange={setDraggedArtifactId}
                         />
                         {tierArtifacts.length === 0 ? (
-                          <p className="grid min-h-20 place-items-center text-sm text-souls-panel">
+                          <p className="grid min-h-16 place-items-center text-sm text-souls-panel">
                             Drop artifacts here
                           </p>
                         ) : null}
@@ -221,6 +265,44 @@ function AdminPage() {
                     </section>
                   );
                 })}
+                {(() => {
+                  const targetId = `${collection.id}-unranked`;
+                  const unrankedArtifacts = collection.images.filter((artifact) => getRating(artifact)[mode] === 0);
+                  return (
+                    <section
+                      className="tier-drop-zone grid grid-cols-[5.5rem_minmax(0,1fr)] overflow-hidden rounded border border-dashed border-souls-spirit/25 bg-souls-night/60"
+                      data-drop-target={dropTargetId === targetId}
+                      onDragOver={(event) => {
+                        event.preventDefault();
+                        setDropTargetId(targetId);
+                      }}
+                      onDrop={(event) => {
+                        event.preventDefault();
+                        const artifactId = event.dataTransfer.getData("text/artifact-id") || draggedArtifactId;
+                        if (artifactId) moveToUnranked(artifactId);
+                        setDraggedArtifactId(null);
+                        setDropTargetId(null);
+                      }}
+                    >
+                      <div className="grid place-items-center border-r border-souls-spirit/25 bg-souls-void/40 p-2 text-center">
+                        <strong className="text-2xl text-souls-panel">0</strong>
+                        <span className="text-[10px] uppercase tracking-wide text-souls-panel">Not ranked</span>
+                      </div>
+                      <div className="min-h-20 p-2">
+                        <TierArtifactGroup
+                          artifacts={unrankedArtifacts}
+                          onDragStateChange={setDraggedArtifactId}
+                          onSelect={setSelectedArtifact}
+                        />
+                        {unrankedArtifacts.length === 0 ? (
+                          <p className="grid min-h-16 place-items-center text-sm text-souls-panel">
+                            Drop unranked artifacts here
+                          </p>
+                        ) : null}
+                      </div>
+                    </section>
+                  );
+                })()}
               </div>
             </section>
           ))}
@@ -260,43 +342,68 @@ function TierTab({ active, label, onClick }: { active: boolean; label: string; o
 
 function TierArtifactGroup({
   artifacts,
+  draggedArtifactId,
+  dropTargetArtifact,
+  onDropAroundArtifact,
+  onDropTargetArtifactChange,
   onSelect,
-  rarity,
   onDragStateChange,
 }: {
   artifacts: ArtifactImage[];
+  draggedArtifactId?: string | null;
+  dropTargetArtifact?: CardDropTarget | null;
+  onDropAroundArtifact?: (artifactId: string, targetArtifactId: string, position: CardDropTarget["position"]) => void;
+  onDropTargetArtifactChange?: (target: CardDropTarget | null) => void;
   onSelect: (artifact: ArtifactImage) => void;
-  rarity: "Legendary" | "Mythic";
   onDragStateChange: (artifactId: string | null) => void;
 }) {
   if (!artifacts.length) return null;
   return (
-    <div className="mb-2 last:mb-0">
-      <p
-        className={`mb-1 text-[10px] font-bold uppercase tracking-[0.16em] ${rarity === "Mythic" ? "text-souls-gold" : "text-souls-spirit"}`}
-      >
-        {rarity}
-      </p>
-      <div className="flex flex-wrap gap-1.5">
-        {artifacts.map((artifact) => (
-          <button
-            className="tier-artifact-card grid size-16 place-items-center rounded border border-souls-spirit/20 bg-souls-void/60 p-1.5"
-            draggable
-            key={artifact.id}
-            onClick={() => onSelect(artifact)}
-            onDragEnd={() => onDragStateChange(null)}
-            onDragStart={(event) => {
-              event.dataTransfer.effectAllowed = "move";
-              event.dataTransfer.setData("text/artifact-id", artifact.id);
-              onDragStateChange(artifact.id);
-            }}
-            title={artifact.name}
-            type="button"
-          >
-            <img alt={artifact.name} className="size-full object-contain" src={artifact.imageUrl} />
-          </button>
-        ))}
-      </div>
+    <div className="flex flex-wrap gap-1.5">
+      {artifacts.map((artifact) => (
+        <button
+          className="tier-artifact-card relative grid size-16 place-items-center rounded border border-souls-spirit/20 bg-souls-void/60 p-1.5"
+          data-drop-position={dropTargetArtifact?.artifactId === artifact.id ? dropTargetArtifact.position : undefined}
+          draggable
+          key={artifact.id}
+          onClick={() => onSelect(artifact)}
+          onDragEnd={() => {
+            onDropTargetArtifactChange?.(null);
+            onDragStateChange(null);
+          }}
+          onDragOver={(event) => {
+            if (!onDropAroundArtifact) return;
+            event.preventDefault();
+            event.stopPropagation();
+            const sourceIndex = artifacts.findIndex((candidate) => candidate.id === draggedArtifactId);
+            const targetIndex = artifacts.findIndex((candidate) => candidate.id === artifact.id);
+            onDropTargetArtifactChange?.({
+              artifactId: artifact.id,
+              position: sourceIndex >= 0 && sourceIndex < targetIndex ? "after" : "before",
+            });
+          }}
+          onDrop={(event) => {
+            if (!onDropAroundArtifact) return;
+            event.preventDefault();
+            event.stopPropagation();
+            const artifactId = event.dataTransfer.getData("text/artifact-id");
+            const position = dropTargetArtifact?.artifactId === artifact.id ? dropTargetArtifact.position : "before";
+            if (artifactId) onDropAroundArtifact(artifactId, artifact.id, position);
+            onDropTargetArtifactChange?.(null);
+            onDragStateChange(null);
+          }}
+          onDragStart={(event) => {
+            event.dataTransfer.effectAllowed = "move";
+            event.dataTransfer.setData("text/artifact-id", artifact.id);
+            onDropTargetArtifactChange?.(null);
+            onDragStateChange(artifact.id);
+          }}
+          title={artifact.name}
+          type="button"
+        >
+          <img alt={artifact.name} className="size-full object-contain" src={artifact.imageUrl} />
+        </button>
+      ))}
     </div>
   );
 }
@@ -354,7 +461,7 @@ function RatingDetail({ label, value }: { label: string; value: ArtifactRating }
   return (
     <div className="rounded border border-souls-gold/35 bg-souls-gold/10 p-3 text-center">
       <p className="text-xs font-bold text-souls-panel">{label}</p>
-      <p className="mt-1 text-2xl font-black text-souls-gold">{value}</p>
+      <p className="mt-1 text-2xl font-black text-souls-gold">{value || "Not ranked"}</p>
     </div>
   );
 }
