@@ -346,6 +346,7 @@ function HeroesPage() {
                 Heroes
               </NavLink>
               <NavLink to="/counterpick">Counterpick</NavLink>
+              <NavLink to="/team-builder">Team Builder</NavLink>
               <NavLink to="/support">Support</NavLink>
             </div>
           </nav>
@@ -449,7 +450,7 @@ function NavLink({
 }: {
   children: ReactNode;
   isActive?: boolean;
-  to: "/" | "/soul-stone-calculator" | "/heroes" | "/counterpick" | "/support";
+  to: "/" | "/soul-stone-calculator" | "/heroes" | "/counterpick" | "/support" | "/team-builder";
 }) {
   return (
     <Link
@@ -851,6 +852,8 @@ function SkillIconSlot({
   const tooltipDescription = skill?.description || "Description will appear here once skill data is filled.";
 
   function openTooltip(target: HTMLElement) {
+    // Touch browsers can retain hover/focus after a tap; details use the modal instead.
+    if (isDetailsOpen || !window.matchMedia("(hover: hover) and (pointer: fine)").matches) return;
     const rect = target.getBoundingClientRect();
     const tooltipWidth = 288;
     const tooltipHeight = 236;
@@ -882,17 +885,25 @@ function SkillIconSlot({
       data-filled={Boolean(skill)}
       data-matched={isMatched}
       onBlur={() => setTooltipState(null)}
-      onClick={() => setIsDetailsOpen(true)}
-      onFocus={(event) => openTooltip(event.currentTarget)}
-      onMouseEnter={(event) => openTooltip(event.currentTarget)}
-      onMouseLeave={() => setTooltipState(null)}
+      onClick={() => {
+        setTooltipState(null);
+        setIsDetailsOpen(true);
+      }}
+      onFocus={(event) => {
+        if (event.currentTarget.matches(":focus-visible")) openTooltip(event.currentTarget);
+      }}
+      onPointerDown={() => setTooltipState(null)}
+      onPointerEnter={(event) => {
+        if (event.pointerType === "mouse") openTooltip(event.currentTarget);
+      }}
+      onPointerLeave={() => setTooltipState(null)}
       type="button"
     >
       <Icon className="size-4 text-souls-spirit group-data-[matched=true]:text-souls-gold" />
       <span className="text-[10px] font-black uppercase tracking-[0.08em] text-souls-spirit">
         {getSkillTypeLabel(type)}
       </span>
-      {tooltipState && typeof document !== "undefined"
+      {tooltipState && !isDetailsOpen && typeof document !== "undefined"
         ? createPortal(
             <span
               className="skill-tooltip pointer-events-none fixed z-[9999] box-border w-72 overflow-hidden rounded border px-4 py-3 text-left text-sm font-normal text-souls-panel shadow-2xl"

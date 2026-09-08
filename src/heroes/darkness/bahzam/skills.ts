@@ -1,4 +1,5 @@
 import { heroImageUrl, type Hero } from "../../types";
+
 export const bahzam: Hero = {
   id: "bahzam",
   name: "Bahzam",

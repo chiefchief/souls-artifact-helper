@@ -1,3 +1,4 @@
+import { NotificationToast } from "../components/NotificationToast";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
@@ -463,34 +464,5 @@ function RatingDetail({ label, value }: { label: string; value: ArtifactRating }
       <p className="text-xs font-bold text-souls-panel">{label}</p>
       <p className="mt-1 text-2xl font-black text-souls-gold">{value || "Not ranked"}</p>
     </div>
-  );
-}
-
-function NotificationToast({
-  isLeaving,
-  notification,
-  onDismiss,
-}: {
-  isLeaving: boolean;
-  notification: Notification;
-  onDismiss: () => void;
-}) {
-  return (
-    <aside
-      aria-live="polite"
-      className={`admin-toast fixed right-4 top-24 z-60 flex w-[min(24rem,calc(100vw-2rem))] items-start gap-3 rounded border p-4 text-sm shadow-2xl ${notification.tone === "success" ? "border-souls-leaf bg-souls-leaf/80 text-souls-parchment" : "border-red-500 bg-red-950/60 text-red-50"}`}
-      data-leaving={isLeaving}
-      role="status"
-    >
-      <p className="flex-1">{notification.message}</p>
-      <button
-        aria-label="Dismiss notification"
-        className="-mr-1 -mt-1 grid size-7 shrink-0 place-items-center rounded text-souls-panel hover:bg-souls-void/50 hover:text-souls-parchment"
-        onClick={onDismiss}
-        type="button"
-      >
-        <X className="size-4" />
-      </button>
-    </aside>
   );
 }

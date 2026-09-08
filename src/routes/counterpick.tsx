@@ -30,6 +30,7 @@ function CounterpickPage() {
               <NavLink isActive to="/counterpick">
                 Counterpick
               </NavLink>
+              <NavLink to="/team-builder">Team Builder</NavLink>
               <NavLink to="/support">Support</NavLink>
             </div>
           </nav>
@@ -70,7 +71,7 @@ function NavLink({
 }: {
   children: ReactNode;
   isActive?: boolean;
-  to: "/" | "/soul-stone-calculator" | "/heroes" | "/counterpick" | "/support";
+  to: "/" | "/soul-stone-calculator" | "/heroes" | "/counterpick" | "/support" | "/team-builder";
 }) {
   return (
     <Link
