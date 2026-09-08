@@ -27,10 +27,10 @@ function CounterpickPage() {
               <NavLink to="/">Artifacts</NavLink>
               <NavLink to="/soul-stone-calculator">Soul Stone Calculator</NavLink>
               <NavLink to="/heroes">Heroes</NavLink>
+              <NavLink to="/team-builder">Team Builder</NavLink>
               <NavLink isActive to="/counterpick">
                 Counterpick
               </NavLink>
-              <NavLink to="/team-builder">Team Builder</NavLink>
               <NavLink to="/support">Support</NavLink>
             </div>
           </nav>

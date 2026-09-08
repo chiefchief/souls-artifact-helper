@@ -345,8 +345,8 @@ function HeroesPage() {
               <NavLink isActive to="/heroes">
                 Heroes
               </NavLink>
-              <NavLink to="/counterpick">Counterpick</NavLink>
               <NavLink to="/team-builder">Team Builder</NavLink>
+              <NavLink to="/counterpick">Counterpick</NavLink>
               <NavLink to="/support">Support</NavLink>
             </div>
           </nav>
