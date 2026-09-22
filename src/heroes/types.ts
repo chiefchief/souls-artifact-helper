@@ -44,6 +44,7 @@ export type HeroId =
   | "lulu"
   | "lumen"
   | "lupico"
+  | "maelin"
   | "melantha"
   | "milia"
   | "morra"

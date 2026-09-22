@@ -7,6 +7,7 @@ import { elara } from "./elara/skills";
 import { fiona } from "./fiona/skills";
 import { galan } from "./galan/skills";
 import { lulu } from "./lulu/skills";
+import { maelin } from "./maelin/skills";
 import { oneiric } from "./oneiric/skills";
 import { sander } from "./sander/skills";
 import { serena } from "./serena/skills";
@@ -26,4 +27,5 @@ export const elfHeroes = [
   oneiric,
   serena,
   chiron,
+  maelin,
 ];

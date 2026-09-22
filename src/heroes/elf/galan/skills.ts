@@ -57,5 +57,13 @@ export const galan: Hero = {
         "Increase ATK by 25% against enemies afflicted with Sandstorm. When using normal attack on enemies afflicted with Sandstorm, you have a 60% chance of increasing the duration of Sandstorm by 1 turn.",
       tags: [],
     },
+    {
+      id: "galan_horn_of_gale",
+      type: "exclusive-equipment",
+      name: "Horn of Gale",
+      description:
+        "Each time Galan traps an enemy hero in a Sandstorm using an Active Skill, his ATK and Penetration increase by 10%, stacking up to 80%. (Resets when Galan takes damage)\nGalan's sandstorm duration increases by 1 turn.",
+      tags: [],
+    },
   ],
 };

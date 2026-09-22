@@ -54,5 +54,13 @@ export const aruru: Hero = {
         "All attacks will ignore enemies' Shield and hit, and the opponent's Shield will be removed immediately. When the Shield is removed, all adjacent allies recover HP equal to 70% of damage dealt to enemy.",
       tags: ["anti-shield", "heal-allies"],
     },
+    {
+      id: "aruru_divine_staff",
+      type: "exclusive-equipment",
+      name: "Divine Staff",
+      description:
+        "Active Skill damage changes to 115% of ATK, but the Active Skill now randomly attacks up to 3 enemy heroes with Shields. (Defaults to primary target if no enemies have Shields) Aruru deals 120% increased Active Skill damage against Boss-type enemies.",
+      tags: ["anti-shield"],
+    },
   ],
 };

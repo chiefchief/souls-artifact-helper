@@ -14,6 +14,8 @@ import { Route as SupportRouteImport } from "./routes/support";
 import { Route as SoulStoneCalculatorRouteImport } from "./routes/soul-stone-calculator";
 import { Route as HeroesRouteImport } from "./routes/heroes";
 import { Route as CounterpickRouteImport } from "./routes/counterpick";
+import { Route as EventsRouteImport } from "./routes/events";
+import { Route as EventsLuckyPuzzleRouteImport } from "./routes/events/lucky-puzzle";
 import { Route as AdminRouteImport } from "./routes/admin";
 import { Route as IndexRouteImport } from "./routes/index";
 
@@ -42,6 +44,16 @@ const CounterpickRoute = CounterpickRouteImport.update({
   path: "/counterpick",
   getParentRoute: () => rootRouteImport,
 } as any);
+const EventsRoute = EventsRouteImport.update({
+  id: "/events",
+  path: "/events",
+  getParentRoute: () => rootRouteImport,
+} as any);
+const EventsLuckyPuzzleRoute = EventsLuckyPuzzleRouteImport.update({
+  id: "/events/lucky-puzzle",
+  path: "/events/lucky-puzzle",
+  getParentRoute: () => rootRouteImport,
+} as any);
 const AdminRoute = AdminRouteImport.update({
   id: "/admin",
   path: "/admin",
@@ -57,6 +69,8 @@ export interface FileRoutesByFullPath {
   "/": typeof IndexRoute;
   "/admin": typeof AdminRoute;
   "/counterpick": typeof CounterpickRoute;
+  "/events": typeof EventsRoute;
+  "/events/lucky-puzzle": typeof EventsLuckyPuzzleRoute;
   "/heroes": typeof HeroesRoute;
   "/soul-stone-calculator": typeof SoulStoneCalculatorRoute;
   "/support": typeof SupportRoute;
@@ -66,6 +80,8 @@ export interface FileRoutesByTo {
   "/": typeof IndexRoute;
   "/admin": typeof AdminRoute;
   "/counterpick": typeof CounterpickRoute;
+  "/events": typeof EventsRoute;
+  "/events/lucky-puzzle": typeof EventsLuckyPuzzleRoute;
   "/heroes": typeof HeroesRoute;
   "/soul-stone-calculator": typeof SoulStoneCalculatorRoute;
   "/support": typeof SupportRoute;
@@ -76,6 +92,8 @@ export interface FileRoutesById {
   "/": typeof IndexRoute;
   "/admin": typeof AdminRoute;
   "/counterpick": typeof CounterpickRoute;
+  "/events": typeof EventsRoute;
+  "/events/lucky-puzzle": typeof EventsLuckyPuzzleRoute;
   "/heroes": typeof HeroesRoute;
   "/soul-stone-calculator": typeof SoulStoneCalculatorRoute;
   "/support": typeof SupportRoute;
@@ -87,6 +105,8 @@ export interface FileRouteTypes {
     | "/"
     | "/admin"
     | "/counterpick"
+    | "/events"
+    | "/events/lucky-puzzle"
     | "/heroes"
     | "/soul-stone-calculator"
     | "/support"
@@ -96,6 +116,8 @@ export interface FileRouteTypes {
     | "/"
     | "/admin"
     | "/counterpick"
+    | "/events"
+    | "/events/lucky-puzzle"
     | "/heroes"
     | "/soul-stone-calculator"
     | "/support"
@@ -115,6 +137,8 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute;
   AdminRoute: typeof AdminRoute;
   CounterpickRoute: typeof CounterpickRoute;
+  EventsRoute: typeof EventsRoute;
+  EventsLuckyPuzzleRoute: typeof EventsLuckyPuzzleRoute;
   HeroesRoute: typeof HeroesRoute;
   SoulStoneCalculatorRoute: typeof SoulStoneCalculatorRoute;
   SupportRoute: typeof SupportRoute;
@@ -158,6 +182,20 @@ declare module "@tanstack/react-router" {
       preLoaderRoute: typeof CounterpickRouteImport;
       parentRoute: typeof rootRouteImport;
     };
+    "/events": {
+      id: "/events";
+      path: "/events";
+      fullPath: "/events";
+      preLoaderRoute: typeof EventsRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/events/lucky-puzzle": {
+      id: "/events/lucky-puzzle";
+      path: "/events/lucky-puzzle";
+      fullPath: "/events/lucky-puzzle";
+      preLoaderRoute: typeof EventsLuckyPuzzleRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
     "/admin": {
       id: "/admin";
       path: "/admin";
@@ -179,6 +217,8 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
   CounterpickRoute: CounterpickRoute,
+  EventsRoute: EventsRoute,
+  EventsLuckyPuzzleRoute: EventsLuckyPuzzleRoute,
   HeroesRoute: HeroesRoute,
   SoulStoneCalculatorRoute: SoulStoneCalculatorRoute,
   SupportRoute: SupportRoute,

@@ -1,6 +1,6 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { Construction, Sparkles } from "lucide-react";
-import type { ReactNode } from "react";
+import { AppHeader } from "../components/AppHeader";
 
 // The disabled Counterpick tool is preserved in features/counterpicks/CounterpickTool.tsx.
 export const Route = createFileRoute("/counterpick")({
@@ -8,32 +8,11 @@ export const Route = createFileRoute("/counterpick")({
 });
 
 function CounterpickPage() {
-  const appIconUrl = `${import.meta.env.BASE_URL}brand/favicon.png`;
-
   return (
     <main className="min-h-screen bg-souls-void text-souls-parchment">
       <section className="hero-shell min-h-screen py-4">
         <div className="mx-auto w-full max-w-7xl px-5 md:px-8">
-          <nav className="mb-4 flex flex-wrap items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <div className="grid size-11 place-items-center rounded border border-souls-spirit/30 bg-souls-spirit/10">
-                <img alt="Souls icon" className="size-6 object-contain" src={appIconUrl} />
-              </div>
-              <span className="text-sm font-semibold uppercase tracking-[0.24em] text-souls-panel">
-                Souls Artifacts
-              </span>
-            </div>
-            <div className="flex flex-wrap items-center justify-end gap-2">
-              <NavLink to="/">Artifacts</NavLink>
-              <NavLink to="/soul-stone-calculator">Soul Stone Calculator</NavLink>
-              <NavLink to="/heroes">Heroes</NavLink>
-              <NavLink to="/team-builder">Team Builder</NavLink>
-              <NavLink isActive to="/counterpick">
-                Counterpick
-              </NavLink>
-              <NavLink to="/support">Support</NavLink>
-            </div>
-          </nav>
+          <AppHeader activePath="/counterpick" />
 
           <section className="artifact-preview relative isolate overflow-hidden px-6 py-14 text-center sm:px-12 sm:py-20">
             <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_50%_0%,rgba(126,212,255,0.24),transparent_38%),radial-gradient(circle_at_80%_80%,rgba(185,129,255,0.18),transparent_34%)]" />
@@ -61,28 +40,5 @@ function CounterpickPage() {
         </div>
       </section>
     </main>
-  );
-}
-
-function NavLink({
-  children,
-  isActive = false,
-  to,
-}: {
-  children: ReactNode;
-  isActive?: boolean;
-  to: "/" | "/soul-stone-calculator" | "/heroes" | "/counterpick" | "/support" | "/team-builder";
-}) {
-  return (
-    <Link
-      className={
-        isActive
-          ? "rounded border border-souls-gold bg-souls-gold px-3 py-1.5 text-sm font-medium text-souls-void"
-          : "rounded border border-souls-spirit/20 px-3 py-1.5 text-sm font-medium text-souls-panel transition hover:border-souls-gold hover:bg-souls-gold hover:text-souls-void"
-      }
-      to={to}
-    >
-      {children}
-    </Link>
   );
 }

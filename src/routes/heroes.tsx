@@ -1,6 +1,6 @@
-import { Link, createFileRoute } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { BadgeQuestionMark, Gem, Search, Shield, Sparkles, Sword, X, Zap } from "lucide-react";
-import type { ComponentType, ReactNode } from "react";
+import type { ComponentType } from "react";
 import { useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import {
@@ -13,6 +13,7 @@ import {
   type SkillTag,
   type SkillType,
 } from "../heroes/heroes";
+import { AppHeader } from "../components/AppHeader";
 
 export const Route = createFileRoute("/heroes")({
   component: HeroesPage,
@@ -256,7 +257,6 @@ const skillTagGroups: SkillTagGroup[] = [
 const groupedTagSet = new Set<SkillTag>(skillTagGroups.flatMap((group) => group.tags));
 
 function HeroesPage() {
-  const appIconUrl = `${import.meta.env.BASE_URL}brand/favicon.png`;
   const [selectedRace, setSelectedRace] = useState<FilterValue<HeroRace>>("all");
   const [selectedRole, setSelectedRole] = useState<FilterValue<HeroRole>>("all");
   const [selectedAttribute, setSelectedAttribute] = useState<FilterValue<HeroAttribute>>("all");
@@ -330,26 +330,7 @@ function HeroesPage() {
     <main className="min-h-screen bg-souls-void text-souls-parchment">
       <section className="hero-shell min-h-screen py-4">
         <div className="mx-auto w-full max-w-7xl px-5 md:px-8">
-          <nav className="mb-4 flex flex-wrap items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <div className="grid size-11 place-items-center rounded border border-souls-spirit/30 bg-souls-spirit/10">
-                <img alt="Souls icon" className="size-6 object-contain" src={appIconUrl} />
-              </div>
-              <span className="text-sm font-semibold uppercase tracking-[0.24em] text-souls-panel">
-                Souls Artifacts
-              </span>
-            </div>
-            <div className="flex flex-wrap items-center justify-end gap-2">
-              <NavLink to="/">Artifacts</NavLink>
-              <NavLink to="/soul-stone-calculator">Soul Stone Calculator</NavLink>
-              <NavLink isActive to="/heroes">
-                Heroes
-              </NavLink>
-              <NavLink to="/team-builder">Team Builder</NavLink>
-              <NavLink to="/counterpick">Counterpick</NavLink>
-              <NavLink to="/support">Support</NavLink>
-            </div>
-          </nav>
+          <AppHeader activePath="/heroes" />
 
           <section className="artifact-preview p-3 md:p-4">
             <div className="border-b border-souls-spirit/20 pb-3">
@@ -440,29 +421,6 @@ function HeroesPage() {
         </div>
       </section>
     </main>
-  );
-}
-
-function NavLink({
-  children,
-  isActive = false,
-  to,
-}: {
-  children: ReactNode;
-  isActive?: boolean;
-  to: "/" | "/soul-stone-calculator" | "/heroes" | "/counterpick" | "/support" | "/team-builder";
-}) {
-  return (
-    <Link
-      className={
-        isActive
-          ? "rounded border border-souls-gold bg-souls-gold px-3 py-1.5 text-sm font-medium text-souls-void"
-          : "rounded border border-souls-spirit/20 px-3 py-1.5 text-sm font-medium text-souls-panel transition hover:border-souls-gold hover:bg-souls-gold hover:text-souls-void"
-      }
-      to={to}
-    >
-      {children}
-    </Link>
   );
 }
 

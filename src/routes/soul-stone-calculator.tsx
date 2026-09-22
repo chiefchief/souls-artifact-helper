@@ -1,4 +1,4 @@
-import { Link, createFileRoute } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { RotateCcw } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import {
@@ -9,6 +9,7 @@ import {
   MIN_SOUL_LINK_LEVEL,
 } from "#/lib/soulLinkUpgradeCosts";
 import { findOptimalChestUsage, type ChestPlanMode } from "#/lib/soulStoneChestPlanning";
+import { AppHeader } from "../components/AppHeader";
 
 export const Route = createFileRoute("/soul-stone-calculator")({
   component: SoulStoneCalculatorPage,
@@ -382,58 +383,7 @@ function SoulStoneCalculatorPage() {
     <main className="min-h-screen bg-souls-void text-souls-parchment">
       <section className="hero-shell min-h-screen py-4">
         <div className="mx-auto w-full max-w-7xl px-5 md:px-8">
-          <nav className="mb-4 flex items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <div className="grid size-11 place-items-center rounded border border-souls-spirit/30 bg-souls-spirit/10">
-                <img
-                  alt="Souls icon"
-                  className="size-6 object-contain"
-                  src={`${import.meta.env.BASE_URL}brand/favicon.png`}
-                />
-              </div>
-              <span className="text-sm font-semibold uppercase tracking-[0.24em] text-souls-panel">
-                Souls Artifacts
-              </span>
-            </div>
-            <div className="flex flex-wrap justify-end gap-2">
-              <Link
-                className="rounded border border-souls-spirit/20 px-3 py-1.5 text-sm font-medium text-souls-panel transition hover:border-souls-gold hover:bg-souls-gold hover:text-souls-void"
-                to="/"
-              >
-                Artifacts
-              </Link>
-              <Link
-                className="rounded border border-souls-gold bg-souls-gold px-3 py-1.5 text-sm font-medium text-souls-void"
-                to="/soul-stone-calculator"
-              >
-                Soul Stone Calculator
-              </Link>
-              <Link
-                className="rounded border border-souls-spirit/20 px-3 py-1.5 text-sm font-medium text-souls-panel transition hover:border-souls-gold hover:bg-souls-gold hover:text-souls-void"
-                to="/heroes"
-              >
-                Heroes
-              </Link>
-              <Link
-                className="rounded border border-souls-spirit/20 px-3 py-1.5 text-sm font-medium text-souls-panel transition hover:border-souls-gold hover:bg-souls-gold hover:text-souls-void"
-                to="/team-builder"
-              >
-                Team Builder
-              </Link>
-              <Link
-                className="rounded border border-souls-spirit/20 px-3 py-1.5 text-sm font-medium text-souls-panel transition hover:border-souls-gold hover:bg-souls-gold hover:text-souls-void"
-                to="/counterpick"
-              >
-                Counterpick
-              </Link>
-              <Link
-                className="rounded border border-souls-spirit/20 px-3 py-1.5 text-sm font-medium text-souls-panel transition hover:border-souls-gold hover:bg-souls-gold hover:text-souls-void"
-                to="/support"
-              >
-                Support
-              </Link>
-            </div>
-          </nav>
+          <AppHeader activePath="/soul-stone-calculator" />
 
           <section className="artifact-preview p-4 md:p-5">
             <div className="flex flex-wrap items-end justify-between gap-3 border-b border-souls-spirit/20 pb-4">
