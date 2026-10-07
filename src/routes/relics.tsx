@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { AppHeader } from "../components/AppHeader";
-import { calculateRelicResources, relicResources } from "../lib/relicUpgradeCosts";
+import { calculateRelicProgress, calculateRelicResources, relicResources } from "../lib/relicUpgradeCosts";
 
 export const Route = createFileRoute("/relics")({
   component: RelicsPage,
@@ -240,6 +240,7 @@ function RelicIcon({
 
 function RelicsPage() {
   const [levels, setLevels] = useState<Record<string, RelicLevels>>({});
+  const [savedTargets, setSavedTargets] = useState<Record<string, number> | null>(null);
 
   const totals = calculateRelicResources(
     relicGroups.flatMap((group) =>
@@ -249,6 +250,29 @@ function RelicsPage() {
       })),
     ),
   );
+
+  const allRelics = relicGroups.flatMap((group) => [...group.relics]);
+  const progress = calculateRelicProgress(totals.spent, totals.required);
+  function toggleMaxTargets() {
+    if (savedTargets) {
+      setLevels((previous) =>
+        Object.fromEntries(
+          allRelics.map((relic) => {
+            const current = previous[relic.id]?.current ?? 0;
+            return [relic.id, { current, target: Math.max(current, savedTargets[relic.id] ?? 0) }];
+          }),
+        ),
+      );
+      setSavedTargets(null);
+    } else {
+      setSavedTargets(Object.fromEntries(allRelics.map((relic) => [relic.id, levels[relic.id]?.target ?? 0])));
+      setLevels((previous) =>
+        Object.fromEntries(
+          allRelics.map((relic) => [relic.id, { current: previous[relic.id]?.current ?? 0, target: 60 }]),
+        ),
+      );
+    }
+  }
 
   function updateLevel(id: string, field: keyof RelicLevels, value: number) {
     setLevels((previous) => {
@@ -269,6 +293,41 @@ function RelicsPage() {
         <div className="mx-auto w-full max-w-[1600px] px-5 md:px-8">
           <AppHeader activePath="/relics" />
           <section className="artifact-preview p-5 md:p-6">
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+              <div className="w-full max-w-xs">
+                <div className="mb-1.5 flex items-center justify-between gap-3 text-sm">
+                  <span className="text-souls-panel/75">Upgrade progress</span>
+                  <span className="font-semibold tabular-nums text-souls-gold">
+                    {progress.toLocaleString("en-US", { maximumFractionDigits: 1 })}%
+                  </span>
+                </div>
+                <div
+                  role="progressbar"
+                  aria-label="Average resource progress toward selected target levels"
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-valuenow={progress}
+                  aria-valuetext={`${progress.toFixed(1)}% of target resource costs`}
+                  className="h-1.5 overflow-hidden rounded-full bg-souls-void"
+                >
+                  <div
+                    className="h-full rounded-full bg-souls-gold transition-[width]"
+                    style={{ width: `${progress}%` }}
+                  />
+                </div>
+                <p className="mt-1 text-[11px] tabular-nums text-souls-panel/55">
+                  Average spent / total target cost per resource
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={toggleMaxTargets}
+                aria-pressed={savedTargets !== null}
+                className="rounded border border-souls-spirit/25 px-3 py-1.5 text-sm font-medium text-souls-panel transition hover:border-souls-gold hover:text-souls-gold focus-visible:outline-2 focus-visible:outline-souls-gold disabled:cursor-default disabled:opacity-40"
+              >
+                {savedTargets ? "Reset max target" : "Max target"}
+              </button>
+            </div>
             <div className="grid gap-5 lg:grid-cols-3">
               {relicGroups.map((group) => (
                 <section

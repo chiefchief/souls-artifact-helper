@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { calculateRelicResources } from "./relicUpgradeCosts";
+import { calculateRelicProgress, calculateRelicResources } from "./relicUpgradeCosts";
 
 describe("relic resource calculations", () => {
   it("splits costs at the current level without counting a transition twice", () => {
@@ -47,5 +47,24 @@ describe("relic resource calculations", () => {
       compassOfMemories: 450,
       keyOfMemories: 110,
     });
+  });
+});
+
+describe("resource progress", () => {
+  it("averages resource ratios equally: 300/1000 and 2400/10000 give 27%", () => {
+    const { spent, required } = calculateRelicResources([]);
+    spent.forgottenWaterOfLife = 300;
+    required.forgottenWaterOfLife = 700;
+    spent.forgottenForestEssence = 2400;
+    required.forgottenForestEssence = 7600;
+    expect(calculateRelicProgress(spent, required)).toBeCloseTo(27);
+  });
+  it("handles empty, not started, and completed targets", () => {
+    const empty = calculateRelicResources([]);
+    expect(calculateRelicProgress(empty.spent, empty.required)).toBe(0);
+    const start = calculateRelicResources([{ current: 0, target: 60, isSeal: false }]);
+    expect(calculateRelicProgress(start.spent, start.required)).toBe(0);
+    const done = calculateRelicResources([{ current: 60, target: 60, isSeal: false }]);
+    expect(calculateRelicProgress(done.spent, done.required)).toBe(100);
   });
 });

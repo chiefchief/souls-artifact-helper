@@ -34,3 +34,10 @@ export function calculateRelicResources(selections: UpgradeSelection[]) {
   }
   return { spent, required };
 }
+
+export function calculateRelicProgress(spent: RelicResourceTotals, required: RelicResourceTotals) {
+  const ratios = relicResources
+    .filter(({ id }) => spent[id] + required[id] > 0)
+    .map(({ id }) => spent[id] / (spent[id] + required[id]));
+  return ratios.length ? (ratios.reduce((sum, ratio) => sum + ratio, 0) / ratios.length) * 100 : 0;
+}
