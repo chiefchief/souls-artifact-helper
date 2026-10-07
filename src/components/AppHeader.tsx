@@ -10,14 +10,18 @@ const navItems = [
   ["/support", "Support"],
 ] as const;
 
-type AppHeaderProps = { activePath: (typeof navItems)[number][0] };
+type AppHeaderProps = { activePath: (typeof navItems)[number][0] | "/relics" };
 
 export function AppHeader({ activePath }: AppHeaderProps) {
   return (
     <nav className="mb-4 flex flex-wrap items-center justify-between gap-3">
       <div className="flex items-center gap-3">
         <div className="grid size-11 place-items-center rounded border border-souls-spirit/30 bg-souls-spirit/10">
-          <img alt="Souls icon" className="size-6 object-contain" src={`${import.meta.env.BASE_URL}brand/favicon.png`} />
+          <img
+            alt="Souls icon"
+            className="size-6 object-contain"
+            src={`${import.meta.env.BASE_URL}brand/favicon.png`}
+          />
         </div>
         <span className="text-sm font-semibold uppercase tracking-[0.24em] text-souls-panel">Souls Artifacts</span>
       </div>

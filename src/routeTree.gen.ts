@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from "./routes/__root";
 import { Route as TeamBuilderRouteImport } from "./routes/team-builder";
+import { Route as RelicsRouteImport } from "./routes/relics";
 import { Route as SupportRouteImport } from "./routes/support";
 import { Route as SoulStoneCalculatorRouteImport } from "./routes/soul-stone-calculator";
 import { Route as HeroesRouteImport } from "./routes/heroes";
@@ -22,6 +23,11 @@ import { Route as IndexRouteImport } from "./routes/index";
 const TeamBuilderRoute = TeamBuilderRouteImport.update({
   id: "/team-builder",
   path: "/team-builder",
+  getParentRoute: () => rootRouteImport,
+} as any);
+const RelicsRoute = RelicsRouteImport.update({
+  id: "/relics",
+  path: "/relics",
   getParentRoute: () => rootRouteImport,
 } as any);
 const SupportRoute = SupportRouteImport.update({
@@ -73,6 +79,7 @@ export interface FileRoutesByFullPath {
   "/events/lucky-puzzle": typeof EventsLuckyPuzzleRoute;
   "/heroes": typeof HeroesRoute;
   "/soul-stone-calculator": typeof SoulStoneCalculatorRoute;
+  "/relics": typeof RelicsRoute;
   "/support": typeof SupportRoute;
   "/team-builder": typeof TeamBuilderRoute;
 }
@@ -84,6 +91,7 @@ export interface FileRoutesByTo {
   "/events/lucky-puzzle": typeof EventsLuckyPuzzleRoute;
   "/heroes": typeof HeroesRoute;
   "/soul-stone-calculator": typeof SoulStoneCalculatorRoute;
+  "/relics": typeof RelicsRoute;
   "/support": typeof SupportRoute;
   "/team-builder": typeof TeamBuilderRoute;
 }
@@ -96,6 +104,7 @@ export interface FileRoutesById {
   "/events/lucky-puzzle": typeof EventsLuckyPuzzleRoute;
   "/heroes": typeof HeroesRoute;
   "/soul-stone-calculator": typeof SoulStoneCalculatorRoute;
+  "/relics": typeof RelicsRoute;
   "/support": typeof SupportRoute;
   "/team-builder": typeof TeamBuilderRoute;
 }
@@ -109,6 +118,7 @@ export interface FileRouteTypes {
     | "/events/lucky-puzzle"
     | "/heroes"
     | "/soul-stone-calculator"
+    | "/relics"
     | "/support"
     | "/team-builder";
   fileRoutesByTo: FileRoutesByTo;
@@ -120,6 +130,7 @@ export interface FileRouteTypes {
     | "/events/lucky-puzzle"
     | "/heroes"
     | "/soul-stone-calculator"
+    | "/relics"
     | "/support"
     | "/team-builder";
   id:
@@ -129,6 +140,7 @@ export interface FileRouteTypes {
     | "/counterpick"
     | "/heroes"
     | "/soul-stone-calculator"
+    | "/relics"
     | "/support"
     | "/team-builder";
   fileRoutesById: FileRoutesById;
@@ -141,6 +153,7 @@ export interface RootRouteChildren {
   EventsLuckyPuzzleRoute: typeof EventsLuckyPuzzleRoute;
   HeroesRoute: typeof HeroesRoute;
   SoulStoneCalculatorRoute: typeof SoulStoneCalculatorRoute;
+  RelicsRoute: typeof RelicsRoute;
   SupportRoute: typeof SupportRoute;
   TeamBuilderRoute: typeof TeamBuilderRoute;
 }
@@ -152,6 +165,13 @@ declare module "@tanstack/react-router" {
       path: "/team-builder";
       fullPath: "/team-builder";
       preLoaderRoute: typeof TeamBuilderRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/relics": {
+      id: "/relics";
+      path: "/relics";
+      fullPath: "/relics";
+      preLoaderRoute: typeof RelicsRouteImport;
       parentRoute: typeof rootRouteImport;
     };
     "/support": {
@@ -221,6 +241,7 @@ const rootRouteChildren: RootRouteChildren = {
   EventsLuckyPuzzleRoute: EventsLuckyPuzzleRoute,
   HeroesRoute: HeroesRoute,
   SoulStoneCalculatorRoute: SoulStoneCalculatorRoute,
+  RelicsRoute: RelicsRoute,
   SupportRoute: SupportRoute,
   TeamBuilderRoute: TeamBuilderRoute,
 };

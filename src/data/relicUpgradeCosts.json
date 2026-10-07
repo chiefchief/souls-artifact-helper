@@ -1,0 +1,610 @@
+{
+  "source": "https://souls-helper-omut-b1430d.gitlab.io/en/relics",
+  "sourceAsset": "https://souls-helper-omut-b1430d.gitlab.io/assets/Relics-CSlrZLEw.js",
+  "retrievedAt": "2026-10-07",
+  "levelMeaning": "Each row is the cost from level to level + 1. Sum current <= level < target.",
+  "nonSeal": [
+    {
+      "level": 0,
+      "forgottenWaterOfLife": 100
+    },
+    {
+      "level": 1,
+      "forgottenWaterOfLife": 100
+    },
+    {
+      "level": 2,
+      "forgottenWaterOfLife": 100
+    },
+    {
+      "level": 3,
+      "forgottenWaterOfLife": 100
+    },
+    {
+      "level": 4,
+      "forgottenWaterOfLife": 100
+    },
+    {
+      "level": 5,
+      "forgottenWaterOfLife": 100
+    },
+    {
+      "level": 6,
+      "forgottenWaterOfLife": 100
+    },
+    {
+      "level": 7,
+      "forgottenWaterOfLife": 100
+    },
+    {
+      "level": 8,
+      "forgottenWaterOfLife": 100
+    },
+    {
+      "level": 9,
+      "forgottenWaterOfLife": 150,
+      "forgottenForestEssence": 60
+    },
+    {
+      "level": 10,
+      "forgottenWaterOfLife": 150,
+      "forgottenForestEssence": 60
+    },
+    {
+      "level": 11,
+      "forgottenWaterOfLife": 150,
+      "forgottenForestEssence": 60
+    },
+    {
+      "level": 12,
+      "forgottenWaterOfLife": 150,
+      "forgottenForestEssence": 60
+    },
+    {
+      "level": 13,
+      "forgottenWaterOfLife": 150,
+      "forgottenForestEssence": 60
+    },
+    {
+      "level": 14,
+      "forgottenWaterOfLife": 150,
+      "forgottenForestEssence": 60
+    },
+    {
+      "level": 15,
+      "forgottenWaterOfLife": 150,
+      "forgottenForestEssence": 60
+    },
+    {
+      "level": 16,
+      "forgottenWaterOfLife": 150,
+      "forgottenForestEssence": 60
+    },
+    {
+      "level": 17,
+      "forgottenWaterOfLife": 150,
+      "forgottenForestEssence": 60
+    },
+    {
+      "level": 18,
+      "forgottenWaterOfLife": 150,
+      "forgottenForestEssence": 60
+    },
+    {
+      "level": 19,
+      "forgottenWaterOfLife": 250,
+      "forgottenForestEssence": 100,
+      "forgottenFlowerBud": 30
+    },
+    {
+      "level": 20,
+      "forgottenWaterOfLife": 250,
+      "forgottenForestEssence": 100
+    },
+    {
+      "level": 21,
+      "forgottenWaterOfLife": 250,
+      "forgottenForestEssence": 100
+    },
+    {
+      "level": 22,
+      "forgottenWaterOfLife": 250,
+      "forgottenForestEssence": 100
+    },
+    {
+      "level": 23,
+      "forgottenWaterOfLife": 250,
+      "forgottenForestEssence": 100
+    },
+    {
+      "level": 24,
+      "forgottenWaterOfLife": 250,
+      "forgottenForestEssence": 100,
+      "forgottenFlowerBud": 40
+    },
+    {
+      "level": 25,
+      "forgottenWaterOfLife": 250,
+      "forgottenForestEssence": 100
+    },
+    {
+      "level": 26,
+      "forgottenWaterOfLife": 250,
+      "forgottenForestEssence": 100
+    },
+    {
+      "level": 27,
+      "forgottenWaterOfLife": 250,
+      "forgottenForestEssence": 100
+    },
+    {
+      "level": 28,
+      "forgottenWaterOfLife": 250,
+      "forgottenForestEssence": 100
+    },
+    {
+      "level": 29,
+      "forgottenWaterOfLife": 450,
+      "forgottenForestEssence": 160,
+      "forgottenFlowerBud": 50
+    },
+    {
+      "level": 30,
+      "forgottenWaterOfLife": 450,
+      "forgottenForestEssence": 160
+    },
+    {
+      "level": 31,
+      "forgottenWaterOfLife": 450,
+      "forgottenForestEssence": 160
+    },
+    {
+      "level": 32,
+      "forgottenWaterOfLife": 450,
+      "forgottenForestEssence": 160
+    },
+    {
+      "level": 33,
+      "forgottenWaterOfLife": 450,
+      "forgottenForestEssence": 160
+    },
+    {
+      "level": 34,
+      "forgottenWaterOfLife": 450,
+      "forgottenForestEssence": 160,
+      "forgottenFlowerBud": 60
+    },
+    {
+      "level": 35,
+      "forgottenWaterOfLife": 450,
+      "forgottenForestEssence": 160
+    },
+    {
+      "level": 36,
+      "forgottenWaterOfLife": 450,
+      "forgottenForestEssence": 160
+    },
+    {
+      "level": 37,
+      "forgottenWaterOfLife": 450,
+      "forgottenForestEssence": 160
+    },
+    {
+      "level": 38,
+      "forgottenWaterOfLife": 450,
+      "forgottenForestEssence": 160
+    },
+    {
+      "level": 39,
+      "forgottenWaterOfLife": 700,
+      "forgottenForestEssence": 240,
+      "forgottenFlowerBud": 70
+    },
+    {
+      "level": 40,
+      "forgottenWaterOfLife": 700,
+      "forgottenForestEssence": 240
+    },
+    {
+      "level": 41,
+      "forgottenWaterOfLife": 700,
+      "forgottenForestEssence": 240
+    },
+    {
+      "level": 42,
+      "forgottenWaterOfLife": 700,
+      "forgottenForestEssence": 240
+    },
+    {
+      "level": 43,
+      "forgottenWaterOfLife": 700,
+      "forgottenForestEssence": 240
+    },
+    {
+      "level": 44,
+      "forgottenWaterOfLife": 700,
+      "forgottenForestEssence": 240,
+      "forgottenFlowerBud": 80
+    },
+    {
+      "level": 45,
+      "forgottenWaterOfLife": 700,
+      "forgottenForestEssence": 240
+    },
+    {
+      "level": 46,
+      "forgottenWaterOfLife": 700,
+      "forgottenForestEssence": 240
+    },
+    {
+      "level": 47,
+      "forgottenWaterOfLife": 700,
+      "forgottenForestEssence": 240
+    },
+    {
+      "level": 48,
+      "forgottenWaterOfLife": 700,
+      "forgottenForestEssence": 240
+    },
+    {
+      "level": 49,
+      "forgottenWaterOfLife": 700,
+      "forgottenForestEssence": 350,
+      "forgottenFlowerBud": 90
+    },
+    {
+      "level": 50,
+      "forgottenWaterOfLife": 1000,
+      "forgottenForestEssence": 350
+    },
+    {
+      "level": 51,
+      "forgottenWaterOfLife": 1000,
+      "forgottenForestEssence": 350
+    },
+    {
+      "level": 52,
+      "forgottenWaterOfLife": 1000,
+      "forgottenForestEssence": 350
+    },
+    {
+      "level": 53,
+      "forgottenWaterOfLife": 1000,
+      "forgottenForestEssence": 350
+    },
+    {
+      "level": 54,
+      "forgottenWaterOfLife": 1000,
+      "forgottenForestEssence": 350,
+      "forgottenFlowerBud": 100
+    },
+    {
+      "level": 55,
+      "forgottenWaterOfLife": 1000,
+      "forgottenForestEssence": 350
+    },
+    {
+      "level": 56,
+      "forgottenWaterOfLife": 1000,
+      "forgottenForestEssence": 350
+    },
+    {
+      "level": 57,
+      "forgottenWaterOfLife": 1000,
+      "forgottenForestEssence": 350
+    },
+    {
+      "level": 58,
+      "forgottenWaterOfLife": 1000,
+      "forgottenForestEssence": 350
+    },
+    {
+      "level": 59,
+      "forgottenWaterOfLife": 1000,
+      "forgottenForestEssence": 450,
+      "forgottenFlowerBud": 110
+    }
+  ],
+  "seal": [
+    {
+      "level": 0,
+      "clockOfMemories": 100
+    },
+    {
+      "level": 1,
+      "clockOfMemories": 100
+    },
+    {
+      "level": 2,
+      "clockOfMemories": 100
+    },
+    {
+      "level": 3,
+      "clockOfMemories": 100
+    },
+    {
+      "level": 4,
+      "clockOfMemories": 100
+    },
+    {
+      "level": 5,
+      "clockOfMemories": 100
+    },
+    {
+      "level": 6,
+      "clockOfMemories": 100
+    },
+    {
+      "level": 7,
+      "clockOfMemories": 100
+    },
+    {
+      "level": 8,
+      "clockOfMemories": 100
+    },
+    {
+      "level": 9,
+      "clockOfMemories": 150,
+      "compassOfMemories": 60
+    },
+    {
+      "level": 10,
+      "clockOfMemories": 150,
+      "compassOfMemories": 60
+    },
+    {
+      "level": 11,
+      "clockOfMemories": 150,
+      "compassOfMemories": 60
+    },
+    {
+      "level": 12,
+      "clockOfMemories": 150,
+      "compassOfMemories": 60
+    },
+    {
+      "level": 13,
+      "clockOfMemories": 150,
+      "compassOfMemories": 60
+    },
+    {
+      "level": 14,
+      "clockOfMemories": 150,
+      "compassOfMemories": 60
+    },
+    {
+      "level": 15,
+      "clockOfMemories": 150,
+      "compassOfMemories": 60
+    },
+    {
+      "level": 16,
+      "clockOfMemories": 150,
+      "compassOfMemories": 60
+    },
+    {
+      "level": 17,
+      "clockOfMemories": 150,
+      "compassOfMemories": 60
+    },
+    {
+      "level": 18,
+      "clockOfMemories": 150,
+      "compassOfMemories": 60
+    },
+    {
+      "level": 19,
+      "clockOfMemories": 250,
+      "compassOfMemories": 100,
+      "keyOfMemories": 30
+    },
+    {
+      "level": 20,
+      "clockOfMemories": 250,
+      "compassOfMemories": 100
+    },
+    {
+      "level": 21,
+      "clockOfMemories": 250,
+      "compassOfMemories": 100
+    },
+    {
+      "level": 22,
+      "clockOfMemories": 250,
+      "compassOfMemories": 100
+    },
+    {
+      "level": 23,
+      "clockOfMemories": 250,
+      "compassOfMemories": 100
+    },
+    {
+      "level": 24,
+      "clockOfMemories": 250,
+      "compassOfMemories": 100,
+      "keyOfMemories": 40
+    },
+    {
+      "level": 25,
+      "clockOfMemories": 250,
+      "compassOfMemories": 100
+    },
+    {
+      "level": 26,
+      "clockOfMemories": 250,
+      "compassOfMemories": 100
+    },
+    {
+      "level": 27,
+      "clockOfMemories": 250,
+      "compassOfMemories": 100
+    },
+    {
+      "level": 28,
+      "clockOfMemories": 250,
+      "compassOfMemories": 100
+    },
+    {
+      "level": 29,
+      "clockOfMemories": 450,
+      "compassOfMemories": 160,
+      "keyOfMemories": 50
+    },
+    {
+      "level": 30,
+      "clockOfMemories": 450,
+      "compassOfMemories": 160
+    },
+    {
+      "level": 31,
+      "clockOfMemories": 450,
+      "compassOfMemories": 160
+    },
+    {
+      "level": 32,
+      "clockOfMemories": 450,
+      "compassOfMemories": 160
+    },
+    {
+      "level": 33,
+      "clockOfMemories": 450,
+      "compassOfMemories": 160
+    },
+    {
+      "level": 34,
+      "clockOfMemories": 450,
+      "compassOfMemories": 160,
+      "keyOfMemories": 60
+    },
+    {
+      "level": 35,
+      "clockOfMemories": 450,
+      "compassOfMemories": 160
+    },
+    {
+      "level": 36,
+      "clockOfMemories": 450,
+      "compassOfMemories": 160
+    },
+    {
+      "level": 37,
+      "clockOfMemories": 450,
+      "compassOfMemories": 160
+    },
+    {
+      "level": 38,
+      "clockOfMemories": 450,
+      "compassOfMemories": 160
+    },
+    {
+      "level": 39,
+      "clockOfMemories": 700,
+      "compassOfMemories": 240,
+      "keyOfMemories": 70
+    },
+    {
+      "level": 40,
+      "clockOfMemories": 700,
+      "compassOfMemories": 240
+    },
+    {
+      "level": 41,
+      "clockOfMemories": 700,
+      "compassOfMemories": 240
+    },
+    {
+      "level": 42,
+      "clockOfMemories": 700,
+      "compassOfMemories": 240
+    },
+    {
+      "level": 43,
+      "clockOfMemories": 700,
+      "compassOfMemories": 240
+    },
+    {
+      "level": 44,
+      "clockOfMemories": 700,
+      "compassOfMemories": 240,
+      "keyOfMemories": 80
+    },
+    {
+      "level": 45,
+      "clockOfMemories": 700,
+      "compassOfMemories": 240
+    },
+    {
+      "level": 46,
+      "clockOfMemories": 700,
+      "compassOfMemories": 240
+    },
+    {
+      "level": 47,
+      "clockOfMemories": 700,
+      "compassOfMemories": 240
+    },
+    {
+      "level": 48,
+      "clockOfMemories": 700,
+      "compassOfMemories": 240
+    },
+    {
+      "level": 49,
+      "clockOfMemories": 700,
+      "compassOfMemories": 350,
+      "keyOfMemories": 90
+    },
+    {
+      "level": 50,
+      "clockOfMemories": 1000,
+      "compassOfMemories": 350
+    },
+    {
+      "level": 51,
+      "clockOfMemories": 1000,
+      "compassOfMemories": 350
+    },
+    {
+      "level": 52,
+      "clockOfMemories": 1000,
+      "compassOfMemories": 350
+    },
+    {
+      "level": 53,
+      "clockOfMemories": 1000,
+      "compassOfMemories": 350
+    },
+    {
+      "level": 54,
+      "clockOfMemories": 1000,
+      "compassOfMemories": 350,
+      "keyOfMemories": 100
+    },
+    {
+      "level": 55,
+      "clockOfMemories": 1000,
+      "compassOfMemories": 350
+    },
+    {
+      "level": 56,
+      "clockOfMemories": 1000,
+      "compassOfMemories": 350
+    },
+    {
+      "level": 57,
+      "clockOfMemories": 1000,
+      "compassOfMemories": 350
+    },
+    {
+      "level": 58,
+      "clockOfMemories": 1000,
+      "compassOfMemories": 350
+    },
+    {
+      "level": 59,
+      "clockOfMemories": 1000,
+      "compassOfMemories": 450,
+      "keyOfMemories": 110
+    }
+  ]
+}

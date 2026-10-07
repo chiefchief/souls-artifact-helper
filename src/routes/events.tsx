@@ -179,18 +179,18 @@ function rankPlacements(board: boolean[][], columnOrder: number[], rowOrder: num
     const valuableThreshold = Math.max(2, bestNextGain - 1);
     const futureOptions = followUps.filter((placement) => placement.gain >= valuableThreshold).length;
 
-    // The first criterion is the fewest blocks needed to reach 80%.  We then
-    // favour a board that still has many strong follow-up placements, so a
-    // locally good move cannot unnecessarily close off the next shapes.
+    // First, minimise blocks needed to reach 80%. Once that is equal, honour
+    // the player's chosen rows and columns, then prefer more newly opened
+    // tiles. Future flexibility is a final tie-breaker, never a reason to
+    // override an equally efficient priority placement.
     const projectedMoves = nextCovered >= target
       ? 0
       : Math.ceil((target - nextCovered) / Math.max(1, bestNextGain));
-    const twoMoveGain = candidate.gain + bestNextGain;
     const score =
       (10 - projectedMoves) * 1_000_000 +
-      twoMoveGain * 10_000 +
-      futureOptions * 100 +
-      candidate.priority * 3;
+      candidate.priority * 10_000 +
+      candidate.gain * 100 +
+      futureOptions;
 
     return { ...candidate, futureOptions, projectedMoves, score };
   });
