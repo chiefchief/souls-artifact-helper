@@ -4,6 +4,9 @@ import { ChevronDown } from "lucide-react";
 import { AppHeader } from "../components/AppHeader";
 import { calculateRelicProgress, calculateRelicResources, relicResources } from "../lib/relicUpgradeCosts";
 
+import { relicStats, type RelicSlot } from "../data/relicStatBonuses";
+import { calculateRelicStatProgress } from "../lib/relicStatBonuses";
+
 export const Route = createFileRoute("/relics")({
   component: RelicsPage,
 });
@@ -253,6 +256,18 @@ function RelicsPage() {
 
   const allRelics = relicGroups.flatMap((group) => [...group.relics]);
   const progress = calculateRelicProgress(totals.spent, totals.required);
+  const slots: RelicSlot[] = ["topLeft", "topRight", "bottomLeft", "bottomRight"];
+  const statTotals = calculateRelicStatProgress(
+    relicGroups.flatMap((group) =>
+      group.relics.map((relic, index) => ({
+        slot: slots[index],
+        ...(levels[relic.id] ?? { current: 0, target: 0 }),
+      })),
+    ),
+  );
+  const currentLevelTotal = allRelics.reduce((sum, relic) => sum + (levels[relic.id]?.current ?? 0), 0);
+  const targetLevelTotal = allRelics.reduce((sum, relic) => sum + (levels[relic.id]?.target ?? 0), 0);
+  const levelProgress = targetLevelTotal ? (currentLevelTotal / targetLevelTotal) * 100 : 0;
   function toggleMaxTargets() {
     if (savedTargets) {
       setLevels((previous) =>
@@ -293,32 +308,7 @@ function RelicsPage() {
         <div className="mx-auto w-full max-w-[1600px] px-5 md:px-8">
           <AppHeader activePath="/relics" />
           <section className="artifact-preview p-5 md:p-6">
-            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-              <div className="w-full max-w-xs">
-                <div className="mb-1.5 flex items-center justify-between gap-3 text-sm">
-                  <span className="text-souls-panel/75">Upgrade progress</span>
-                  <span className="font-semibold tabular-nums text-souls-gold">
-                    {progress.toLocaleString("en-US", { maximumFractionDigits: 1 })}%
-                  </span>
-                </div>
-                <div
-                  role="progressbar"
-                  aria-label="Average resource progress toward selected target levels"
-                  aria-valuemin={0}
-                  aria-valuemax={100}
-                  aria-valuenow={progress}
-                  aria-valuetext={`${progress.toFixed(1)}% of target resource costs`}
-                  className="h-1.5 overflow-hidden rounded-full bg-souls-void"
-                >
-                  <div
-                    className="h-full rounded-full bg-souls-gold transition-[width]"
-                    style={{ width: `${progress}%` }}
-                  />
-                </div>
-                <p className="mt-1 text-[11px] tabular-nums text-souls-panel/55">
-                  Average spent / total target cost per resource
-                </p>
-              </div>
+            <div className="mb-4 flex justify-end">
               <button
                 type="button"
                 onClick={toggleMaxTargets}
@@ -361,6 +351,60 @@ function RelicsPage() {
                       </article>
                     ))}
                   </div>
+                </section>
+              ))}
+            </div>
+            <div className="mt-5 grid gap-4 md:grid-cols-3">
+              {[
+                { title: "Resources", value: progress, description: "Average spent / total target cost per resource" },
+                {
+                  title: "Levels",
+                  value: levelProgress,
+                  description: `${currentLevelTotal} / ${targetLevelTotal} target levels`,
+                },
+                {
+                  title: "Attributes",
+                  value: statTotals.progress,
+                  description: "Average current / target bonus per stat",
+                },
+              ].map(({ title, value, description }) => (
+                <section key={title} className="rounded-lg border border-souls-spirit/20 bg-souls-void/45 p-4">
+                  <div className="mb-2 flex items-center justify-between gap-3 text-sm">
+                    <h2 className="font-semibold text-souls-panel">{title}</h2>
+                    <span className="font-semibold tabular-nums text-souls-gold">
+                      {value === null ? "—" : `${value.toLocaleString("en-US", { maximumFractionDigits: 1 })}%`}
+                    </span>
+                  </div>
+                  {value !== null && (
+                    <div
+                      role="progressbar"
+                      aria-label={`${title} progress toward selected targets`}
+                      aria-valuemin={0}
+                      aria-valuemax={100}
+                      aria-valuenow={value}
+                      className="h-1.5 overflow-hidden rounded-full bg-souls-void"
+                    >
+                      <div
+                        className="h-full rounded-full bg-souls-gold transition-[width]"
+                        style={{ width: `${value}%` }}
+                      />
+                    </div>
+                  )}
+                  <p className="mt-2 text-[11px] text-souls-panel/55">{description}</p>
+                  {title === "Attributes" && (
+                    <dl className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1 text-[11px] text-souls-panel/75">
+                      {relicStats.map(({ id, label, unit }) => (
+                        <div key={id} className="flex justify-between gap-1">
+                          <dt>{label}</dt>
+                          <dd className="tabular-nums">
+                            {statTotals.current[id].toLocaleString("en-US", { maximumFractionDigits: 1 })}
+                            {unit} / {statTotals.target[id].toLocaleString("en-US", { maximumFractionDigits: 1 })}
+                            {unit}
+                          </dd>
+                        </div>
+                      ))}
+                    </dl>
+                  )}
                 </section>
               ))}
             </div>
