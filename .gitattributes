@@ -1,0 +1,4 @@
+# Trained model files are binary, including ONNX graphs with long text headers.
+public/models/**/*.onnx binary
+public/models/**/*.onnx.data binary
+public/models/**/*.pt binary

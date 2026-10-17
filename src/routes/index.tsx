@@ -3,7 +3,7 @@ import { Search } from "lucide-react";
 import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import { artifactImageCollections, type ArtifactImage } from "../data/artifactImageCollections";
 import { ArtifactIconCollection } from "../features/artifacts/collection";
-import { ArtifactGalleryModal, LegendaryCountGuideModal, MythicCraftModal } from "../features/artifacts/modals";
+import { ArtifactGalleryModal, LegendaryCountGuideModal, ArtifactCraftModal } from "../features/artifacts/modals";
 import { ScreenshotCounterPanel } from "../features/artifacts/screenshotCounterPanel";
 import { AppHeader } from "../components/AppHeader";
 import { fetchArtifactRatingOverrides } from "../lib/artifactRatingsApi";
@@ -29,7 +29,7 @@ function Home() {
   const [artifactQuantities, setArtifactQuantities] = useState<Record<string, number>>({});
   const [isQuantitiesHydrated, setIsQuantitiesHydrated] = useState(false);
   const [rarityFilter, setRarityFilter] = useState<RarityFilter>("all");
-  const [selectedMythicArtifact, setSelectedMythicArtifact] = useState<ArtifactImage | null>(null);
+  const [selectedArtifact, setSelectedArtifact] = useState<ArtifactImage | null>(null);
   const [ratingOverrides, setRatingOverrides] = useState<Record<string, ArtifactImage["ratings"]>>({});
   const [galleryModal, setGalleryModal] = useState<GalleryModalState | null>(null);
   const [isLegendaryGuideOpen, setIsLegendaryGuideOpen] = useState(false);
@@ -111,7 +111,9 @@ function Home() {
   }, []);
 
   useEffect(() => {
-    void fetchArtifactRatingOverrides().then(setRatingOverrides).catch(() => undefined);
+    void fetchArtifactRatingOverrides()
+      .then(setRatingOverrides)
+      .catch(() => undefined);
   }, []);
 
   const collectionsWithRatings = useMemo(
@@ -125,9 +127,8 @@ function Home() {
       })),
     [ratingOverrides],
   );
-  const allArtifacts = useMemo(() => collectionsWithRatings.flatMap((collection) => collection.images), [collectionsWithRatings]);
-  const mythicArtifacts = useMemo(
-    () => collectionsWithRatings.find((collection) => collection.id === "mythic")?.images ?? [],
+  const allArtifacts = useMemo(
+    () => collectionsWithRatings.flatMap((collection) => collection.images),
     [collectionsWithRatings],
   );
 
@@ -201,7 +202,7 @@ function Home() {
   const openCraftableModal = useCallback(() => {
     setGalleryModal({
       title: "Artifacts I can craft",
-      artifacts: mythicArtifacts
+      artifacts: allArtifacts
         .filter((artifact) => canCraftArtifact(artifact, artifactQuantities))
         .map((artifact) => ({
           key: artifact.id,
@@ -211,7 +212,7 @@ function Home() {
           isOwned: (artifactQuantities[artifact.id] ?? 0) > 0,
         })),
     });
-  }, [artifactQuantities, mythicArtifacts]);
+  }, [allArtifacts, artifactQuantities]);
 
   return (
     <main className="min-h-screen bg-souls-void text-souls-parchment">
@@ -242,7 +243,7 @@ function Home() {
               data-stuck={isStickyStuck}
               ref={stickyControlsRef}
             >
-              <div className="grid grid-cols-3 gap-2 md:flex md:flex-wrap">
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 md:flex md:flex-wrap">
                 {rarityFilters.map((filter) => (
                   <button
                     className="w-full rounded border border-souls-spirit/20 px-3 py-1.5 text-sm font-medium capitalize text-souls-panel transition data-[active=true]:border-souls-gold data-[active=true]:bg-souls-gold data-[active=true]:text-souls-void md:w-auto"
@@ -294,7 +295,7 @@ function Home() {
                     collection={collection}
                     key={collection.id}
                     onAddQuantity={addArtifactQuantity}
-                    onOpenArtifact={collection.id === "mythic" ? setSelectedMythicArtifact : undefined}
+                    onOpenArtifact={setSelectedArtifact}
                     onOpenLegendaryGuide={() => setIsLegendaryGuideOpen(true)}
                     onResetQuantity={resetArtifactQuantity}
                   />
@@ -308,8 +309,12 @@ function Home() {
           </section>
         </div>
       </section>
-      {selectedMythicArtifact && (
-        <MythicCraftModal artifact={selectedMythicArtifact} onClose={() => setSelectedMythicArtifact(null)} />
+      {selectedArtifact && (
+        <ArtifactCraftModal
+          artifact={selectedArtifact}
+          onClose={() => setSelectedArtifact(null)}
+          onSelectArtifact={setSelectedArtifact}
+        />
       )}
       {galleryModal && (
         <ArtifactGalleryModal

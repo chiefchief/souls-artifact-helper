@@ -262,3 +262,43 @@ Files prefixed with `demo` can be safely deleted. They are there to provide a st
 You can learn more about all of the offerings from TanStack in the [TanStack documentation](https://tanstack.com).
 
 For TanStack Start specific documentation, visit [TanStack Start](https://tanstack.com/start).
+
+## Adding artifacts to screenshot recognition
+
+The artifact generator reads Mythic, Legendary, and Primal entries and image paths
+from `src/data/artifactImageCollections.ts`. Add the real PNG icons before generating.
+It preserves the original 67 class positions and appends new artifacts.
+
+Generate the artifact dataset only (70 classes including World Tree Branch and the two Primal artifacts):
+
+```bash
+bash scripts/artifact/ds_balanced.sh
+```
+
+Train and export only the artifact model:
+
+```bash
+.venv/bin/python -u scripts/train_artifact_classifier.py --data data/artifacts_dataset --epochs 8 --batch 64
+```
+
+Generation writes `data/artifacts_dataset/labels.json`. Training validates the class
+folders against it, then exports `artifact-classifier-labels.json` beside the ONNX
+model in `public/models/artifacts/`. Deploy the model, its companion data files (if
+any), and labels together. The app uses these labels instead of catalog ordering.
+If no labels file is present, only the original shipped 67-class model is supported.
+A class-count mismatch is rejected rather than returning incorrect artifact names.
+
+The shipped model has been retrained on all 70 current artifacts. Future new
+artifacts require retraining; generating samples alone does not update the model. Quantity and diamond models do not need retraining for new artifact
+IDs. Diamond multipliers apply only to Legendary artifacts.
+
+If generation reports unexpected class folders, use a fresh `--artifact-out` path
+and pass that same path to training with `--data`.
+
+Validation note (2026-10-17): the model was retrained for 8 epochs on all 70
+artifacts, including both Primal variants and World Tree Branch. It correctly
+classified all 1,260 held-out synthetic validation samples. The exported ONNX
+model was also checked for the three new classes. Better recognition on real
+screenshots has not yet been verified; synthetic accuracy is not a real-game
+accuracy measurement. See [model validation status and troubleshooting](public/models/artifacts/README.md#validation-status-and-troubleshooting--2026-10-17)
+for the limitations and checks to make if recognition regresses.

@@ -14,7 +14,7 @@ export const bella: Hero = {
       name: "Upward Slash",
       description:
         "Attacks an enemy, dealing 230% ATK damage and removing 1 buff(s). If the target is a Tank hero with no buffs, stuns them for 1 turns.",
-      tags: [],
+      tags: ["remove-enemy-buff", "cc"],
     },
     {
       id: "bella_sweeping_slash",
@@ -37,7 +37,7 @@ export const bella: Hero = {
       name: "Opening Strike",
       description:
         "If Bella has no debuffs, she performs a joint attack when an ally uses a normal attack, dealing 100% ATK damage and removing 1 buff(s). (Once per round)",
-      tags: ["join-attack"],
+      tags: ["join-attack", "remove-enemy-buff"],
     },
     {
       id: "bella_hone_blade",
@@ -45,7 +45,7 @@ export const bella: Hero = {
       name: "Hone Blade",
       description:
         "Bella gains a Sharpness buff for 2 turns at the start of battle, and thereafter gains a Sharpness buff for 2 turns each time she removes an enemy buff. While Sharpness is active, ATK increases by 20% and Penetration increases by 60%. (Sharpness buff does not stack.)",
-      tags: ["increase-self-penetration", "remove-enemy-buff"],
+      tags: ["increase-self-penetration", "increase-self-penetration"],
     },
     {
       id: "bella_engraving",

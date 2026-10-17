@@ -31,6 +31,7 @@ export const counterpicksByTargetId: Record<HeroId, HeroCounterpick[]> = {
   galan: [],
   harfa: [],
   idina: [],
+  jakel: [],
   jack: [],
   kaion: [],
   karim: [],

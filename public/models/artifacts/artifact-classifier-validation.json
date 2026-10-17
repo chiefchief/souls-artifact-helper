@@ -1,0 +1,299 @@
+{
+  "date": "2026-10-17",
+  "classes": 70,
+  "training_samples": 7140,
+  "validation_samples": 1260,
+  "validation_correct": 1260,
+  "validation_accuracy": 1.0,
+  "epochs": 8,
+  "model_sha256": "aa1923eb6621abf1811e374e4a626b90557f10b2df0f9b1ed507b93f0282aa0d",
+  "labels_sha256": "666b73d472747326cef4129f6982c10dcddf1c0884a7ff68a8b6e09c112778de",
+  "per_class": {
+    "mythic-01": {
+      "correct": 16,
+      "total": 16
+    },
+    "mythic-02": {
+      "correct": 19,
+      "total": 19
+    },
+    "mythic-03": {
+      "correct": 18,
+      "total": 18
+    },
+    "mythic-04": {
+      "correct": 10,
+      "total": 10
+    },
+    "mythic-05": {
+      "correct": 18,
+      "total": 18
+    },
+    "mythic-06": {
+      "correct": 13,
+      "total": 13
+    },
+    "mythic-07": {
+      "correct": 21,
+      "total": 21
+    },
+    "mythic-08": {
+      "correct": 16,
+      "total": 16
+    },
+    "mythic-09": {
+      "correct": 15,
+      "total": 15
+    },
+    "mythic-10": {
+      "correct": 15,
+      "total": 15
+    },
+    "mythic-11": {
+      "correct": 24,
+      "total": 24
+    },
+    "mythic-12": {
+      "correct": 13,
+      "total": 13
+    },
+    "mythic-13": {
+      "correct": 23,
+      "total": 23
+    },
+    "mythic-14": {
+      "correct": 16,
+      "total": 16
+    },
+    "mythic-15": {
+      "correct": 17,
+      "total": 17
+    },
+    "mythic-16": {
+      "correct": 15,
+      "total": 15
+    },
+    "mythic-17": {
+      "correct": 17,
+      "total": 17
+    },
+    "mythic-18": {
+      "correct": 21,
+      "total": 21
+    },
+    "mythic-19": {
+      "correct": 19,
+      "total": 19
+    },
+    "mythic-20": {
+      "correct": 19,
+      "total": 19
+    },
+    "mythic-21": {
+      "correct": 17,
+      "total": 17
+    },
+    "mythic-22": {
+      "correct": 15,
+      "total": 15
+    },
+    "mythic-23": {
+      "correct": 32,
+      "total": 32
+    },
+    "mythic-24": {
+      "correct": 14,
+      "total": 14
+    },
+    "mythic-25": {
+      "correct": 16,
+      "total": 16
+    },
+    "mythic-26": {
+      "correct": 16,
+      "total": 16
+    },
+    "mythic-27": {
+      "correct": 20,
+      "total": 20
+    },
+    "mythic-28": {
+      "correct": 16,
+      "total": 16
+    },
+    "mythic-29": {
+      "correct": 18,
+      "total": 18
+    },
+    "mythic-30": {
+      "correct": 19,
+      "total": 19
+    },
+    "mythic-31": {
+      "correct": 12,
+      "total": 12
+    },
+    "mythic-32": {
+      "correct": 17,
+      "total": 17
+    },
+    "mythic-33": {
+      "correct": 18,
+      "total": 18
+    },
+    "mythic-34": {
+      "correct": 23,
+      "total": 23
+    },
+    "legendary-01": {
+      "correct": 17,
+      "total": 17
+    },
+    "legendary-02": {
+      "correct": 24,
+      "total": 24
+    },
+    "legendary-03": {
+      "correct": 17,
+      "total": 17
+    },
+    "legendary-04": {
+      "correct": 12,
+      "total": 12
+    },
+    "legendary-05": {
+      "correct": 16,
+      "total": 16
+    },
+    "legendary-06": {
+      "correct": 26,
+      "total": 26
+    },
+    "legendary-07": {
+      "correct": 21,
+      "total": 21
+    },
+    "legendary-08": {
+      "correct": 22,
+      "total": 22
+    },
+    "legendary-09": {
+      "correct": 19,
+      "total": 19
+    },
+    "legendary-10": {
+      "correct": 24,
+      "total": 24
+    },
+    "legendary-11": {
+      "correct": 19,
+      "total": 19
+    },
+    "legendary-12": {
+      "correct": 14,
+      "total": 14
+    },
+    "legendary-13": {
+      "correct": 18,
+      "total": 18
+    },
+    "legendary-14": {
+      "correct": 23,
+      "total": 23
+    },
+    "legendary-15": {
+      "correct": 20,
+      "total": 20
+    },
+    "legendary-16": {
+      "correct": 16,
+      "total": 16
+    },
+    "legendary-17": {
+      "correct": 21,
+      "total": 21
+    },
+    "legendary-18": {
+      "correct": 14,
+      "total": 14
+    },
+    "legendary-19": {
+      "correct": 19,
+      "total": 19
+    },
+    "legendary-20": {
+      "correct": 9,
+      "total": 9
+    },
+    "legendary-21": {
+      "correct": 14,
+      "total": 14
+    },
+    "legendary-22": {
+      "correct": 23,
+      "total": 23
+    },
+    "legendary-23": {
+      "correct": 16,
+      "total": 16
+    },
+    "legendary-24": {
+      "correct": 11,
+      "total": 11
+    },
+    "legendary-25": {
+      "correct": 18,
+      "total": 18
+    },
+    "legendary-26": {
+      "correct": 15,
+      "total": 15
+    },
+    "legendary-27": {
+      "correct": 27,
+      "total": 27
+    },
+    "legendary-28": {
+      "correct": 18,
+      "total": 18
+    },
+    "legendary-29": {
+      "correct": 16,
+      "total": 16
+    },
+    "legendary-30": {
+      "correct": 18,
+      "total": 18
+    },
+    "legendary-31": {
+      "correct": 21,
+      "total": 21
+    },
+    "legendary-32": {
+      "correct": 21,
+      "total": 21
+    },
+    "legendary-33": {
+      "correct": 23,
+      "total": 23
+    },
+    "mythic-35": {
+      "correct": 19,
+      "total": 19
+    },
+    "primal-01": {
+      "correct": 16,
+      "total": 16
+    },
+    "primal-02": {
+      "correct": 15,
+      "total": 15
+    }
+  },
+  "onnx_new_class_smoke_test": {
+    "mythic-35": "mythic-35",
+    "primal-02": "primal-02",
+    "primal-01": "primal-01"
+  },
+  "limitations": "Validation uses held-out synthetic samples. Accuracy on real game screenshots remains unverified."
+}

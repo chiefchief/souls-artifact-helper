@@ -50,6 +50,35 @@ function userProvidedRecipe(artifactId: string): CraftingRecipe {
   };
 }
 
+const primalArtifacts: ArtifactImage[] = [
+  {
+    id: "primal-01",
+    name: "Staff of Bloodlord",
+    imageUrl: "/artifacts/primal/staff-of-bloodlord.png",
+    crafting: {
+      ingredients: [
+        { artifactId: "mythic-11", quantity: 1 },
+        { artifactId: "legendary-22", quantity: 4 },
+      ],
+      source: "user-provided",
+    },
+    ratings: { pve: 0, pvp: 0 },
+  },
+  {
+    id: "primal-02",
+    name: "Mace of Judgment",
+    imageUrl: "/artifacts/primal/mace-of-judgment.png",
+    crafting: {
+      ingredients: [
+        { artifactId: "mythic-03", quantity: 1 },
+        { artifactId: "legendary-12", quantity: 4 },
+      ],
+      source: "user-provided",
+    },
+    ratings: { pve: 0, pvp: 0 },
+  },
+];
+
 const mythicArtifacts: ArtifactImage[] = [
   {
     id: "mythic-01",
@@ -289,6 +318,12 @@ const mythicArtifacts: ArtifactImage[] = [
     crafting: undefined,
     ratings: { pve: 0, pvp: 0 },
   },
+  {
+    id: "mythic-35",
+    name: "World Tree Branch",
+    imageUrl: "/artifacts/mythic/world-tree-branch.png",
+    ratings: { pve: 0, pvp: 0 },
+  },
 ];
 
 const legendaryArtifacts: ArtifactImage[] = [
@@ -494,6 +529,12 @@ const legendaryArtifacts: ArtifactImage[] = [
 
 const rawArtifactImageCollections: ArtifactImageCollection[] = [
   {
+    id: "primal",
+    title: "Primal artifacts",
+    description: "Crafted from a Mythic artifact and Legendary materials.",
+    images: primalArtifacts,
+  },
+  {
     id: "mythic",
     title: "Mythic artifacts",
     description: "These icons were cropped from the provided Mythic artifact list and mapped to their in-game names.",
@@ -508,7 +549,11 @@ const rawArtifactImageCollections: ArtifactImageCollection[] = [
   },
 ];
 
-export const artifactIdToImageUrl: Record<string, string> = [...mythicArtifacts, ...legendaryArtifacts].reduce(
+export const artifactIdToImageUrl: Record<string, string> = [
+  ...primalArtifacts,
+  ...mythicArtifacts,
+  ...legendaryArtifacts,
+].reduce(
   (map, artifact) => {
     map[artifact.id] = artifact.imageUrl;
     return map;
@@ -528,3 +573,10 @@ export const artifactImageCount = rawArtifactImageCollections.reduce(
   (total, collection) => total + collection.images.length,
   0,
 );
+
+// Keep the shipped model's class order independent of catalog additions.
+// Update this list only together with a retrained artifact classifier.
+export const artifactClassifierIds = [
+  ...Array.from({ length: 34 }, (_, index) => `mythic-${String(index + 1).padStart(2, "0")}`),
+  ...Array.from({ length: 33 }, (_, index) => `legendary-${String(index + 1).padStart(2, "0")}`),
+];

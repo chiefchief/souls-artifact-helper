@@ -137,8 +137,8 @@ type IdentifyDiamondsProps = {
 };
 
 async function identifyDiamonds({ cell, artifactId }: IdentifyDiamondsProps): Promise<DiamondsDecision> {
-  const isMythicArtifact = artifactId.startsWith("mythic-");
-  if (isMythicArtifact) {
+  const usesLegendaryDiamonds = artifactId.startsWith("legendary-");
+  if (!usesLegendaryDiamonds) {
     return { diamondMultiplier: 1 };
   }
 

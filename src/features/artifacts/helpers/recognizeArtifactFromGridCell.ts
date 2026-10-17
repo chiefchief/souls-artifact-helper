@@ -1,4 +1,4 @@
-import { artifactImageCollections } from "../../../data/artifactImageCollections";
+import { artifactClassifierIds, artifactImageCollections } from "../../../data/artifactImageCollections";
 import type * as Ort from "onnxruntime-web";
 import type { CellPreview } from "./screenshotGrid";
 
@@ -6,6 +6,7 @@ type ArtifactModelSession = {
   session: Ort.InferenceSession;
   inputName: string;
   outputName: string;
+  labels: string[];
 };
 
 let ortModulePromise: Promise<typeof Ort | null> | null = null;
@@ -114,6 +115,20 @@ async function createOrtSession(ort: typeof Ort, modelUrl: string): Promise<Ort.
   return null;
 }
 
+export function parseArtifactClassifierLabels(value: unknown): string[] | null {
+  const knownIds = new Set(
+    artifactImageCollections.flatMap((collection) => collection.images.map((artifact) => artifact.id)),
+  );
+  if (
+    !Array.isArray(value) ||
+    value.length === 0 ||
+    !value.every((id) => typeof id === "string" && knownIds.has(id)) ||
+    new Set(value).size !== value.length
+  )
+    return null;
+  return value;
+}
+
 async function getArtifactModelSession() {
   if (!artifactModelSessionPromise) {
     artifactModelSessionPromise = (async () => {
@@ -127,7 +142,20 @@ async function getArtifactModelSession() {
       const inputName = session.inputNames[0];
       const outputName = session.outputNames[0];
       if (!inputName || !outputName) return null;
-      return { session, inputName, outputName };
+      let labels = artifactClassifierIds;
+      try {
+        const response = await fetch(withBase("/models/artifacts/artifact-classifier-labels.json"));
+        if (response.ok) {
+          const parsed = parseArtifactClassifierLabels(await response.json());
+          if (!parsed) return null;
+          labels = parsed;
+        } else if (response.status !== 404) {
+          return null;
+        }
+      } catch {
+        return null;
+      }
+      return { session, inputName, outputName, labels };
     })();
   }
   return artifactModelSessionPromise;
@@ -169,9 +197,10 @@ export async function recognizeArtifactFromGridCell(cell: CellPreview): Promise<
     if (!out?.data) return null;
 
     const logits = toFloat32(out.data as Float32Array | readonly number[] | ArrayLike<number>);
+    if (logits.length !== model.labels.length) return null;
     const probs = softmax(logits);
     const { index, value } = argmax(probs);
-    const artifact = artifacts[index];
+    const artifact = artifacts.find((candidate) => candidate.id === model.labels[index]);
     if (!artifact) return null;
 
     return {

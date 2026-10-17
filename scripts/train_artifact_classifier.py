@@ -5,10 +5,11 @@ Dataset layout:
   data/artifacts_dataset/
     class_000/
     class_001/
-    ... (one folder per artifact class, folder order must match app artifacts order)
+    ... (one folder per artifact class, matched by labels.json)
 """
 from pathlib import Path
 import argparse
+import json
 import os
 import time
 import torch
@@ -24,16 +25,23 @@ def main():
     p.add_argument('--epochs', type=int, default=8)
     p.add_argument('--batch', type=int, default=64)
     p.add_argument('--model-name', type=str, default='artifact')
+    p.add_argument('--device', choices=['auto', 'cpu', 'cuda', 'mps'], default='auto')
+    p.add_argument('--workers', type=int, default=0 if os.name == 'nt' else 4,
+                   help='Data-loading processes; use 0 when shared memory is unavailable.')
     args = p.parse_args()
     if args.epochs <= 0:
         raise SystemExit('--epochs must be > 0')
     if args.batch <= 0:
         raise SystemExit('--batch must be > 0')
+    if args.workers < 0:
+        raise SystemExit('--workers must be >= 0')
 
     torch.manual_seed(42)
 
-    device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    num_workers = 0 if os.name == 'nt' else 4
+    device = args.device
+    if device == 'auto':
+        device = 'cuda' if torch.cuda.is_available() else 'mps' if torch.backends.mps.is_available() else 'cpu'
+    num_workers = args.workers
     local_torch_home = Path('.torch-cache').resolve()
     local_torch_home.mkdir(parents=True, exist_ok=True)
     os.environ['TORCH_HOME'] = str(local_torch_home)
@@ -53,6 +61,15 @@ def main():
     n_classes = len(split_ds.classes)
     if n_classes < 2:
         raise SystemExit('Need at least 2 classes')
+
+    manifest_path = args.data / 'labels.json'
+    if not manifest_path.is_file():
+        raise SystemExit('Dataset labels.json is missing. Regenerate the artifact dataset before training.')
+    labels = json.loads(manifest_path.read_text(encoding='utf-8'))
+    folder_labels = [name.split('_', 1)[1] if '_' in name else '' for name in split_ds.classes]
+    if (not isinstance(labels, list) or not all(isinstance(label, str) for label in labels)
+            or len(set(labels)) != len(labels) or labels != folder_labels):
+        raise SystemExit('Dataset labels.json does not match its class folders. Regenerate the artifact dataset.')
 
     n_total = len(split_ds)
     n_val = max(1, int(n_total * 0.15))
@@ -171,7 +188,9 @@ def main():
     pt_out = args.out.with_suffix('.pt')
     torch.save(model.state_dict(), pt_out)
     print(f"[train:{args.model_name}] checkpoint: {pt_out}", flush=True)
-    dummy = torch.randn(1, 3, 128, 128, device=device)
+    # Export on CPU regardless of training backend.
+    model.to('cpu')
+    dummy = torch.randn(1, 3, 128, 128)
     torch_version = torch.__version__.split('+', maxsplit=1)[0]
     torch_version_parts = torch_version.split('.')
     use_dynamo = tuple(int(x) for x in torch_version_parts[:2]) >= (2, 1)
@@ -203,7 +222,9 @@ def main():
             external_data=False,
             dynamo=False,
         )
-    print(f"[train:{args.model_name}] exported: {args.out}", flush=True)
+    labels_out = args.out.with_name(f"{args.out.stem}-labels.json")
+    labels_out.write_text(json.dumps(labels, indent=2) + '\n', encoding='utf-8')
+    print(f"[train:{args.model_name}] exported: {args.out} | labels: {labels_out}", flush=True)
 
 
 if __name__ == '__main__':

@@ -30,6 +30,7 @@ export type HeroId =
   | "galan"
   | "harfa"
   | "idina"
+  | "jakel"
   | "jack"
   | "kaion"
   | "karim"

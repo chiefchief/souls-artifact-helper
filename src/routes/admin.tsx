@@ -29,7 +29,7 @@ function AdminPage() {
   const collections = useMemo(
     () =>
       artifactImageCollections
-        .filter((collection) => collection.id === "mythic")
+        .filter((collection) => collection.id === "mythic" || collection.id === "primal")
         .map((collection) => ({ ...collection, images: [...collection.images].reverse() })),
     [],
   );
@@ -216,6 +216,7 @@ function AdminPage() {
           {collections.map((collection) => (
             <section key={collection.id}>
               <div className="mb-3">
+                <h2 className="text-xl font-bold">{collection.title}</h2>
                 <span className="text-sm text-souls-panel">{collection.images.length} artifacts</span>
               </div>
               <div className="space-y-3">

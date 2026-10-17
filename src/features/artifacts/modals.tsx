@@ -1,7 +1,7 @@
 import { X } from "lucide-react";
 import { useMemo, useState } from "react";
 import type { ArtifactImage } from "../../data/artifactImageCollections";
-import { extractedArtifactById, type GalleryArtifactItem } from "./utils";
+import { extractedArtifactById, getCraftingResults, type GalleryArtifactItem } from "./utils";
 
 export function ArtifactGalleryModal({
   artifacts,
@@ -15,10 +15,13 @@ export function ArtifactGalleryModal({
   const [deprioritizeOwned, setDeprioritizeOwned] = useState(false);
   const [includePvpRating, setIncludePvpRating] = useState(true);
   const [includePveRating, setIncludePveRating] = useState(true);
-  const mythicArtifacts = artifacts.filter((artifact) => artifact.key.startsWith("mythic-"));
-  const legendaryArtifacts = artifacts.filter((artifact) => artifact.key.startsWith("legendary-"));
-  const showSeparatedRarities =
-    title === "Crafted artifacts" && mythicArtifacts.length > 0 && legendaryArtifacts.length > 0;
+  const raritySections = ["primal", "mythic", "legendary"]
+    .map((rarity) => ({
+      rarity,
+      artifacts: artifacts.filter((artifact) => artifact.key.startsWith(`${rarity}-`)),
+    }))
+    .filter((section) => section.artifacts.length > 0);
+  const showSeparatedRarities = title === "Crafted artifacts" && raritySections.length > 1;
   const canDeprioritizeOwned = title === "Artifacts I can craft";
   const visibleArtifacts = useMemo(() => {
     if (!canDeprioritizeOwned) {
@@ -109,8 +112,13 @@ export function ArtifactGalleryModal({
           ) : null}
           {showSeparatedRarities ? (
             <div className="space-y-5">
-              <ArtifactGallerySection artifacts={mythicArtifacts} title="Mythic" />
-              <ArtifactGallerySection artifacts={legendaryArtifacts} title="Legendary" />
+              {raritySections.map((section) => (
+                <ArtifactGallerySection
+                  artifacts={section.artifacts}
+                  key={section.rarity}
+                  title={section.rarity[0].toUpperCase() + section.rarity.slice(1)}
+                />
+              ))}
             </div>
           ) : visibleArtifacts.length > 0 ? (
             <ArtifactGalleryGrid artifacts={visibleArtifacts} deprioritizeOwned={deprioritizeOwned} />
@@ -145,13 +153,21 @@ function ArtifactGalleryGrid({
     <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8">
       {artifacts.map((artifact) => (
         <div
-          className="relative grid aspect-square place-items-center rounded border border-souls-spirit/18 bg-souls-void/55 p-2 transition"
+          className="relative flex flex-col items-center rounded border border-souls-spirit/18 bg-souls-void/55 p-2 transition"
           data-owned={artifact.isOwned ? "true" : "false"}
           data-owned-deprioritized={deprioritizeOwned ? "true" : "false"}
           key={artifact.key}
           style={deprioritizeOwned && artifact.isOwned ? { opacity: 0.28 } : undefined}
+          title={`${artifact.name} (${artifact.key.split("-")[0]})`}
         >
-          <img alt={artifact.name} className="h-full w-full object-contain" loading="lazy" src={artifact.imageUrl} />
+          <img
+            alt={artifact.name}
+            className="aspect-square w-full object-contain"
+            loading="lazy"
+            src={artifact.imageUrl}
+          />
+          <p className="mt-1 text-center text-[10px] leading-tight">{artifact.name}</p>
+          <p className="mt-1 text-[10px] capitalize text-souls-panel">{artifact.key.split("-")[0]}</p>
           {artifact.quantity && artifact.quantity > 1 ? (
             <span className="absolute bottom-1 right-1 rounded bg-souls-gold px-1.5 py-0.5 text-[11px] font-bold text-souls-void">
               x{artifact.quantity}
@@ -173,7 +189,7 @@ export function LegendaryCountGuideModal({ onClose }: { onClose: () => void }) {
       <section
         aria-labelledby="legendary-guide-title"
         aria-modal="true"
-        className="w-full max-w-2xl overflow-hidden rounded border border-souls-spirit/30 bg-souls-night text-souls-parchment shadow-2xl"
+        className="flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded border border-souls-spirit/30 bg-souls-night text-souls-parchment shadow-2xl"
         onClick={(event) => event.stopPropagation()}
         role="dialog"
       >
@@ -222,7 +238,18 @@ export function LegendaryCountGuideModal({ onClose }: { onClose: () => void }) {
   );
 }
 
-export function MythicCraftModal({ artifact, onClose }: { artifact: ArtifactImage; onClose: () => void }) {
+export function ArtifactCraftModal({
+  artifact,
+  onClose,
+  onSelectArtifact,
+}: {
+  artifact: ArtifactImage;
+  onClose: () => void;
+  onSelectArtifact: (artifact: ArtifactImage) => void;
+}) {
+  const isLegendary = artifact.id.startsWith("legendary-");
+  const craftingResults = isLegendary ? getCraftingResults(artifact.id) : [];
+
   return (
     <div
       className="fixed inset-0 z-50 grid place-items-center bg-souls-void/78 p-4 backdrop-blur-sm"
@@ -231,16 +258,18 @@ export function MythicCraftModal({ artifact, onClose }: { artifact: ArtifactImag
     >
       <section
         aria-labelledby="craft-modal-title"
-        className="w-full max-w-2xl overflow-hidden rounded border border-souls-spirit/30 bg-souls-night text-souls-parchment shadow-2xl"
+        className="flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded border border-souls-spirit/30 bg-souls-night text-souls-parchment shadow-2xl"
         onClick={(event) => event.stopPropagation()}
         role="dialog"
         aria-modal="true"
       >
-        <div className="flex items-start justify-between gap-4 border-b border-souls-spirit/20 p-5">
+        <div className="flex shrink-0 items-start justify-between gap-4 border-b border-souls-spirit/20 p-5">
           <div className="flex gap-4">
             <img alt={artifact.name} className="size-20 rounded object-contain" src={artifact.imageUrl} />
             <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-souls-spirit">Mythic craft</p>
+              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-souls-spirit">
+                {isLegendary ? "Crafting uses" : artifact.id.startsWith("primal-") ? "Primal craft" : "Mythic craft"}
+              </p>
               <h2 className="mt-2 text-2xl font-black" id="craft-modal-title">
                 {artifact.name}
               </h2>
@@ -257,10 +286,45 @@ export function MythicCraftModal({ artifact, onClose }: { artifact: ArtifactImag
           </button>
         </div>
 
-        <div className="p-5">
-          {artifact.crafting ? (
+        <div className="overflow-y-auto p-5">
+          {isLegendary ? (
             <div>
-              <p className="text-sm text-souls-panel">Required Legendary artifacts:</p>
+              <p className="text-sm text-souls-panel">Artifacts that use {artifact.name} in their recipe:</p>
+              {craftingResults.length > 0 ? (
+                <div className="mt-4 space-y-3">
+                  {craftingResults.map((result) => (
+                    <button
+                      className="grid w-full grid-cols-[64px_minmax(0,1fr)] items-center gap-4 rounded border border-souls-spirit/18 bg-souls-void/55 p-3 text-left transition hover:border-souls-gold"
+                      key={result.id}
+                      onClick={() => onSelectArtifact(result)}
+                      type="button"
+                    >
+                      <img alt={result.name} className="size-16 rounded object-contain" src={result.imageUrl} />
+                      <div>
+                        <p className="text-xs font-semibold capitalize text-souls-spirit">{result.id.split("-")[0]}</p>
+                        <p className="mt-1 font-bold text-souls-gold">{result.name}</p>
+                        <p className="mt-2 text-xs leading-5 text-souls-panel">
+                          Required:{" "}
+                          {result
+                            .crafting!.ingredients.map(
+                              (ingredient) =>
+                                `${ingredient.quantity} × ${extractedArtifactById.get(ingredient.artifactId)?.name ?? ingredient.artifactId}`,
+                            )
+                            .join(" + ")}
+                        </p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <p className="mt-4 rounded border border-souls-spirit/18 bg-souls-void/55 p-4 text-sm text-souls-panel">
+                  No known crafting recipes use this artifact yet.
+                </p>
+              )}
+            </div>
+          ) : artifact.crafting ? (
+            <div>
+              <p className="text-sm text-souls-panel">Required artifacts:</p>
               <div className="mt-4 grid gap-3 sm:grid-cols-2">
                 {artifact.crafting.ingredients.map((ingredient) => {
                   const ingredientArtifact = extractedArtifactById.get(ingredient.artifactId);
@@ -293,7 +357,7 @@ export function MythicCraftModal({ artifact, onClose }: { artifact: ArtifactImag
             </div>
           ) : (
             <div className="rounded border border-souls-spirit/18 bg-souls-void/55 p-4 text-sm leading-6 text-souls-panel">
-              No craft recipe is mapped for this Mythic artifact yet.
+              No craft recipe is mapped for this artifact yet.
             </div>
           )}
         </div>

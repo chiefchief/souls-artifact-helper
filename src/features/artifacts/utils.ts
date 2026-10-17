@@ -5,7 +5,7 @@ import {
   type ArtifactRatings,
 } from "../../data/artifactImageCollections";
 
-export const rarityFilters = ["all", "mythic", "legendary"] as const;
+export const rarityFilters = ["all", "primal", "mythic", "legendary"] as const;
 export type RarityFilter = (typeof rarityFilters)[number];
 export const ARTIFACT_QUANTITIES_STORAGE_KEY = "souls_artifact_quantities_v1";
 
@@ -23,6 +23,12 @@ export const extractedArtifactById = new Map(
     collection.images.map((artifact) => [artifact.id, artifact] as const),
   ),
 );
+
+export function getCraftingResults(ingredientId: string): ArtifactImage[] {
+  return [...extractedArtifactById.values()].filter((artifact) =>
+    artifact.crafting?.ingredients.some((ingredient) => ingredient.artifactId === ingredientId),
+  );
+}
 
 const LEGENDARY_NON_MYTHIC_MATERIAL_IDS = new Set([
   "legendary-17", // Adventurer's Chronicle
@@ -84,7 +90,7 @@ export function buildObtainedGalleryItems(allArtifacts: ArtifactImage[], artifac
       return [];
     }
 
-    const shouldExpand = artifact.id.startsWith("mythic-");
+    const shouldExpand = artifact.id.startsWith("mythic-") || artifact.id.startsWith("primal-");
     if (!shouldExpand) {
       return [
         {

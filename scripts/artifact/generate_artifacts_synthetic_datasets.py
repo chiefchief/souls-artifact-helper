@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import io
+import json
 import random
 import re
 from pathlib import Path
@@ -63,6 +64,7 @@ def parse_artifacts(ts_path: Path) -> List[Tuple[int, str, str, str]]:
     blocks = [
         _extract_array_block(text, "mythicArtifacts"),
         _extract_array_block(text, "legendaryArtifacts"),
+        _extract_array_block(text, "primalArtifacts"),
     ]
 
     artifacts: List[Tuple[int, str, str, str]] = []
@@ -84,7 +86,15 @@ def parse_artifacts(ts_path: Path) -> List[Tuple[int, str, str, str]]:
         raise RuntimeError(
             f"Failed to parse full artifact list from artifactImageCollections.ts (parsed={len(artifacts)})"
         )
-    return artifacts
+    # Preserve the 67 classes used by the original shipped model and append
+    # new catalog entries. Future training uses the explicit labels manifest.
+    legacy_ids = [f"mythic-{i:02d}" for i in range(1, 35)] + [f"legendary-{i:02d}" for i in range(1, 34)]
+    legacy_positions = {artifact_id: i for i, artifact_id in enumerate(legacy_ids)}
+    artifacts.sort(key=lambda artifact: legacy_positions.get(artifact[1], len(legacy_ids)))
+    ids = [artifact[1] for artifact in artifacts]
+    if len(set(ids)) != len(ids):
+        raise RuntimeError("Duplicate artifact IDs in catalog")
+    return [(i, artifact_id, name, image_url) for i, (_, artifact_id, name, image_url) in enumerate(artifacts)]
 
 
 def list_screenshots(folder: Path) -> List[Path]:
@@ -558,7 +568,23 @@ def generate_artifact_dataset(
     per_class: int,
     artifact_cell_ratio: float,
 ) -> None:
+    if per_class <= 0:
+        raise ValueError("--artifact-per-class must be > 0")
+    # Fail before writing any samples if the catalog or an existing dataset is
+    # inconsistent. Never silently train on a partial set of artifacts.
+    expected_dirs = {f"{idx:03d}_{artifact_id}" for idx, artifact_id, _, _ in artifacts}
+    existing_dirs = {path.name for path in out_dir.iterdir() if path.is_dir()} if out_dir.exists() else set()
+    unexpected_dirs = existing_dirs - expected_dirs
+    if unexpected_dirs:
+        raise RuntimeError(f"Unexpected dataset folders: {sorted(unexpected_dirs)}. Use a fresh --artifact-out directory.")
+    for _, _, _, image_url in artifacts:
+        ref_path = Path('public') / image_url.lstrip('/')
+        with Image.open(ref_path) as ref:
+            ref.verify()
     out_dir.mkdir(parents=True, exist_ok=True)
+    manifest_path = out_dir / "labels.json"
+    # A failed/partial generation must not leave a seemingly valid manifest.
+    manifest_path.unlink(missing_ok=True)
     _ = max(0.0, min(1.0, artifact_cell_ratio))
     background_path = Path("assets/background/artifacts-background.png")
     if background_path.exists():
@@ -570,10 +596,6 @@ def generate_artifact_dataset(
 
     for idx, artifact_id, _name, image_url in artifacts:
         ref_path = Path('public') / image_url.lstrip('/')
-        if not ref_path.exists():
-            print(f'skip missing ref: {ref_path}')
-            continue
-
         ref_img = Image.open(ref_path).convert('RGBA')
         class_dir = out_dir / f'{idx:03d}_{artifact_id}'
         class_dir.mkdir(parents=True, exist_ok=True)
@@ -586,6 +608,9 @@ def generate_artifact_dataset(
                 equip_img=equip_img,
             )
             out.save(class_dir / f'{i:05d}.png')
+
+    manifest_path.write_text(json.dumps([artifact_id for _, artifact_id, _, _ in artifacts], indent=2) + "\n", encoding="utf-8")
+    print(f"[artifact] classes={len(artifacts)} samples_per_class={per_class} labels={manifest_path}")
 
 
 def main() -> None:
