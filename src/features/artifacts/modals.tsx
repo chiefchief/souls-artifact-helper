@@ -1,5 +1,6 @@
 import { X } from "lucide-react";
 import { useMemo, useState } from "react";
+import { usePageScrollLock } from "../../lib/usePageScrollLock";
 import type { ArtifactImage } from "../../data/artifactImageCollections";
 import { extractedArtifactById, getCraftingResults, type GalleryArtifactItem } from "./utils";
 
@@ -12,6 +13,7 @@ export function ArtifactGalleryModal({
   title: string;
   onClose: () => void;
 }) {
+  usePageScrollLock();
   const [deprioritizeOwned, setDeprioritizeOwned] = useState(false);
   const [includePvpRating, setIncludePvpRating] = useState(true);
   const [includePveRating, setIncludePveRating] = useState(true);
@@ -74,7 +76,7 @@ export function ArtifactGalleryModal({
             <X className="size-4.5" />
           </button>
         </div>
-        <div className="overflow-y-auto p-4">
+        <div className="min-h-0 overflow-y-auto overscroll-contain p-4">
           {canDeprioritizeOwned ? (
             <div className="mb-3 flex flex-wrap items-center gap-2">
               <button
@@ -180,6 +182,7 @@ function ArtifactGalleryGrid({
 }
 
 export function LegendaryCountGuideModal({ onClose }: { onClose: () => void }) {
+  usePageScrollLock();
   return (
     <div
       className="fixed inset-0 z-50 grid place-items-center bg-souls-void/78 p-4 backdrop-blur-sm"
@@ -207,7 +210,7 @@ export function LegendaryCountGuideModal({ onClose }: { onClose: () => void }) {
           </button>
         </div>
 
-        <div className="space-y-4 p-4 text-sm leading-6 text-souls-panel">
+        <div className="min-h-0 space-y-4 overflow-y-auto overscroll-contain p-4 text-sm leading-6 text-souls-panel">
           <p>Enter value by diamond level so the planner can correctly estimate what Mythic artifacts you can craft:</p>
           <ul className="space-y-2">
             <li>
@@ -247,6 +250,7 @@ export function ArtifactCraftModal({
   onClose: () => void;
   onSelectArtifact: (artifact: ArtifactImage) => void;
 }) {
+  usePageScrollLock();
   const isLegendary = artifact.id.startsWith("legendary-");
   const craftingResults = isLegendary ? getCraftingResults(artifact.id) : [];
 
@@ -286,7 +290,7 @@ export function ArtifactCraftModal({
           </button>
         </div>
 
-        <div className="overflow-y-auto p-5">
+        <div className="min-h-0 overflow-y-auto overscroll-contain p-5">
           {isLegendary ? (
             <div>
               <p className="text-sm text-souls-panel">Artifacts that use {artifact.name} in their recipe:</p>

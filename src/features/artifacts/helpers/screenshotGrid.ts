@@ -8,6 +8,9 @@ export type GridConfig = {
   rows: number;
   cols: number;
   scoreThreshold: number;
+  columnGapRatio?: number;
+  rowGapRatio?: number;
+  detectedRows?: { topRatio: number; heightRatio: number }[];
 };
 
 export type GridCell = {
@@ -15,6 +18,15 @@ export type GridCell = {
   col: number;
   bounds: Bounds;
 };
+
+export function getGridRowLayout(config: GridConfig, row: number) {
+  const rows = Math.max(1, Math.round(config.rows));
+  const detected = config.detectedRows?.length === rows ? config.detectedRows[row] : undefined;
+  if (detected) return detected;
+  const gap = Math.min(0.5 / rows, Math.max(0, config.rowGapRatio ?? 0));
+  const heightRatio = (1 - gap * (rows - 1)) / rows;
+  return { topRatio: row * (heightRatio + gap), heightRatio };
+}
 
 export type GridDebugResult = {
   imageWidth: number;
@@ -79,15 +91,28 @@ function getGridBoundsFromRatios(imageWidth: number, imageHeight: number, gridCo
   return { x, y, width: safeWidth, height: safeHeight };
 }
 
-function extractCellBounds(gridBounds: Bounds, row: number, col: number, rows: number, cols: number): Bounds {
-  const cellWidth = gridBounds.width / cols;
-  const cellHeight = gridBounds.height / rows;
+function extractCellBounds(
+  gridBounds: Bounds,
+  row: number,
+  col: number,
+  rows: number,
+  cols: number,
+  config: GridConfig,
+): Bounds {
+  const gapX = gridBounds.width * clamp(config.columnGapRatio ?? 0, 0, 0.5 / cols);
+  const cellWidth = (gridBounds.width - gapX * (cols - 1)) / cols;
+  const detectedRow = config.detectedRows?.length === rows ? config.detectedRows[row] : undefined;
+  const rowLayout = getGridRowLayout(config, row);
+  const cellHeight = gridBounds.height * rowLayout.heightRatio;
 
-  const x = Math.floor(gridBounds.x + col * cellWidth);
-  const y = Math.floor(gridBounds.y + row * cellHeight);
+  const x = Math.floor(gridBounds.x + col * (cellWidth + gapX));
+  const y = Math.floor(gridBounds.y + gridBounds.height * rowLayout.topRatio);
 
   const width = Math.max(8, Math.floor(col === cols - 1 ? gridBounds.x + gridBounds.width - x : cellWidth));
-  const height = Math.max(8, Math.floor(row === rows - 1 ? gridBounds.y + gridBounds.height - y : cellHeight));
+  const height = Math.max(
+    8,
+    Math.floor(!detectedRow && row === rows - 1 ? gridBounds.y + gridBounds.height - y : cellHeight),
+  );
 
   return { x, y, width, height };
 }
@@ -109,7 +134,7 @@ export async function debugGridSlicingFromScreenshot({
 
   for (let row = 0; row < rows; row += 1) {
     for (let col = 0; col < cols; col += 1) {
-      const bounds = extractCellBounds(gridBounds, row, col, rows, cols);
+      const bounds = extractCellBounds(gridBounds, row, col, rows, cols, gridConfig);
       cells.push({ row, col, bounds });
       debugLines.push(`slot(r${row + 1} c${col + 1}) cell=(${bounds.x},${bounds.y},${bounds.width},${bounds.height})`);
     }
@@ -167,4 +192,17 @@ export async function analyzeGridSlicing(file: File, gridConfig: GridConfig) {
   const image = await loadImageFromFile(file);
   const cellPreviews = buildCellPreviews(image, gridDebug);
   return { gridDebug, cellPreviews };
+}
+
+export async function detectGridFromScreenshot(file: File): Promise<GridConfig | null> {
+  const image = await loadImageFromFile(file);
+  const canvas = document.createElement("canvas");
+  const scale = Math.min(1, 900 / image.width, 1800 / image.height);
+  canvas.width = Math.max(1, Math.round(image.width * scale));
+  canvas.height = Math.max(1, Math.round(image.height * scale));
+  const context = canvas.getContext("2d", { willReadFrequently: true });
+  if (!context) throw new Error("Unable to read screenshot.");
+  context.drawImage(image, 0, 0, canvas.width, canvas.height);
+  const { detectScreenshotGrid } = await import("./detectScreenshotGrid");
+  return detectScreenshotGrid(context.getImageData(0, 0, canvas.width, canvas.height));
 }

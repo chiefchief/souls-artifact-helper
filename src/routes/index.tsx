@@ -6,6 +6,7 @@ import { ArtifactIconCollection } from "../features/artifacts/collection";
 import { ArtifactGalleryModal, LegendaryCountGuideModal, ArtifactCraftModal } from "../features/artifacts/modals";
 import { ScreenshotCounterPanel } from "../features/artifacts/screenshotCounterPanel";
 import { AppHeader } from "../components/AppHeader";
+import { useScrollAwareControls } from "../lib/useScrollAwareControls";
 import { fetchArtifactRatingOverrides } from "../lib/artifactRatingsApi";
 import {
   ARTIFACT_QUANTITIES_STORAGE_KEY,
@@ -34,8 +35,7 @@ function Home() {
   const [galleryModal, setGalleryModal] = useState<GalleryModalState | null>(null);
   const [isLegendaryGuideOpen, setIsLegendaryGuideOpen] = useState(false);
   const stickyControlsRef = useRef<HTMLDivElement | null>(null);
-  const [isStickyStuck, setIsStickyStuck] = useState(false);
-  const stickyStateRef = useRef(false);
+  const { isStuck: isStickyStuck, isHidden: areControlsHidden } = useScrollAwareControls(stickyControlsRef);
   const deferredQuery = useDeferredValue(query);
 
   useEffect(() => {
@@ -74,41 +74,6 @@ function Home() {
 
     window.localStorage.setItem(ARTIFACT_QUANTITIES_STORAGE_KEY, JSON.stringify(artifactQuantities));
   }, [artifactQuantities, isQuantitiesHydrated]);
-
-  useEffect(() => {
-    if (typeof window === "undefined") {
-      return;
-    }
-
-    let rafId = 0;
-    function updateStickyState() {
-      if (rafId !== 0) {
-        return;
-      }
-
-      rafId = window.requestAnimationFrame(() => {
-        const top = stickyControlsRef.current?.getBoundingClientRect().top;
-        const nextIsStuck = typeof top === "number" ? top <= 0 : false;
-        if (stickyStateRef.current !== nextIsStuck) {
-          stickyStateRef.current = nextIsStuck;
-          setIsStickyStuck(nextIsStuck);
-        }
-        rafId = 0;
-      });
-    }
-
-    updateStickyState();
-    window.addEventListener("scroll", updateStickyState, { passive: true });
-    window.addEventListener("resize", updateStickyState);
-
-    return () => {
-      if (rafId !== 0) {
-        window.cancelAnimationFrame(rafId);
-      }
-      window.removeEventListener("scroll", updateStickyState);
-      window.removeEventListener("resize", updateStickyState);
-    };
-  }, []);
 
   useEffect(() => {
     void fetchArtifactRatingOverrides()
@@ -214,6 +179,32 @@ function Home() {
     });
   }, [allArtifacts, artifactQuantities]);
 
+  const inventoryActions = (
+    <>
+      <button
+        className="inline-flex min-h-9 w-full items-center justify-center gap-2 rounded border border-souls-spirit/20 px-3 py-1.5 text-sm font-medium text-souls-panel transition hover:border-souls-leaf hover:bg-souls-leaf hover:text-souls-void md:w-auto"
+        onClick={openObtainedModal}
+        type="button"
+      >
+        Show crafted artifacts
+      </button>
+      <button
+        className="inline-flex min-h-9 w-full items-center justify-center gap-2 rounded border border-souls-spirit/20 px-3 py-1.5 text-sm font-medium text-souls-panel transition hover:border-souls-gold hover:bg-souls-gold hover:text-souls-void md:w-auto"
+        onClick={openCraftableModal}
+        type="button"
+      >
+        Show artifacts I can craft
+      </button>
+      <button
+        className="inline-flex min-h-9 w-full items-center justify-center gap-2 rounded border border-souls-ember/30 px-3 py-1.5 text-sm font-medium text-souls-panel transition hover:border-souls-ember hover:bg-souls-ember hover:text-souls-void md:w-auto"
+        onClick={resetAllArtifactQuantities}
+        type="button"
+      >
+        Reset all
+      </button>
+    </>
+  );
+
   return (
     <main className="min-h-screen bg-souls-void text-souls-parchment">
       <section className="hero-shell min-h-screen py-4">
@@ -239,48 +230,33 @@ function Home() {
             </div>
 
             <div
-              className="sticky-controls sticky top-0 z-30 mt-3 flex flex-col gap-2 rounded border border-souls-spirit/25 bg-souls-night/85 p-2 backdrop-blur-md md:flex-row md:items-center md:justify-between"
-              data-stuck={isStickyStuck}
+              className="inventory-sticky sticky top-0 z-30 mt-3"
+              data-hidden={areControlsHidden}
               ref={stickyControlsRef}
             >
-              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 md:flex md:flex-wrap">
-                {rarityFilters.map((filter) => (
-                  <button
-                    className="w-full rounded border border-souls-spirit/20 px-3 py-1.5 text-sm font-medium capitalize text-souls-panel transition data-[active=true]:border-souls-gold data-[active=true]:bg-souls-gold data-[active=true]:text-souls-void md:w-auto"
-                    data-active={rarityFilter === filter}
-                    key={filter}
-                    onClick={() => setRarityFilter(filter)}
-                    type="button"
-                  >
-                    {filter === "all" ? "All" : filter}
-                  </button>
-                ))}
-              </div>
+              <div
+                className="sticky-controls flex flex-col gap-2 rounded border border-souls-spirit/25 bg-souls-night p-1.5 md:flex-row md:items-center md:justify-between md:p-2"
+                data-stuck={isStickyStuck}
+              >
+                <div className="grid grid-cols-4 gap-1 md:flex md:flex-wrap md:gap-2">
+                  {rarityFilters.map((filter) => (
+                    <button
+                      className="min-h-10 w-full rounded border border-souls-spirit/20 px-1 py-1.5 text-xs font-medium capitalize sm:text-sm md:min-h-0 md:px-3 text-souls-panel transition data-[active=true]:border-souls-gold data-[active=true]:bg-souls-gold data-[active=true]:text-souls-void md:w-auto"
+                      data-active={rarityFilter === filter}
+                      aria-pressed={rarityFilter === filter}
+                      key={filter}
+                      onClick={() => setRarityFilter(filter)}
+                      type="button"
+                    >
+                      {filter === "all" ? "All" : filter}
+                    </button>
+                  ))}
+                </div>
 
-              <div className="grid grid-cols-1 gap-2 md:flex md:flex-wrap">
-                <button
-                  className="inline-flex min-h-9 w-full items-center justify-center gap-2 rounded border border-souls-spirit/20 px-3 py-1.5 text-sm font-medium text-souls-panel transition hover:border-souls-leaf hover:bg-souls-leaf hover:text-souls-void md:w-auto"
-                  onClick={openObtainedModal}
-                  type="button"
-                >
-                  Show crafted artifacts
-                </button>
-                <button
-                  className="inline-flex min-h-9 w-full items-center justify-center gap-2 rounded border border-souls-spirit/20 px-3 py-1.5 text-sm font-medium text-souls-panel transition hover:border-souls-gold hover:bg-souls-gold hover:text-souls-void md:w-auto"
-                  onClick={openCraftableModal}
-                  type="button"
-                >
-                  Show artifacts I can craft
-                </button>
-                <button
-                  className="inline-flex min-h-9 w-full items-center justify-center gap-2 rounded border border-souls-ember/30 px-3 py-1.5 text-sm font-medium text-souls-panel transition hover:border-souls-ember hover:bg-souls-ember hover:text-souls-void md:w-auto"
-                  onClick={resetAllArtifactQuantities}
-                  type="button"
-                >
-                  Reset all
-                </button>
+                <div className="hidden flex-wrap gap-2 md:flex">{inventoryActions}</div>
               </div>
             </div>
+            <div className="mt-2 grid grid-cols-1 gap-2 md:hidden">{inventoryActions}</div>
             <p className="mt-2 text-base font-semibold text-souls-panel/95">
               Tip: values entered in <strong>+Qty</strong> are added to the current amount.
             </p>

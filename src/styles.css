@@ -145,6 +145,8 @@ input[type="number"]::-webkit-outer-spin-button {
 .sticky-controls {
   will-change: transform;
   transition:
+    transform 160ms ease,
+    opacity 160ms ease,
     box-shadow 160ms ease,
     border-color 160ms ease,
     background-color 160ms ease;
@@ -154,6 +156,32 @@ input[type="number"]::-webkit-outer-spin-button {
   border-color: rgba(126, 212, 255, 0.45);
   background: rgba(29, 36, 53, 0.94);
   box-shadow: 0 14px 36px rgba(10, 12, 22, 0.45);
+}
+
+@media (max-width: 767px) {
+  .inventory-sticky[data-hidden="true"] {
+    pointer-events: none;
+  }
+
+  .inventory-sticky[data-hidden="true"] .sticky-controls {
+    transform: translateY(calc(-100% - 1rem));
+    opacity: 0;
+  }
+
+  .inventory-sticky:has(:focus-visible) {
+    pointer-events: auto;
+  }
+
+  .inventory-sticky:has(:focus-visible) .sticky-controls {
+    transform: none;
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sticky-controls {
+    transition: none;
+  }
 }
 
 .artifact-image {

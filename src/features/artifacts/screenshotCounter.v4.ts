@@ -3,6 +3,7 @@ import { recognizeArtifactFromGridCell } from "./helpers/recognizeArtifactFromGr
 import { recognizeDiamondsFromGridCell } from "./helpers/recognizeDiamondsFromGridCell";
 import { recognizeQuantityFromGridCell } from "./helpers/recognizeQuantityFromGridCell";
 import { artifactIdToImageUrl } from "#/data/artifactImageCollections";
+import { ARTIFACT_CONFIDENCE_THRESHOLD } from "./helpers/artifactPrediction";
 
 export type { GridConfig, GridDebugResult } from "./helpers/screenshotGrid";
 
@@ -40,8 +41,6 @@ export const defaultGridConfig: GridConfig = {
   cols: 5,
   scoreThreshold: 0.58,
 };
-
-const ARTIFACT_CONFIDENCE_THRESHOLD = 0.45;
 
 type ArtifactDecision =
   | { accepted: false }
@@ -92,7 +91,7 @@ async function identifyArtifact(cell: CellPreview): Promise<ArtifactDecision> {
   }
 
   const confidence = Number(artifact.confidence.toFixed(3));
-  if (confidence < ARTIFACT_CONFIDENCE_THRESHOLD) {
+  if (artifact.confidence < ARTIFACT_CONFIDENCE_THRESHOLD) {
     return { accepted: false };
   }
 

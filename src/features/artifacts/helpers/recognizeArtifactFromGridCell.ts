@@ -1,6 +1,12 @@
 import { artifactClassifierIds, artifactImageCollections } from "../../../data/artifactImageCollections";
 import type * as Ort from "onnxruntime-web";
 import type { CellPreview } from "./screenshotGrid";
+import {
+  ARTIFACT_CONFIDENCE_THRESHOLD,
+  ARTIFACT_RETRY_CROPS,
+  confirmArtifactPrediction,
+  type ArtifactPrediction,
+} from "./artifactPrediction";
 
 type ArtifactModelSession = {
   session: Ort.InferenceSession;
@@ -24,14 +30,16 @@ function createCanvas(width: number, height: number) {
   return canvas;
 }
 
-function canvasToCHW(canvas: HTMLCanvasElement, size: number) {
+function canvasToCHW(canvas: HTMLCanvasElement, size: number, cropRatio = 0) {
   const resized = createCanvas(size, size);
   const ctx = resized.getContext("2d");
   const chw = new Float32Array(3 * size * size);
   if (!ctx) return chw;
 
   ctx.imageSmoothingEnabled = true;
-  ctx.drawImage(canvas, 0, 0, size, size);
+  const insetX = canvas.width * cropRatio;
+  const insetY = canvas.height * cropRatio;
+  ctx.drawImage(canvas, insetX, insetY, canvas.width - 2 * insetX, canvas.height - 2 * insetY, 0, 0, size, size);
   const data = ctx.getImageData(0, 0, size, size).data;
   const hw = size * size;
   for (let i = 0, p = 0; i < data.length; i += 4, p += 1) {
@@ -190,23 +198,44 @@ export async function recognizeArtifactFromGridCell(cell: CellPreview): Promise<
     if (!context) return null;
     context.drawImage(image, 0, 0);
 
-    const input = canvasToCHW(canvas, 128);
-    const tensor = new ort.Tensor("float32", input, [1, 3, 128, 128]);
-    const outputs = await model.session.run({ [model.inputName]: tensor });
-    const out = outputs[model.outputName];
-    if (!out?.data) return null;
+    const predict = async (cropRatio = 0): Promise<ArtifactPrediction | null> => {
+      const tensor = new ort.Tensor("float32", canvasToCHW(canvas, 128, cropRatio), [1, 3, 128, 128]);
+      let out: Ort.Tensor | undefined;
+      try {
+        const outputs = await model.session.run({ [model.inputName]: tensor });
+        out = outputs[model.outputName];
+        if (!out?.data) return null;
+        const logits = toFloat32(out.data as Float32Array | readonly number[] | ArrayLike<number>);
+        if (logits.length !== model.labels.length) return null;
+        const best = argmax(softmax(logits));
+        return { index: best.index, confidence: best.value };
+      } finally {
+        tensor.dispose();
+        out?.dispose();
+      }
+    };
 
-    const logits = toFloat32(out.data as Float32Array | readonly number[] | ArrayLike<number>);
-    if (logits.length !== model.labels.length) return null;
-    const probs = softmax(logits);
-    const { index, value } = argmax(probs);
+    const original = await predict();
+    if (!original) return null;
+    let prediction = original;
+    if (original.confidence < ARTIFACT_CONFIDENCE_THRESHOLD) {
+      const retries: ArtifactPrediction[] = [];
+      for (const cropRatio of ARTIFACT_RETRY_CROPS) {
+        const retry = await predict(cropRatio);
+        if (!retry) break;
+        retries.push(retry);
+        if (retry.index !== original.index || retry.confidence < 0.8) break;
+      }
+      prediction = confirmArtifactPrediction(original, retries);
+    }
+    const { index, confidence } = prediction;
     const artifact = artifacts.find((candidate) => candidate.id === model.labels[index]);
     if (!artifact) return null;
 
     return {
       artifactId: artifact.id,
       artifactName: artifact.name,
-      confidence: value,
+      confidence,
       cellImageUrl: cell.imageUrl,
     };
   } catch {
