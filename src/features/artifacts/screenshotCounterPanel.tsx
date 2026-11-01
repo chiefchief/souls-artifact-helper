@@ -12,10 +12,12 @@ import {
 import { createPortal } from "react-dom";
 import { usePageScrollLock } from "../../lib/usePageScrollLock";
 import { artifactImageCollections, type ArtifactImage } from "../../data/artifactImageCollections";
+import { ArtifactSelectionDialog } from "./artifactSelectionDialog";
 import {
   countArtifactsFromGridCells,
   defaultGridConfig,
   type CounterResult,
+  type DetectedArtifact,
   type GridConfig,
 } from "./screenshotCounter.v4";
 import {
@@ -176,6 +178,7 @@ function ScreenshotRecognitionReview({
   allArtifacts,
   excludedCellKeys,
   onToggleCell,
+  onEditCell,
   cols,
 }: {
   result: CounterResult;
@@ -183,6 +186,7 @@ function ScreenshotRecognitionReview({
   allArtifacts: ArtifactImage[];
   excludedCellKeys: Set<string>;
   onToggleCell: (row: number, col: number) => void;
+  onEditCell: (cell: CellPreview) => void;
   cols: number;
 }) {
   const detections = new Map(result.detections.map((item) => [detectionCellKey(item.row, item.col), item]));
@@ -216,17 +220,34 @@ function ScreenshotRecognitionReview({
                   alt={`Screenshot ${position}`}
                   className="aspect-square w-full rounded object-contain"
                 />
-                {recognizedImage ? (
-                  <img src={recognizedImage} alt={name} className="aspect-square w-full rounded object-contain" />
-                ) : (
-                  <div
-                    role="img"
-                    aria-label="Not recognized"
-                    className="grid aspect-square place-items-center rounded border border-dashed border-souls-gold/30 text-lg text-souls-gold"
-                  >
-                    ?
-                  </div>
-                )}
+                <button
+                  type="button"
+                  aria-label={`Choose artifact ${position}`}
+                  onClick={() => onEditCell(cell)}
+                  className="relative min-w-0 rounded transition hover:ring-2 hover:ring-souls-gold focus-visible:outline-2 focus-visible:outline-souls-gold"
+                >
+                  {recognizedImage ? (
+                    <img src={recognizedImage} alt={name} className="aspect-square w-full rounded object-contain" />
+                  ) : (
+                    <div
+                      role="img"
+                      aria-label="Not recognized"
+                      className="flex aspect-square flex-col items-center justify-center gap-1 rounded border border-dashed border-souls-gold/30 text-center text-souls-gold"
+                    >
+                      <span className="text-xl leading-none">?</span>
+                      <span className="text-[10px] leading-tight">
+                        Tap to
+                        <br />
+                        choose
+                      </span>
+                    </div>
+                  )}
+                  {detection && (
+                    <span className="absolute bottom-0 right-0 rounded-tl bg-souls-night/90 px-1 text-[10px] font-semibold text-souls-gold">
+                      Edit
+                    </span>
+                  )}
+                </button>
               </div>
               <div className="mt-1 flex min-h-8 items-center justify-between gap-1">
                 <span className={`pl-1 text-sm font-semibold ${isExcluded ? "text-souls-ember" : "text-souls-gold"}`}>
@@ -287,6 +308,8 @@ function ScreenshotCounterModal({
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [isDragActive, setIsDragActive] = useState(false);
   const [excludedCellKeys, setExcludedCellKeys] = useState<Set<string>>(() => new Set());
+  const [corrections, setCorrections] = useState<Record<string, DetectedArtifact>>({});
+  const [editingCell, setEditingCell] = useState<CellPreview | null>(null);
   const [adjustGrid, setAdjustGrid] = useState(false);
   const [showOriginal, setShowOriginal] = useState(false);
   const isBusy = isRunning || gridStatus === "detecting";
@@ -295,6 +318,8 @@ function ScreenshotCounterModal({
 
   useEffect(() => {
     setExcludedCellKeys(new Set());
+    setCorrections({});
+    setEditingCell(null);
     if (result && contentRef.current) contentRef.current.scrollTop = 0;
   }, [result]);
 
@@ -430,7 +455,13 @@ function ScreenshotCounterModal({
     });
   }
 
-  const filteredCounts = result ? buildCountsFromDetections(result.detections, excludedCellKeys) : {};
+  const reviewedResult = useMemo(() => {
+    if (!result) return null;
+    const detections = new Map(result.detections.map((item) => [detectionCellKey(item.row, item.col), item]));
+    for (const [key, correction] of Object.entries(corrections)) detections.set(key, correction);
+    return { ...result, detections: [...detections.values()] };
+  }, [result, corrections]);
+  const filteredCounts = reviewedResult ? buildCountsFromDetections(reviewedResult.detections, excludedCellKeys) : {};
 
   return (
     <div
@@ -443,6 +474,7 @@ function ScreenshotCounterModal({
       role="presentation"
     >
       <section
+        inert={Boolean(editingCell)}
         aria-modal="true"
         aria-labelledby="screenshot-counter-title"
         className={
@@ -734,11 +766,12 @@ function ScreenshotCounterModal({
 
               {result && (
                 <ScreenshotRecognitionReview
-                  result={result}
+                  result={reviewedResult!}
                   sourceCells={sourceCells}
                   allArtifacts={allArtifacts}
                   excludedCellKeys={excludedCellKeys}
                   onToggleCell={toggleDetectionCell}
+                  onEditCell={setEditingCell}
                   cols={gridConfig.cols}
                 />
               )}
@@ -770,6 +803,38 @@ function ScreenshotCounterModal({
           </div>
         )}
       </section>
+      {editingCell && (
+        <ArtifactSelectionDialog
+          key={detectionCellKey(editingCell.row, editingCell.col)}
+          cell={editingCell}
+          detection={reviewedResult?.detections.find(
+            (item) => item.row === editingCell.row && item.col === editingCell.col,
+          )}
+          allArtifacts={allArtifacts}
+          onClose={() => setEditingCell(null)}
+          onSelect={(artifact, quantity) => {
+            const key = detectionCellKey(editingCell.row, editingCell.col);
+            setCorrections((current) => ({
+              ...current,
+              [key]: {
+                row: editingCell.row,
+                col: editingCell.col,
+                artifactId: artifact.id,
+                artifactName: artifact.name,
+                quantity,
+                score: 1,
+                cellImageUrl: artifact.imageUrl,
+              },
+            }));
+            setExcludedCellKeys((current) => {
+              const next = new Set(current);
+              next.delete(key);
+              return next;
+            });
+            setEditingCell(null);
+          }}
+        />
+      )}
     </div>
   );
 }

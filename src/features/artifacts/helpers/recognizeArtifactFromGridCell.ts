@@ -18,6 +18,16 @@ type ArtifactModelSession = {
 let ortModulePromise: Promise<typeof Ort | null> | null = null;
 let artifactModelSessionPromise: Promise<ArtifactModelSession | null> | null = null;
 
+export type ArtifactCandidate = { artifactId: string; confidence: number };
+// Keep scores even when automatic recognition rejects a cell. Weak keys release
+// the screenshot data when the review is removed and avoid another model run in the picker.
+const candidatesByCell = new WeakMap<CellPreview, ArtifactCandidate[]>();
+
+export async function getArtifactCandidates(cell: CellPreview): Promise<ArtifactCandidate[]> {
+  if (!candidatesByCell.has(cell)) await recognizeArtifactFromGridCell(cell);
+  return candidatesByCell.get(cell) ?? [];
+}
+
 function withBase(path: string): string {
   const base = import.meta.env.BASE_URL.endsWith("/") ? import.meta.env.BASE_URL : `${import.meta.env.BASE_URL}/`;
   return `${base}${path.replace(/^\//, "")}`;
@@ -207,7 +217,14 @@ export async function recognizeArtifactFromGridCell(cell: CellPreview): Promise<
         if (!out?.data) return null;
         const logits = toFloat32(out.data as Float32Array | readonly number[] | ArrayLike<number>);
         if (logits.length !== model.labels.length) return null;
-        const best = argmax(softmax(logits));
+        const probabilities = softmax(logits);
+        if (cropRatio === 0) {
+          candidatesByCell.set(
+            cell,
+            model.labels.map((artifactId, index) => ({ artifactId, confidence: probabilities[index] })),
+          );
+        }
+        const best = argmax(probabilities);
         return { index: best.index, confidence: best.value };
       } finally {
         tensor.dispose();

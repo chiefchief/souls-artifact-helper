@@ -174,9 +174,7 @@ async function processCell({ cell }: { cell: CellPreview }): Promise<CellItem | 
     return;
   }
 
-  const { baseQty } = await identifyQuantity(cell);
-  const { diamondMultiplier } = await identifyDiamonds({ cell, artifactId: artifact.artifactId });
-  const quantity = baseQty * diamondMultiplier;
+  const quantity = await recognizeArtifactQuantity(cell, artifact.artifactId);
 
   return {
     artifactId: artifact.artifactId,
@@ -187,6 +185,14 @@ async function processCell({ cell }: { cell: CellPreview }): Promise<CellItem | 
     col: cell.col,
     cellImageUrl: artifactIdToImageUrl[artifact.artifactId] ?? artifact.cellImageUrl,
   };
+}
+
+// Manual selections still use the quantity and Legendary diamond models,
+// even when the artifact classifier rejected this cell.
+export async function recognizeArtifactQuantity(cell: CellPreview, artifactId: string): Promise<number> {
+  const { baseQty } = await identifyQuantity(cell);
+  const { diamondMultiplier } = await identifyDiamonds({ cell, artifactId });
+  return baseQty * diamondMultiplier;
 }
 
 export async function countArtifactsFromGridCells({ cells }: { cells: CellPreview[] }): Promise<CounterResult> {

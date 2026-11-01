@@ -3,7 +3,12 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { ScreenshotCounterPanel } from "./screenshotCounterPanel";
 import { analyzeGridSlicing, detectGridFromScreenshot } from "./helpers/screenshotGrid";
-import { countArtifactsFromGridCells, defaultGridConfig } from "./screenshotCounter.v4";
+import { countArtifactsFromGridCells, defaultGridConfig, recognizeArtifactQuantity } from "./screenshotCounter.v4";
+import { detectArtifactRarityFromImage } from "./helpers/artifactRarity";
+import { getArtifactCandidates } from "./helpers/recognizeArtifactFromGridCell";
+
+vi.mock("./helpers/artifactRarity", () => ({ detectArtifactRarityFromImage: vi.fn(async () => null) }));
+vi.mock("./helpers/recognizeArtifactFromGridCell", () => ({ getArtifactCandidates: vi.fn(async () => []) }));
 
 vi.mock("./helpers/screenshotGrid", async (importOriginal) => ({
   ...(await importOriginal<typeof import("./helpers/screenshotGrid")>()),
@@ -13,6 +18,7 @@ vi.mock("./helpers/screenshotGrid", async (importOriginal) => ({
 vi.mock("./screenshotCounter.v4", () => ({
   defaultGridConfig: { xRatio: 0, yRatio: 0, widthRatio: 1, heightRatio: 1, rows: 4, cols: 5, scoreThreshold: 0.58 },
   countArtifactsFromGridCells: vi.fn(async () => ({ detections: [], counts: {} })),
+  recognizeArtifactQuantity: vi.fn(async () => 4),
 }));
 
 afterEach(() => {
@@ -30,6 +36,65 @@ function openUpload(onApplyCounts = vi.fn()) {
 }
 
 describe("screenshot grid workflow", () => {
+  it("fills a missed cell using the background filter, search and manual quantity, then applies it once", async () => {
+    vi.mocked(detectArtifactRarityFromImage).mockResolvedValue("legendary");
+    vi.mocked(getArtifactCandidates).mockResolvedValue([
+      { artifactId: "legendary-01", confidence: 0.05 },
+      { artifactId: "legendary-29", confidence: 0.25 },
+      { artifactId: "mythic-01", confidence: 0.6 },
+    ]);
+    vi.mocked(recognizeArtifactQuantity).mockResolvedValue(4);
+    vi.mocked(detectGridFromScreenshot).mockResolvedValue({ ...defaultGridConfig, rows: 1, cols: 1 });
+    vi.mocked(analyzeGridSlicing).mockResolvedValue({
+      cellPreviews: [{ row: 0, col: 0, bounds: { x: 0, y: 0, width: 80, height: 80 }, imageUrl: "data:missed" }],
+      gridDebug: {} as never,
+    });
+    vi.mocked(countArtifactsFromGridCells).mockResolvedValue({ detections: [], counts: {} });
+    const onApply = vi.fn();
+    fireEvent.change(openUpload(onApply), { target: { files: [new File(["image"], "inventory.png")] } });
+    await waitFor(() =>
+      expect((screen.getByRole("button", { name: "Analyze screenshot" }) as HTMLButtonElement).disabled).toBe(false),
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Analyze screenshot" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Choose artifact row 1 column 1" }));
+    const picker = screen.getByRole("dialog", { name: "Choose artifact" });
+    await waitFor(() =>
+      expect(within(picker).getByRole("button", { name: "legendary" }).getAttribute("aria-pressed")).toBe("true"),
+    );
+    expect(within(picker).queryByRole("button", { name: "Select Oblivion (mythic)" })).toBeNull();
+    await waitFor(() =>
+      expect(
+        within(picker)
+          .getAllByRole("button", { name: /^Select / })[0]
+          .getAttribute("aria-label"),
+      ).toBe("Select Guardian of the Sage (legendary)"),
+    );
+    fireEvent.click(within(picker).getByRole("button", { name: "legendary" }));
+    expect(within(picker).getByRole("button", { name: "Select Oblivion (mythic)" })).toBeDefined();
+    expect(
+      within(picker)
+        .getAllByRole("button", { name: /^Select / })[0]
+        .getAttribute("aria-label"),
+    ).toBe("Select Oblivion (mythic)");
+    fireEvent.click(within(picker).getByRole("button", { name: "legendary" }));
+    fireEvent.change(within(picker).getByRole("searchbox"), { target: { value: "Guardian of the Sage" } });
+    fireEvent.click(within(picker).getByRole("button", { name: "Select Guardian of the Sage (legendary)" }));
+    await waitFor(() =>
+      expect((within(picker).getByRole("spinbutton", { name: "Artifact quantity" }) as HTMLInputElement).value).toBe(
+        "4",
+      ),
+    );
+    fireEvent.change(within(picker).getByRole("spinbutton", { name: "Artifact quantity" }), { target: { value: "6" } });
+    fireEvent.click(within(picker).getByRole("button", { name: "Use artifact" }));
+    expect(screen.queryByRole("dialog", { name: "Choose artifact" })).toBeNull();
+    expect(screen.getByText("Qty: 6")).toBeDefined();
+    fireEvent.click(screen.getByRole("button", { name: "Choose artifact row 1 column 1" }));
+    fireEvent.keyDown(screen.getByRole("searchbox"), { key: "Escape" });
+    expect(screen.getByText("Qty: 6")).toBeDefined();
+    fireEvent.click(screen.getByRole("button", { name: "Add detected counts" }));
+    expect(onApply).toHaveBeenCalledWith({ "legendary-29": 6 });
+  });
+
   it("compares all source cells inline, keeps missed cells visible, and applies exclusions", async () => {
     vi.mocked(detectGridFromScreenshot).mockResolvedValue({ ...defaultGridConfig, rows: 1, cols: 3 });
     vi.mocked(analyzeGridSlicing).mockResolvedValue({
@@ -100,6 +165,42 @@ describe("screenshot grid workflow", () => {
     // Editing the grid invalidates results from its previous position.
     fireEvent.change(screen.getByRole("combobox", { name: "Rows" }), { target: { value: "2" } });
     expect(screen.queryByRole("button", { name: "Add detected counts" })).toBeNull();
+  });
+
+  it("replaces a recognized cell without keeping its previous artifact count", async () => {
+    vi.mocked(detectArtifactRarityFromImage).mockResolvedValue(null);
+    vi.mocked(recognizeArtifactQuantity).mockResolvedValue(2);
+    vi.mocked(detectGridFromScreenshot).mockResolvedValue({ ...defaultGridConfig, rows: 1, cols: 1 });
+    vi.mocked(analyzeGridSlicing).mockResolvedValue({
+      cellPreviews: [{ row: 0, col: 0, bounds: { x: 0, y: 0, width: 80, height: 80 }, imageUrl: "data:wrong" }],
+      gridDebug: {} as never,
+    });
+    vi.mocked(countArtifactsFromGridCells).mockResolvedValue({
+      counts: { "legendary-29": 4 },
+      detections: [
+        { row: 0, col: 0, artifactId: "legendary-29", artifactName: "Guardian of the Sage", quantity: 4, score: 0.9 },
+      ],
+    });
+    const onApply = vi.fn();
+    fireEvent.change(openUpload(onApply), { target: { files: [new File(["image"], "inventory.png")] } });
+    await waitFor(() =>
+      expect((screen.getByRole("button", { name: "Analyze screenshot" }) as HTMLButtonElement).disabled).toBe(false),
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Analyze screenshot" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Choose artifact row 1 column 1" }));
+    const picker = screen.getByRole("dialog", { name: "Choose artifact" });
+    fireEvent.click(within(picker).getByRole("button", { name: "Select Oblivion (mythic)" }));
+    await waitFor(() =>
+      expect((within(picker).getByRole("spinbutton", { name: "Artifact quantity" }) as HTMLInputElement).value).toBe(
+        "2",
+      ),
+    );
+    fireEvent.click(within(picker).getByRole("button", { name: "Use artifact" }));
+    fireEvent.click(screen.getByRole("button", { name: "Exclude detection row 1 column 1" }));
+    fireEvent.click(screen.getByRole("button", { name: "Restore detection row 1 column 1" }));
+    expect(screen.getByText("Qty: 2")).toBeDefined();
+    fireEvent.click(screen.getByRole("button", { name: "Add detected counts" }));
+    expect(onApply).toHaveBeenCalledWith({ "mythic-01": 2 });
   });
 
   it("offers manual controls when no reliable grid is found", async () => {
