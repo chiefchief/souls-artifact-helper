@@ -1,5 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { emptyTeam, placeHero, restoreMatchup, shareMatchup, readSharedMatchup } from "./state";
+import {
+  emptyTeam,
+  equipArtifact,
+  equipRune,
+  placeHero,
+  restoreMatchup,
+  shareMatchup,
+  readSharedMatchup,
+} from "./state";
 
 describe("team formations", () => {
   it("limits each team to five heroes but allows replacements", () => {
@@ -71,4 +79,145 @@ it("rejects invalid compact positions", () => {
   ]) {
     expect(readSharedMatchup(hash, new Set(["a", "b"]), new Set())).toBeNull();
   }
+});
+
+describe("hero artifacts", () => {
+  it("rejects incompatible equipment when assigning, restoring or opening a shared setup", () => {
+    const healer = placeHero(emptyTeam(), 0, "aolmond");
+    expect(equipArtifact(healer, "aolmond", "mythic-19")).toBe(healer);
+    expect(equipArtifact(healer, "aolmond", "mythic-23").artifacts).toEqual({ aolmond: "mythic-23" });
+    expect(equipArtifact(healer, "aolmond", "mythic-04").artifacts).toEqual({ aolmond: "mythic-04" });
+    const tank = placeHero(emptyTeam(), 0, "richelle");
+    expect(equipArtifact(tank, "richelle", "mythic-19").artifacts).toEqual({ richelle: "mythic-19" });
+    expect(equipArtifact(tank, "richelle", "mythic-23")).toBe(tank);
+    const heroIds = new Set(["aolmond", "richelle"]);
+    const restored = restoreMatchup(
+      JSON.stringify({ ally: { ...healer, artifacts: { aolmond: "mythic-19" } } }),
+      heroIds,
+      new Set(),
+    );
+    expect(restored.ally.slots[0]).toBe("aolmond");
+    expect(restored.ally.artifacts).toBeUndefined();
+    expect(readSharedMatchup("#setup=4/1-aolmond/-/1-mythic-19/-/-/-/-/-", heroIds, new Set())).toBeNull();
+    expect(
+      readSharedMatchup("#setup=4/1-aolmond/-/1-mythic-23/-/-/-/-/-", heroIds, new Set())?.enemy.artifacts,
+    ).toEqual({ aolmond: "mythic-23" });
+  });
+  it("keeps artifacts with heroes when moving and swapping, and clears removed heroes", () => {
+    let team = placeHero(placeHero(emptyTeam(), 0, "a"), 1, "b");
+    team = equipArtifact(equipArtifact(team, "a", "mythic-03"), "b", "primal-02");
+    team = placeHero(team, 1, "a");
+    expect(team.slots.slice(0, 2)).toEqual(["b", "a"]);
+    expect(team.artifacts).toEqual({ a: "mythic-03", b: "primal-02" });
+    team = placeHero(team, 7, "a");
+    expect(team.artifacts?.a).toBe("mythic-03");
+    team = placeHero(team, 7, "c");
+    expect(team.artifacts).toEqual({ b: "primal-02" });
+    expect(placeHero(team, 0, null).artifacts).toBeUndefined();
+  });
+
+  it("allows removing equipment and rejects unknown artifacts or absent heroes", () => {
+    const team = placeHero(emptyTeam(), 0, "a");
+    expect(equipArtifact(team, "b", "mythic-03")).toBe(team);
+    expect(equipArtifact(team, "a", "unknown")).toBe(team);
+    expect(equipArtifact(equipArtifact(team, "a", "mythic-03"), "a", null)).toEqual(team);
+  });
+
+  it("round trips independent equipment for the same hero on opposing teams", () => {
+    const matchup = {
+      enemy: equipArtifact(placeHero(emptyTeam(), 0, "a"), "a", "mythic-03"),
+      ally: equipArtifact(placeHero(emptyTeam(), 7, "a"), "a", "primal-02"),
+    };
+    const heroIds = new Set(["a"]);
+    const url = new URL(shareMatchup(matchup, "https://example.com/team-builder"));
+    expect(readSharedMatchup(url.hash, heroIds, new Set())).toEqual(matchup);
+    expect(restoreMatchup(JSON.stringify(matchup), heroIds, new Set())).toEqual(matchup);
+  });
+
+  it("drops stale equipment from storage and rejects invalid equipment in links", () => {
+    const result = restoreMatchup(
+      JSON.stringify({
+        enemy: {
+          slots: ["a", "b"],
+          artifacts: { a: "mythic-03", b: "unknown", c: "primal-02" },
+        },
+      }),
+      new Set(["a", "b"]),
+      new Set(),
+    );
+    expect(result.enemy.artifacts).toEqual({ a: "mythic-03" });
+    for (const equipment of ["1-unknown", "2-mythic-03", "1-mythic-03,1-primal-02"]) {
+      expect(readSharedMatchup(`#setup=3/1-a/-/${equipment}/-/-/-`, new Set(["a"]), new Set())).toBeNull();
+    }
+  });
+
+  it("opens existing compact links without equipment", () => {
+    expect(readSharedMatchup("#setup=2/1-a/-/-/-", new Set(["a"]), new Set())).toEqual({
+      enemy: placeHero(emptyTeam(), 0, "a"),
+      ally: emptyTeam(),
+    });
+  });
+});
+
+describe("hero runes", () => {
+  it("keeps a rune and its optional ability with its hero across movement and swaps", () => {
+    let team = placeHero(placeHero(emptyTeam(), 0, "a"), 1, "b");
+    team = equipRune(team, "a", { runeId: "80001_5", ability: 6 });
+    team = equipRune(team, "b", { runeId: "80101_5", ability: null });
+    team = placeHero(team, 1, "a");
+    expect(team.slots.slice(0, 2)).toEqual(["b", "a"]);
+    expect(team.runes).toEqual({ a: { runeId: "80001_5", ability: 6 }, b: { runeId: "80101_5", ability: null } });
+    team = placeHero(team, 7, "a");
+    expect(team.runes?.a.ability).toBe(6);
+    team = placeHero(team, 7, "c");
+    expect(team.runes?.a).toBeUndefined();
+    expect(equipRune(team, "b", null).runes).toBeUndefined();
+  });
+
+  it("round trips runes with and without abilities alongside artifacts and pets", () => {
+    const matchup = {
+      enemy: equipRune(equipArtifact({ ...placeHero(emptyTeam(), 2, "a"), petId: "p" }, "a", "mythic-03"), "a", {
+        runeId: "81101_5",
+        ability: 3,
+      }),
+      ally: equipRune(placeHero(emptyTeam(), 7, "a"), "a", { runeId: "80001_5", ability: null }),
+    };
+    const heroIds = new Set(["a"]),
+      petIds = new Set(["p"]);
+    const hash = new URL(shareMatchup(matchup, "https://example.com/team-builder")).hash;
+    expect(readSharedMatchup(hash, heroIds, petIds)).toEqual(matchup);
+    expect(restoreMatchup(JSON.stringify(matchup), heroIds, petIds)).toEqual(matchup);
+  });
+
+  it("rejects invalid rune types, abilities, unoccupied positions and duplicates", () => {
+    const team = placeHero(emptyTeam(), 0, "a");
+    expect(equipRune(team, "absent", { runeId: "80001_5", ability: null })).toBe(team);
+    expect(equipRune(team, "a", { runeId: "missing", ability: null })).toBe(team);
+    expect(equipRune(team, "a", { runeId: "80001_5", ability: 7 })).toBe(team);
+    expect(equipRune(team, "a", { runeId: "80001_4", ability: null })).toBe(team);
+    for (const encoded of ["1-99999_5-1", "1-80001_5-7", "1-80001_4-1", "2-80001_5-0", "1-80001_5-1,1-80101_5-0"]) {
+      expect(readSharedMatchup(`#setup=4/1-a/-/-/${encoded}/-/-/-/-`, new Set(["a"]), new Set())).toBeNull();
+    }
+  });
+
+  it("drops stale runes on restore and keeps version 3 artifact links working", () => {
+    const restored = restoreMatchup(
+      JSON.stringify({
+        ally: {
+          slots: ["a", "b"],
+          runes: {
+            a: { runeId: "80001_5", ability: null },
+            b: { runeId: "80101_5", ability: 7 },
+            absent: { runeId: "80001_5", ability: 1 },
+          },
+        },
+      }),
+      new Set(["a", "b"]),
+      new Set(),
+    );
+    expect(restored.ally.runes).toEqual({ a: { runeId: "80001_5", ability: null } });
+    expect(readSharedMatchup("#setup=3/1-a/-/1-mythic-03/-/-/-", new Set(["a"]), new Set())?.enemy.artifacts).toEqual({
+      a: "mythic-03",
+    });
+  });
 });

@@ -1,0 +1,23 @@
+.rune-icon {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  flex-shrink: 0;
+}
+.rune-icon img.rune-icon__image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 0;
+}
+.rune-icon img.rune-icon__ability {
+  position: absolute;
+  display: block;
+  height: auto;
+  aspect-ratio: auto;
+  object-fit: contain;
+  border-radius: 0;
+  background: transparent;
+}

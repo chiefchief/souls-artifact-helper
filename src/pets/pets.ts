@@ -15,21 +15,22 @@ import { tianum } from "./tianum/skills";
 import { vailo } from "./vailo/skills";
 
 export const pets = [
-  banavi,
-  bloombell,
-  estelle,
   gladis,
-  hamm,
-  katatsu,
-  manti,
-  moko,
-  mystet,
   nasrune,
   romaelle,
-  silbren,
-  spooky,
   tianum,
+  hamm,
+  spooky,
+  mystet,
+  bloombell,
+  silbren,
   vailo,
+  estelle,
+  banavi,
+  moko,
+  katatsu,
+  manti,
 ];
 
 export type { Pet } from "./types";
+export { petBattleRules, petReferenceBonuses } from "./mechanics";

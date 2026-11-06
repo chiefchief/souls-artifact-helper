@@ -21,7 +21,7 @@
   --team-color: #ee9c88;
 }
 .formation-grid {
-  max-width: 340px;
+  max-width: 356px;
   margin: 18px auto 0;
   padding: 0 52px;
 }
@@ -29,12 +29,12 @@
   position: relative;
   display: flex;
   justify-content: center;
-  gap: 4px;
-  margin-top: 5px;
+  gap: 16px;
+  margin-top: 8px;
 }
 .formation-cell {
   position: relative;
-  width: calc((100% - 8px) / 3);
+  width: calc((100% - 32px) / 3);
   flex-shrink: 0;
 }
 .formation-slot {
@@ -100,6 +100,43 @@
   right: -7px;
   z-index: 2;
 }
+.hero-artifact {
+  position: absolute;
+  right: -3px;
+  bottom: -3px;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 46%;
+  min-width: 32px;
+  aspect-ratio: 1;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid #f6c85f88;
+  border-radius: 5px;
+  background: #111522;
+  color: #f6c85f;
+  cursor: pointer;
+}
+.hero-artifact img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.hero-rune {
+  right: auto;
+  left: -3px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: #b981ff;
+  overflow: visible;
+}
+.hero-artifact:hover,
+.hero-artifact:focus-visible {
+  outline: 2px solid #f6c85f;
+  outline-offset: 1px;
+}
 .cell-actions button {
   display: grid;
   place-items: center;
@@ -141,13 +178,15 @@
 }
 .pet-slot {
   position: absolute;
-  width: calc((100% - 8px) / 3);
+  width: calc((100% - 32px) / 3);
+  top: 50%;
+  transform: translateY(-50%) scale(0.7);
 }
 .pet-enemy {
-  left: calc(100% - (100% - 8px) / 6 + 4px);
+  left: calc(50% + (100% - 32px) / 3 + 24px);
 }
 .pet-ally {
-  right: calc(100% - (100% - 8px) / 6 + 4px);
+  right: calc(50% + (100% - 32px) / 3 + 24px);
 }
 .front-line {
   margin: 10px 0 0;
@@ -304,6 +343,11 @@
 .mobile-picker-dialog::backdrop {
   background: #080d18bb;
   backdrop-filter: blur(4px);
+}
+.formation-export-dialog[open] {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 .mobile-picker-dialog .formation-picker {
   border: 0;

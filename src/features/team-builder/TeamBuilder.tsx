@@ -1,10 +1,37 @@
+import { RunePicker } from "./RunePicker";
+import { mapHeroRuneToAppearance, runeAbilityByKey, runeByType } from "./runes";
+import { RuneIcon } from "./RuneIcon";
 import { exportFormationImage } from "./exportImage";
+import { ArtifactPicker, formationArtifactById } from "./ArtifactPicker";
+import { PetDetails } from "./PetDetails";
 import { NotificationToast } from "../../components/NotificationToast";
 import { useEffect, useState, useRef, type PointerEvent } from "react";
-import { ArrowDownUp, PawPrint, Plus, Search, Shield, Swords, X, Share2, Camera, Download } from "lucide-react";
+import {
+  Gem,
+  Hexagon,
+  ArrowDownUp,
+  PawPrint,
+  Plus,
+  Search,
+  Shield,
+  Swords,
+  X,
+  Share2,
+  Camera,
+  Download,
+} from "lucide-react";
 import { heroes } from "../../heroes/heroes";
 import { pets } from "../../pets/pets";
-import { emptyTeam, placeHero, restoreMatchup, shareMatchup, readSharedMatchup, type Matchup } from "./state";
+import {
+  emptyTeam,
+  equipArtifact,
+  equipRune,
+  placeHero,
+  restoreMatchup,
+  shareMatchup,
+  readSharedMatchup,
+  type Matchup,
+} from "./state";
 import "./team-builder.css";
 
 const STORAGE_KEY = "souls-team-builder-v1";
@@ -61,8 +88,11 @@ export function TeamBuilder() {
   useEffect(() => {
     if (!exportUrl) return;
     exportDialog.current?.showModal();
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
     return () => {
       exportDialog.current?.close();
+      document.body.style.overflow = previousOverflow;
       URL.revokeObjectURL(exportUrl);
     };
   }, [exportUrl]);
@@ -83,7 +113,7 @@ export function TeamBuilder() {
     const clearSelection = (event: globalThis.PointerEvent) => {
       if (
         !(event.target instanceof Element) ||
-        event.target.closest(".formation-slot, .cell-actions, .formation-picker, .mobile-picker-dialog")
+        event.target.closest(".formation-slot, .hero-artifact, .cell-actions, .formation-picker, .mobile-picker-dialog")
       )
         return;
       setHasSelection(false);
@@ -92,6 +122,8 @@ export function TeamBuilder() {
     return () => document.removeEventListener("pointerdown", clearSelection);
   }, []);
 
+  const [pickingRune, setPickingRune] = useState(false);
+  const [pickingArtifact, setPickingArtifact] = useState(false);
   const [query, setQuery] = useState("");
   const [race, setRace] = useState("all");
   const drag = useRef<{ side: keyof Matchup; slot: number; x: number; y: number; active: boolean } | null>(null);
@@ -152,6 +184,7 @@ export function TeamBuilder() {
   const team = matchup[selection.side];
   const isPet = selection.slot === "pet";
   const selectedId = hasSelection ? (isPet ? team.petId : team.slots[selection.slot as number]) : null;
+  const selectedPet = isPet && hasSelection ? pets.find((pet) => pet.id === selectedId) : undefined;
   const full = team.slots.filter(Boolean).length >= 5;
   const options = (isPet ? pets : heroes.filter((hero) => race === "all" || hero.race === race)).filter((item) =>
     item.name.toLowerCase().includes(query.trim().toLowerCase()),
@@ -181,6 +214,8 @@ export function TeamBuilder() {
   }
 
   function select(next: Selection) {
+    setPickingArtifact(false);
+    setPickingRune(false);
     setHasSelection(true);
     setSelection(next);
     setQuery("");
@@ -198,87 +233,161 @@ export function TeamBuilder() {
     }));
   }
 
-  const picker = (
-    <aside className="formation-picker artifact-preview p-4" aria-label="Formation selection">
-      {isMobile && (
-        <button
-          className="mobile-picker-close formation-action"
-          aria-label="Close selection"
-          onClick={() => setPickerOpen(false)}
-        >
-          <X size={20} />
-        </button>
-      )}
-      <div className="flex items-center justify-between gap-2">
-        <div>
-          <p className="text-xs uppercase tracking-widest text-souls-gold">{sideName[selection.side]} team</p>
-          <h2 id="formation-picker-title" className="mt-1 text-xl font-bold">
-            {!hasSelection ? "Choose a position" : isPet ? "Choose a pet" : `Position ${Number(selection.slot) + 1}`}
-          </h2>
-        </div>
-        {selectedId && (
-          <button className="formation-action" aria-label="Remove selected unit" onClick={() => assign(null)}>
-            <X size={16} /> Remove
+  function chooseArtifact(side: keyof Matchup, slot: number) {
+    select({ side, slot });
+    setPickingArtifact(true);
+  }
+  const selectedHero = !isPet && selectedId ? heroes.find((hero) => hero.id === selectedId) : undefined;
+  function chooseRune(side: keyof Matchup, slot: number) {
+    select({ side, slot });
+    setPickingRune(true);
+  }
+  const picker =
+    pickingRune && selectedHero ? (
+      <RunePicker
+        key={`${selection.side}-${selectedId}`}
+        heroName={selectedHero.name}
+        value={team.runes?.[selectedHero.id]}
+        onClose={() => {
+          setPickingRune(false);
+          setPickerOpen(false);
+        }}
+        onSave={(rune) => {
+          setMatchup((current) => ({
+            ...current,
+            [selection.side]: equipRune(current[selection.side], selectedHero.id, rune),
+          }));
+          setPickingRune(false);
+          setPickerOpen(false);
+        }}
+      />
+    ) : pickingArtifact && selectedHero ? (
+      <ArtifactPicker
+        heroRole={selectedHero.role}
+        key={`${selection.side}-${selectedId}`}
+        heroName={selectedHero.name}
+        selectedId={team.artifacts?.[selectedHero.id]}
+        onClose={() => {
+          setPickingArtifact(false);
+          setPickerOpen(false);
+        }}
+        onSelect={(id) => {
+          setMatchup((current) => ({
+            ...current,
+            [selection.side]: equipArtifact(current[selection.side], selectedHero.id, id),
+          }));
+          setPickingArtifact(false);
+          setPickerOpen(false);
+        }}
+      />
+    ) : (
+      <aside className="formation-picker artifact-preview p-4" aria-label="Formation selection">
+        {isMobile && (
+          <button
+            className="mobile-picker-close formation-action"
+            aria-label="Close selection"
+            onClick={() => setPickerOpen(false)}
+          >
+            <X size={20} />
           </button>
         )}
-      </div>
-      <p className="my-3 min-h-10 text-xs leading-relaxed text-souls-panel/65">
-        {!hasSelection
-          ? "Select a position on the board to add or replace a hero or pet."
-          : isPet
-            ? "Choose the companion for this team."
-            : full && !selectedId
-              ? "Team is full. Choose a hero already in this team to move them here, or remove a hero first."
-              : "Choose a hero to place here. Choosing a hero already in this team moves them here, swapping occupied positions."}
-      </p>
-      <label className="flex items-center gap-2 rounded border border-souls-spirit/25 bg-souls-void/60 px-3 py-2">
-        <Search size={16} />
-        <input
-          aria-label={isPet ? "Search pets" : "Search heroes"}
-          className="min-w-0 w-full bg-transparent text-sm outline-none"
-          placeholder={isPet ? "Search pets…" : "Search heroes…"}
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
-        />
-      </label>
-      {!isPet && (
-        <div className="my-3 flex flex-wrap gap-1" aria-label="Filter by race">
-          {["all", "human", "horde", "elf", "undead", "light", "darkness"].map((value) => (
-            <button key={value} className="race-filter" aria-pressed={race === value} onClick={() => setRace(value)}>
-              {value}
+        <div className="flex items-center justify-between gap-2">
+          <div>
+            <p className="text-xs uppercase tracking-widest text-souls-gold">{sideName[selection.side]} team</p>
+            <h2 id="formation-picker-title" className="mt-1 text-xl font-bold">
+              {!hasSelection ? "Choose a position" : isPet ? "Choose a pet" : `Position ${Number(selection.slot) + 1}`}
+            </h2>
+          </div>
+          {selectedId && (
+            <button className="formation-action" aria-label="Remove selected unit" onClick={() => assign(null)}>
+              <X size={16} /> Remove
             </button>
-          ))}
+          )}
         </div>
-      )}
-      <div className="picker-roster mt-3">
-        {options.map((item) => {
-          const inTeam = !isPet && team.slots.includes(item.id);
-          const disabled = !hasSelection || (!isPet && full && !selectedId && !inTeam);
-          return (
-            <button
-              className="roster-unit"
-              key={item.id}
-              data-selected={selectedId === item.id}
-              disabled={disabled}
-              aria-pressed={selectedId === item.id}
-              onClick={() => assign(item.id)}
-            >
-              <img src={item.imageUrl} alt="" loading="lazy" />
-              <span>{item.name}</span>
+        <p className="my-3 min-h-10 text-xs leading-relaxed text-souls-panel/65">
+          {!hasSelection
+            ? "Select a position on the board to add or replace a hero or pet."
+            : isPet
+              ? "Choose the companion for this team."
+              : full && !selectedId
+                ? "Team is full. Choose a hero already in this team to move them here, or remove a hero first."
+                : "Choose a hero to place here. Choosing a hero already in this team moves them here, swapping occupied positions."}
+        </p>
+        {selectedHero && (
+          <div className="mb-3 flex flex-wrap gap-2">
+            <button className="formation-action" onClick={() => chooseRune(selection.side, selection.slot as number)}>
+              <Hexagon size={16} /> {team.runes?.[selectedHero.id] ? "Change rune" : "Add rune"}
             </button>
-          );
-        })}
-      </div>
-      {!options.length && (
-        <p className="py-8 text-center text-sm text-souls-panel/60">No matches. Try another name or race.</p>
-      )}
-      <p className="mt-4 text-xs text-souls-panel/60" role="status">
-        {saved
-          ? "Saved automatically in this browser."
-          : "Browser storage unavailable. Changes last until you leave this page."}
-      </p>
-    </aside>
-  );
+            {team.runes?.[selectedHero.id] && (
+              <button
+                className="formation-action"
+                onClick={() =>
+                  setMatchup((current) => ({
+                    ...current,
+                    [selection.side]: equipRune(current[selection.side], selectedHero.id, null),
+                  }))
+                }
+              >
+                <X size={16} /> Remove rune
+              </button>
+            )}
+            <button
+              className="formation-action"
+              onClick={() => chooseArtifact(selection.side, selection.slot as number)}
+            >
+              <Gem size={16} /> {team.artifacts?.[selectedHero.id] ? "Change artifact" : "Add artifact"}
+            </button>
+          </div>
+        )}
+        <label className="flex items-center gap-2 rounded border border-souls-spirit/25 bg-souls-void/60 px-3 py-2">
+          <Search size={16} />
+          <input
+            aria-label={isPet ? "Search pets" : "Search heroes"}
+            className="min-w-0 w-full bg-transparent text-sm outline-none"
+            placeholder={isPet ? "Search pets…" : "Search heroes…"}
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+          />
+        </label>
+        {!isPet && (
+          <div className="my-3 flex flex-wrap gap-1" aria-label="Filter by race">
+            {["all", "human", "horde", "elf", "undead", "light", "darkness"].map((value) => (
+              <button key={value} className="race-filter" aria-pressed={race === value} onClick={() => setRace(value)}>
+                {value}
+              </button>
+            ))}
+          </div>
+        )}
+        <div className="picker-roster mt-3">
+          {options.map((item) => {
+            const inTeam = !isPet && team.slots.includes(item.id);
+            const disabled = !hasSelection || (!isPet && full && !selectedId && !inTeam);
+            return (
+              <button
+                className="roster-unit"
+                key={item.id}
+                data-selected={selectedId === item.id}
+                disabled={disabled}
+                aria-pressed={selectedId === item.id}
+                onClick={() => assign(item.id)}
+              >
+                <img src={item.imageUrl} alt="" loading="lazy" />
+                <span>{item.name}</span>
+              </button>
+            );
+          })}
+        </div>
+        {!options.length && (
+          <p className="py-8 text-center text-sm text-souls-panel/60">No matches. Try another name or race.</p>
+        )}
+        {selectedPet && <PetDetails pet={selectedPet} />}
+        <p className="mt-4 text-xs text-souls-panel/60" role="status">
+          {saved
+            ? "Saved automatically in this browser."
+            : "Browser storage unavailable. Changes last until you leave this page."}
+        </p>
+      </aside>
+    );
 
   return (
     <section>
@@ -315,11 +424,11 @@ export function TeamBuilder() {
       )}
       <dialog
         ref={exportDialog}
-        className="mobile-picker-dialog p-4"
+        className="mobile-picker-dialog formation-export-dialog"
         aria-label="Formation screenshot"
         onCancel={() => setExportUrl("")}
       >
-        <div className="flex items-center justify-between gap-3 p-4">
+        <div className="flex shrink-0 items-center justify-between gap-3 border-b border-souls-spirit/20 p-4">
           <a className="formation-action" href={exportUrl || undefined} download="souls-formation.png">
             <Download size={16} /> Save PNG
           </a>
@@ -327,8 +436,12 @@ export function TeamBuilder() {
             <X size={20} />
           </button>
         </div>
-        {exportUrl && <img className="w-full" src={exportUrl} alt="Enemy and allied formations" />}
-        <p className="p-4 text-xs text-souls-panel/70">On mobile, you can also press and hold the image to save it.</p>
+        <div className="min-h-0 overflow-y-auto overscroll-contain">
+          {exportUrl && <img className="w-full" src={exportUrl} alt="Enemy and allied formations" />}
+          <p className="p-4 text-xs text-souls-panel/70">
+            On mobile, you can also press and hold the image to save it.
+          </p>
+        </div>
       </dialog>
       {showCopied && (
         <NotificationToast
@@ -391,6 +504,11 @@ export function TeamBuilder() {
                     <div className="formation-row" key={row[0]}>
                       {row.map((slot) => {
                         const hero = heroes.find((item) => item.id === current.slots[slot]);
+                        const artifact = hero
+                          ? formationArtifactById.get(current.artifacts?.[hero.id] ?? "")
+                          : undefined;
+                        const heroRune = hero ? current.runes?.[hero.id] : undefined;
+                        const rune = heroRune ? mapHeroRuneToAppearance(heroRune) : null;
                         const active = hasSelection && selection.side === side && selection.slot === slot;
                         return (
                           <div className="formation-cell" key={slot}>
@@ -460,6 +578,31 @@ export function TeamBuilder() {
                               )}
                               {!hero && <span className="slot-name">Add hero</span>}
                             </button>
+                            {hero && (
+                              <button
+                                className="hero-artifact hero-rune"
+                                aria-label={`${rune ? "Change rune" : "Add rune"} for ${hero.name}`}
+                                title={
+                                  rune
+                                    ? `${runeByType.get(rune.rune)?.name}${rune.ability ? ` · ${runeAbilityByKey.get(rune.ability)?.name}` : ""}`
+                                    : "Add rune"
+                                }
+                                onClick={() => chooseRune(side, slot)}
+                              >
+                                {rune ? <RuneIcon {...rune} /> : <Hexagon size={16} />}
+                              </button>
+                            )}
+                            {hero && (
+                              <button
+                                className="hero-artifact"
+                                data-filled={Boolean(artifact)}
+                                aria-label={`${artifact ? `Change ${artifact.name}` : "Add artifact"} for ${hero.name}`}
+                                title={artifact?.name ?? "Add artifact"}
+                                onClick={() => chooseArtifact(side, slot)}
+                              >
+                                {artifact ? <img src={artifact.imageUrl} alt="" /> : <Gem size={16} />}
+                              </button>
+                            )}
                             {hero && (
                               <div className="cell-actions">
                                 <button

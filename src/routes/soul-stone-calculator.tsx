@@ -54,7 +54,7 @@ const SOUL_LINK_LEVEL_STORAGE_KEY = "souls_soul_link_level_v2";
 const SOUL_STONE_HIDDEN_COEFFICIENT = 1.08475;
 const MIN_CHAPTER = 40;
 const MIN_LEVEL = 1;
-const MAX_CHAPTER = 76;
+const MAX_CHAPTER = 90;
 const MAX_LEVEL = 60;
 const soulStoneChests: SoulStoneChest[] = [
   {
