@@ -1,3 +1,4 @@
+import { heroFaceImageUrl } from "../../heroes/faceImages";
 import type { Matchup } from "./state";
 import { artifactImageCollections } from "../../data/artifactImageCollections";
 import { runes, runeAbilities, RUNE_ABILITY_WIDTH_RATIO, RUNE_ABILITY_OVERHANG_RATIO } from "./runes";
@@ -25,9 +26,17 @@ export async function exportFormationImage(matchup: Matchup, heroes: Portrait[],
       if (rune.ability) used.add(`rune-ability-${rune.ability}`);
     }
   }
+  const facePortraits = heroes
+    .filter((hero) => used.has(hero.id))
+    .map((hero) => ({
+      id: `hero-face-${hero.id}`,
+      imageUrl: heroFaceImageUrl(hero),
+    }));
+  for (const face of facePortraits) used.add(face.id);
   await Promise.all(
     [
       ...heroes,
+      ...facePortraits,
       ...pets,
       ...artifactImageCollections.flatMap((collection) => collection.images),
       ...runes,
@@ -81,12 +90,17 @@ export async function exportFormationImage(matchup: Matchup, heroes: Portrait[],
     context!.restore();
   }
 
+  const formationScale = 0.92;
+  const formationHeight = (2 * 128 + 121) * formationScale;
+  const dividerY = layoutSize / 2;
+  const dividerGap = 24;
   for (const side of ["enemy", "ally"] as const) {
     const team = matchup[side];
     const color = side === "enemy" ? "#ee9c88" : "#7ed4ff";
     context.save();
-    context.translate(40, side === "enemy" ? 20 : 430);
-    context.scale(0.9, 0.9);
+    const top = side === "enemy" ? dividerY - dividerGap - formationHeight : dividerY + dividerGap;
+    context.translate(290 - 400 * formationScale, top);
+    context.scale(formationScale, formationScale);
     const rows =
       side === "enemy"
         ? [
@@ -100,53 +114,80 @@ export async function exportFormationImage(matchup: Matchup, heroes: Portrait[],
             [5, 6, 7],
           ];
     rows.forEach((row, rowIndex) => {
-      const start = 400 - (row.length * 128 - 24) / 2;
+      const start = 400 - (row.length * 116 - 12) / 2;
       row.forEach((index, column) => {
-        const x = start + column * 128;
-        const y = rowIndex * 132;
+        const x = start + column * 116;
+        const y = rowIndex * 128;
         const heroId = team.slots[index];
         slot(x, y, heroId, color);
-        const artifactId = heroId ? team.artifacts?.[heroId] : null;
-        const artifact = artifactId ? portraits.get(artifactId) : null;
-        if (artifact) {
-          context.save();
-          context.beginPath();
-          context.roundRect(x + 59, y + 76, 48, 48, 5);
-          context.fillStyle = "#111522";
-          context.fill();
-          context.clip();
-          const scale = Math.min(48 / artifact.naturalWidth, 48 / artifact.naturalHeight);
-          const width = artifact.naturalWidth * scale;
-          const height = artifact.naturalHeight * scale;
-          context.drawImage(artifact, x + 59 + (48 - width) / 2, y + 76 + (48 - height) / 2, width, height);
-          context.restore();
-          context.strokeStyle = "#f6c85f88";
-          context.lineWidth = 1;
-          context.stroke();
-        }
-        const heroRune = heroId ? team.runes?.[heroId] : null;
-        const rune = heroRune ? portraits.get(heroRune.runeId) : null;
-        if (rune) {
-          const scale = Math.min(48 / rune.naturalWidth, 48 / rune.naturalHeight);
-          const width = rune.naturalWidth * scale;
-          const height = rune.naturalHeight * scale;
-          context.drawImage(rune, x - 3 + (48 - width) / 2, y + 76 + (48 - height) / 2, width, height);
-          const ability = heroRune?.ability ? portraits.get(`rune-ability-${heroRune.ability}`) : null;
-          if (ability) {
-            const runeSize = 48;
-            const abilityWidth = runeSize * RUNE_ABILITY_WIDTH_RATIO;
-            const abilityHeight = (abilityWidth * ability.naturalHeight) / ability.naturalWidth;
-            context.drawImage(
-              ability,
-              x - 3 - runeSize * RUNE_ABILITY_OVERHANG_RATIO,
-              y + 76 + runeSize * (1 + RUNE_ABILITY_OVERHANG_RATIO) - abilityHeight,
-              abilityWidth,
-              abilityHeight,
-            );
-          }
-        }
       });
-      if (rowIndex === 1) slot(side === "enemy" ? start + 256 : start - 128, 132, team.petId, color, true);
+      if (rowIndex === 1) slot(side === "enemy" ? start + 232 : start - 116, 128, team.petId, color, true);
+    });
+    context.restore();
+    const equipmentScale = 1.06;
+    const equipmentHeight = Math.max(0, team.slots.filter(Boolean).length - 1) * 60 + 64;
+    // Center the compact list beside its formation without column headings.
+    context.save();
+    context.translate(566, top + (formationHeight - equipmentHeight * equipmentScale) / 2);
+    context.scale(equipmentScale, equipmentScale);
+    context.translate(-540, 0);
+    let equipmentRow = 0;
+    team.slots.forEach((heroId) => {
+      if (!heroId) return;
+      const y = equipmentRow++ * 60;
+      const face = portraits.get(`hero-face-${heroId}`);
+      context.save();
+      context.beginPath();
+      context.roundRect(540, y + 4.25, 52, 52, 5);
+      context.clip();
+      if (face) context.drawImage(face, 540, y + 4.25, 52, 52);
+      context.restore();
+      context.strokeStyle = color;
+      context.lineWidth = 1;
+      context.stroke();
+      const equipmentImage = (id: string | null | undefined, x: number, hexagon = false) => {
+        const image = id ? portraits.get(id) : null;
+        if (!image) {
+          if (hexagon) {
+            context.beginPath();
+            for (let i = 0; i < 6; i++) {
+              const angle = (i * Math.PI) / 3 - Math.PI / 2;
+              const px = x + 26 + Math.cos(angle) * 25;
+              const py = y + 30.25 + Math.sin(angle) * 25;
+              if (i === 0) context.moveTo(px, py);
+              else context.lineTo(px, py);
+            }
+            context.closePath();
+            context.strokeStyle = "#b981ff88";
+            context.lineWidth = 1;
+            context.stroke();
+          }
+          context.fillStyle = "#fff8ea55";
+          context.font = "20px system-ui";
+          context.fillText("+", x + 26, y + 34);
+          return;
+        }
+        const scale = Math.min(52 / image.naturalWidth, 52 / image.naturalHeight);
+        const width = image.naturalWidth * scale;
+        const height = image.naturalHeight * scale;
+        context.drawImage(image, x + (52 - width) / 2, y + (60.5 - height) / 2, width, height);
+      };
+      const heroRune = team.runes?.[heroId];
+      equipmentImage(heroRune?.runeId, 606, true);
+      const ability = heroRune?.ability ? portraits.get(`rune-ability-${heroRune.ability}`) : null;
+      if (ability) {
+        const size = 52;
+        const width = size * RUNE_ABILITY_WIDTH_RATIO;
+        const height = (width * ability.naturalHeight) / ability.naturalWidth;
+        context.drawImage(
+          ability,
+          606 - size * RUNE_ABILITY_OVERHANG_RATIO,
+          y + (60.5 - size) / 2 + size * (1 + RUNE_ABILITY_OVERHANG_RATIO) - height,
+          width,
+          height,
+        );
+      }
+      equipmentImage(team.artifacts?.[heroId], 672);
     });
     context.restore();
   }

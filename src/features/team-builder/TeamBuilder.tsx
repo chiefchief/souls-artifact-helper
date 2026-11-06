@@ -1,8 +1,7 @@
 import { RunePicker } from "./RunePicker";
-import { mapHeroRuneToAppearance, runeAbilityByKey, runeByType } from "./runes";
-import { RuneIcon } from "./RuneIcon";
+import { TeamEquipment } from "./TeamEquipment";
 import { exportFormationImage } from "./exportImage";
-import { ArtifactPicker, formationArtifactById } from "./ArtifactPicker";
+import { ArtifactPicker } from "./ArtifactPicker";
 import { PetDetails } from "./PetDetails";
 import { NotificationToast } from "../../components/NotificationToast";
 import { useEffect, useState, useRef, type PointerEvent } from "react";
@@ -113,7 +112,7 @@ export function TeamBuilder() {
     const clearSelection = (event: globalThis.PointerEvent) => {
       if (
         !(event.target instanceof Element) ||
-        event.target.closest(".formation-slot, .hero-artifact, .cell-actions, .formation-picker, .mobile-picker-dialog")
+        event.target.closest(".formation-slot, .equipment-icon, .cell-actions, .formation-picker, .mobile-picker-dialog")
       )
         return;
       setHasSelection(false);
@@ -499,144 +498,123 @@ export function TeamBuilder() {
                     Clear
                   </button>
                 </header>
-                <div className="formation-grid">
-                  {visualRows.map((row) => (
-                    <div className="formation-row" key={row[0]}>
-                      {row.map((slot) => {
-                        const hero = heroes.find((item) => item.id === current.slots[slot]);
-                        const artifact = hero
-                          ? formationArtifactById.get(current.artifacts?.[hero.id] ?? "")
-                          : undefined;
-                        const heroRune = hero ? current.runes?.[hero.id] : undefined;
-                        const rune = heroRune ? mapHeroRuneToAppearance(heroRune) : null;
-                        const active = hasSelection && selection.side === side && selection.slot === slot;
-                        return (
-                          <div className="formation-cell" key={slot}>
-                            <button
-                              className="formation-slot"
-                              data-moving={moving?.side === side && moving.slot === slot}
-                              data-drop-target={dropTarget?.side === side && dropTarget.slot === slot}
-                              data-selected={active}
-                              data-filled={Boolean(hero)}
-                              aria-pressed={active}
-                              aria-label={`${sideName[side]} position ${slot + 1}: ${hero?.name ?? "empty"}`}
-                              data-side={side}
-                              data-slot={slot}
-                              onPointerDown={(event) => {
-                                // A fresh press always starts a new click, including on empty slots.
-                                // Some browsers do not emit a click after a completed drag.
-                                suppressClick.current = false;
-                                if (!hero || event.button !== 0) return;
-                                drag.current = { side, slot, x: event.clientX, y: event.clientY, active: false };
-                                event.currentTarget.setPointerCapture(event.pointerId);
-                              }}
-                              onPointerMove={(event) => {
-                                const source = drag.current;
-                                if (!source) return;
-                                if (
-                                  !source.active &&
-                                  Math.hypot(event.clientX - source.x, event.clientY - source.y) < 8
-                                )
-                                  return;
-                                source.active = true;
-                                setMoving({ side: source.side, slot: source.slot });
-                                setDragPoint({ x: event.clientX, y: event.clientY });
-                                const target = document
-                                  .elementFromPoint(event.clientX, event.clientY)
-                                  ?.closest<HTMLButtonElement>("button[data-slot]");
-                                setDropTarget(
-                                  target?.dataset.side === source.side
-                                    ? { side: source.side, slot: Number(target.dataset.slot) }
-                                    : null,
-                                );
-                              }}
-                              onPointerUp={finishDrag}
-                              onPointerCancel={() => {
-                                drag.current = null;
-                                setMoving(null);
-                                setDragPoint(null);
-                                setDropTarget(null);
-                              }}
-                              onLostPointerCapture={() => {
-                                drag.current = null;
-                                setMoving(null);
-                                setDragPoint(null);
-                                setDropTarget(null);
-                              }}
-                              onClick={(event) => {
-                                if (suppressClick.current && event.detail !== 0) {
+                <div className="formation-body">
+                  <div className="formation-grid">
+                    {visualRows.map((row) => (
+                      <div className="formation-row" key={row[0]}>
+                        {row.map((slot) => {
+                          const hero = heroes.find((item) => item.id === current.slots[slot]);
+                          const active = hasSelection && selection.side === side && selection.slot === slot;
+                          return (
+                            <div className="formation-cell" key={slot}>
+                              <button
+                                className="formation-slot"
+                                data-moving={moving?.side === side && moving.slot === slot}
+                                data-drop-target={dropTarget?.side === side && dropTarget.slot === slot}
+                                data-selected={active}
+                                data-filled={Boolean(hero)}
+                                aria-pressed={active}
+                                aria-label={`${sideName[side]} position ${slot + 1}: ${hero?.name ?? "empty"}`}
+                                data-side={side}
+                                data-slot={slot}
+                                onPointerDown={(event) => {
+                                  // A fresh press always starts a new click, including on empty slots.
+                                  // Some browsers do not emit a click after a completed drag.
                                   suppressClick.current = false;
-                                  return;
-                                }
-                                select({ side, slot });
-                              }}
-                            >
-                              {hero ? (
-                                <img src={hero.imageUrl} alt="" draggable={false} />
-                              ) : (
-                                <Plus className="slot-plus" size={24} />
+                                  if (!hero || event.button !== 0) return;
+                                  drag.current = { side, slot, x: event.clientX, y: event.clientY, active: false };
+                                  event.currentTarget.setPointerCapture(event.pointerId);
+                                }}
+                                onPointerMove={(event) => {
+                                  const source = drag.current;
+                                  if (!source) return;
+                                  if (
+                                    !source.active &&
+                                    Math.hypot(event.clientX - source.x, event.clientY - source.y) < 8
+                                  )
+                                    return;
+                                  source.active = true;
+                                  setMoving({ side: source.side, slot: source.slot });
+                                  setDragPoint({ x: event.clientX, y: event.clientY });
+                                  const target = document
+                                    .elementFromPoint(event.clientX, event.clientY)
+                                    ?.closest<HTMLButtonElement>("button[data-slot]");
+                                  setDropTarget(
+                                    target?.dataset.side === source.side
+                                      ? { side: source.side, slot: Number(target.dataset.slot) }
+                                      : null,
+                                  );
+                                }}
+                                onPointerUp={finishDrag}
+                                onPointerCancel={() => {
+                                  drag.current = null;
+                                  setMoving(null);
+                                  setDragPoint(null);
+                                  setDropTarget(null);
+                                }}
+                                onLostPointerCapture={() => {
+                                  drag.current = null;
+                                  setMoving(null);
+                                  setDragPoint(null);
+                                  setDropTarget(null);
+                                }}
+                                onClick={(event) => {
+                                  if (suppressClick.current && event.detail !== 0) {
+                                    suppressClick.current = false;
+                                    return;
+                                  }
+                                  select({ side, slot });
+                                }}
+                              >
+                                {hero ? (
+                                  <img src={hero.imageUrl} alt="" draggable={false} />
+                                ) : (
+                                  <Plus className="slot-plus" size={24} />
+                                )}
+                                {!hero && <span className="slot-name">Add hero</span>}
+                              </button>
+                              {hero && (
+                                <div className="cell-actions">
+                                  <button
+                                    aria-label={`Remove ${hero.name} from ${sideName[side]} position ${slot + 1}`}
+                                    title="Remove hero"
+                                    onClick={() => {
+                                      setMoving(null);
+                                      setMatchup((value) => ({ ...value, [side]: placeHero(value[side], slot, null) }));
+                                    }}
+                                  >
+                                    <X size={14} />
+                                  </button>
+                                </div>
                               )}
-                              {!hero && <span className="slot-name">Add hero</span>}
-                            </button>
-                            {hero && (
-                              <button
-                                className="hero-artifact hero-rune"
-                                aria-label={`${rune ? "Change rune" : "Add rune"} for ${hero.name}`}
-                                title={
-                                  rune
-                                    ? `${runeByType.get(rune.rune)?.name}${rune.ability ? ` · ${runeAbilityByKey.get(rune.ability)?.name}` : ""}`
-                                    : "Add rune"
-                                }
-                                onClick={() => chooseRune(side, slot)}
-                              >
-                                {rune ? <RuneIcon {...rune} /> : <Hexagon size={16} />}
-                              </button>
-                            )}
-                            {hero && (
-                              <button
-                                className="hero-artifact"
-                                data-filled={Boolean(artifact)}
-                                aria-label={`${artifact ? `Change ${artifact.name}` : "Add artifact"} for ${hero.name}`}
-                                title={artifact?.name ?? "Add artifact"}
-                                onClick={() => chooseArtifact(side, slot)}
-                              >
-                                {artifact ? <img src={artifact.imageUrl} alt="" /> : <Gem size={16} />}
-                              </button>
-                            )}
-                            {hero && (
-                              <div className="cell-actions">
-                                <button
-                                  aria-label={`Remove ${hero.name} from ${sideName[side]} position ${slot + 1}`}
-                                  title="Remove hero"
-                                  onClick={() => {
-                                    setMoving(null);
-                                    setMatchup((value) => ({ ...value, [side]: placeHero(value[side], slot, null) }));
-                                  }}
-                                >
-                                  <X size={14} />
-                                </button>
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })}
-                      {row[0] === 3 && (
-                        <button
-                          className={`formation-slot pet-slot pet-${side}`}
-                          data-selected={hasSelection && selection.side === side && isPet}
-                          data-filled={Boolean(pet)}
-                          aria-pressed={hasSelection && selection.side === side && isPet}
-                          aria-label={`${sideName[side]} pet: ${pet?.name ?? "empty"}`}
-                          onClick={() => select({ side, slot: "pet" })}
-                        >
-                          {pet ? <img src={pet.imageUrl} alt="" /> : <PawPrint className="slot-plus" size={25} />}
-                          {!pet && <span className="slot-name">Add pet</span>}
-                        </button>
-                      )}
-                    </div>
-                  ))}
+                            </div>
+                          );
+                        })}
+                        {row[0] === 3 && (
+                          <button
+                            className={`formation-slot pet-slot pet-${side}`}
+                            data-selected={hasSelection && selection.side === side && isPet}
+                            data-filled={Boolean(pet)}
+                            aria-pressed={hasSelection && selection.side === side && isPet}
+                            aria-label={`${sideName[side]} pet: ${pet?.name ?? "empty"}`}
+                            onClick={() => select({ side, slot: "pet" })}
+                          >
+                            {pet ? <img src={pet.imageUrl} alt="" /> : <PawPrint className="slot-plus" size={25} />}
+                            {!pet && <span className="slot-name">Add pet</span>}
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                  <TeamEquipment
+                    team={current}
+                    teamName={sideName[side]}
+                    selectedSlot={hasSelection && selection.side === side ? selection.slot : null}
+                    onHero={(slot) => select({ side, slot })}
+                    onRune={(slot) => chooseRune(side, slot)}
+                    onArtifact={(slot) => chooseArtifact(side, slot)}
+                  />
                 </div>
-                <p className="front-line">Front line</p>
                 {side === "enemy" && (
                   <div className="battle-divider">
                     <span />

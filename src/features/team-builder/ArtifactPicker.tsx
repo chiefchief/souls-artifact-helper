@@ -41,6 +41,11 @@ export function ArtifactPicker({
           <X size={20} />
         </button>
       </div>
+      {selectedId && (
+        <button className="formation-action mt-3" onClick={() => onSelect(null)}>
+          <X size={16} /> Remove artifact
+        </button>
+      )}
       <p className="mt-2 text-xs text-souls-panel/70">
         Showing artifacts for this hero’s class and universal artifacts.
       </p>
@@ -59,11 +64,6 @@ export function ArtifactPicker({
           </button>
         ))}
       </div>
-      {selectedId && (
-        <button className="formation-action mb-3" onClick={() => onSelect(null)}>
-          <X size={16} /> Remove artifact
-        </button>
-      )}
       <div className="picker-roster">
         {options.map((item) => (
           <button

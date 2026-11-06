@@ -5,6 +5,7 @@
   align-items: start;
 }
 .battle-arena {
+  container-type: inline-size;
   border: 1px solid #f6c85f30;
   border-radius: 16px;
   padding: 24px 8px;
@@ -21,20 +22,20 @@
   --team-color: #ee9c88;
 }
 .formation-grid {
-  max-width: 356px;
+  max-width: 300px;
   margin: 18px auto 0;
-  padding: 0 52px;
+  padding: 0 40px;
 }
 .formation-row {
   position: relative;
   display: flex;
   justify-content: center;
-  gap: 16px;
-  margin-top: 8px;
+  gap: 8px;
+  margin-top: 6px;
 }
 .formation-cell {
   position: relative;
-  width: calc((100% - 32px) / 3);
+  width: calc((100% - 16px) / 3);
   flex-shrink: 0;
 }
 .formation-slot {
@@ -100,43 +101,6 @@
   right: -7px;
   z-index: 2;
 }
-.hero-artifact {
-  position: absolute;
-  right: -3px;
-  bottom: -3px;
-  z-index: 1;
-  display: grid;
-  place-items: center;
-  width: 46%;
-  min-width: 32px;
-  aspect-ratio: 1;
-  padding: 0;
-  overflow: hidden;
-  border: 1px solid #f6c85f88;
-  border-radius: 5px;
-  background: #111522;
-  color: #f6c85f;
-  cursor: pointer;
-}
-.hero-artifact img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-.hero-rune {
-  right: auto;
-  left: -3px;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-  color: #b981ff;
-  overflow: visible;
-}
-.hero-artifact:hover,
-.hero-artifact:focus-visible {
-  outline: 2px solid #f6c85f;
-  outline-offset: 1px;
-}
 .cell-actions button {
   display: grid;
   place-items: center;
@@ -178,31 +142,19 @@
 }
 .pet-slot {
   position: absolute;
-  width: calc((100% - 32px) / 3);
+  width: calc((100% - 16px) / 3);
   top: 50%;
   transform: translateY(-50%) scale(0.7);
 }
 .pet-enemy {
-  left: calc(50% + (100% - 32px) / 3 + 24px);
+  left: calc(50% + (100% - 16px) / 3 + 12px);
 }
 .pet-ally {
-  right: calc(50% + (100% - 32px) / 3 + 24px);
-}
-.front-line {
-  margin: 10px 0 0;
-  text-align: center;
-  text-transform: uppercase;
-  font-size: 9px;
-  letter-spacing: 0.2em;
-  opacity: 0.55;
+  right: calc(50% + (100% - 16px) / 3 + 12px);
 }
 .formation-ally {
   display: flex;
   flex-direction: column;
-}
-.formation-ally .front-line {
-  order: -2;
-  margin: 0 0 10px;
 }
 .formation-ally header {
   order: 2;
@@ -308,7 +260,7 @@
 }
 @media (max-width: 400px) {
   .formation-grid {
-    padding: 0 52px;
+    padding: 0 40px;
   }
   .battle-arena {
     padding-inline: 0;
@@ -366,4 +318,103 @@
   right: 12px;
   top: 12px;
   z-index: 1;
+}
+
+.formation-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 160px;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 6px;
+}
+.formation-body .formation-grid {
+  width: 100%;
+  margin: 0 auto;
+}
+.team-equipment {
+  padding: 6px;
+  border: 1px solid #f6c85f25;
+  border-radius: 10px;
+  background: #11152266;
+}
+.equipment-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: center;
+  gap: 6px;
+}
+.equipment-row + .equipment-row {
+  margin-top: 6px;
+}
+.equipment-row[data-selected="true"] {
+  border-radius: 5px;
+  background: #f6c85f18;
+}
+.equipment-icon {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  aspect-ratio: 1;
+  padding: 0;
+  border: 1px solid #f6c85f66;
+  border-radius: 5px;
+  color: #f6c85f;
+  background: #111522;
+  cursor: pointer;
+}
+.equipment-icon > img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 4px;
+}
+.equipment-rune {
+  border: 0;
+  background: transparent;
+}
+.equipment-icon:hover,
+.equipment-icon:focus-visible {
+  outline: 2px solid #f6c85f;
+  outline-offset: 2px;
+}
+.equipment-empty {
+  font-size: 11px;
+  text-align: center;
+  color: #fff8ea99;
+}
+@container (max-width: 500px) {
+  .formation-body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .team-equipment {
+    width: min(100%, 196px);
+    margin: 12px auto 0;
+  }
+}
+
+.equipment-rune-outline {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  fill: #111522;
+  stroke: #b981ff88;
+  pointer-events: none;
+}
+.equipment-rune > .lucide-plus {
+  position: relative;
+}
+
+.equipment-portrait {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: 4px;
+}
+.equipment-portrait img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
