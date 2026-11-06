@@ -322,7 +322,7 @@
 
 .formation-body {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 160px;
+  grid-template-columns: minmax(0, 1fr) 144px;
   align-items: center;
   gap: 8px;
   padding: 8px 6px;
@@ -388,7 +388,7 @@
     grid-template-columns: minmax(0, 1fr);
   }
   .team-equipment {
-    width: min(100%, 196px);
+    width: min(100%, 172px);
     margin: 12px auto 0;
   }
 }
